@@ -1,5 +1,25 @@
+# Python
 __pycache__/
 *.pyc
 .sisyphus/
-test_workspace/
+
+# TypeScript / Node
+node_modules/
+dist/
+
+# Environment & Config
 .env
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Testing
+test_workspace/
+test-tmp/
+
+# Database
+*.db
+*.db-journal
