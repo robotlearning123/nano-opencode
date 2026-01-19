@@ -1,6 +1,7 @@
 import { readdirSync, statSync } from 'fs';
 import { resolve, join } from 'path';
 import type { Tool } from '../types.js';
+import { getErrorMessage } from '../constants.js';
 
 export const listDirTool: Tool = {
   name: 'list_dir',
@@ -73,8 +74,7 @@ export const listDirTool: Tool = {
 
       return `Contents of ${dirPath}:\n${lines.join('\n')}`;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return `Error listing directory: ${message}`;
+      return `Error listing directory: ${getErrorMessage(error)}`;
     }
   },
 };

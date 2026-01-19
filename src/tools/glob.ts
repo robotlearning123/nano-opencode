@@ -2,6 +2,7 @@ import { glob } from 'glob';
 import { statSync } from 'fs';
 import { resolve } from 'path';
 import type { Tool } from '../types.js';
+import { getErrorMessage } from '../constants.js';
 
 export const globTool: Tool = {
   name: 'glob',
@@ -51,8 +52,7 @@ export const globTool: Tool = {
       const result = withStats.map((f) => f.file).join('\n');
       return `Found ${matches.length} file(s):\n${result}`;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return `Error searching files: ${message}`;
+      return `Error searching files: ${getErrorMessage(error)}`;
     }
   },
 };

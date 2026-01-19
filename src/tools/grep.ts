@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import type { Tool } from '../types.js';
+import { getErrorMessage } from '../constants.js';
 
 export const grepTool: Tool = {
   name: 'grep',
@@ -148,7 +149,7 @@ async function fallbackGrep(
     });
 
     proc.on('error', (error) => {
-      resolve(`Error: ${error.message}`);
+      resolve(`Error: ${getErrorMessage(error)}`);
     });
   });
 }

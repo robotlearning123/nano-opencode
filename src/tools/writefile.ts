@@ -1,6 +1,7 @@
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import type { Tool } from '../types.js';
+import { getErrorMessage } from '../constants.js';
 
 export const writeFileTool: Tool = {
   name: 'write_file',
@@ -35,8 +36,7 @@ export const writeFileTool: Tool = {
       const lines = content.split('\n').length;
       return `Successfully wrote ${lines} lines to ${filePath}`;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return `Error writing file: ${message}`;
+      return `Error writing file: ${getErrorMessage(error)}`;
     }
   },
 };

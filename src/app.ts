@@ -6,6 +6,7 @@ import { loadConfig } from './config.js';
 import { createProvider } from './providers/index.js';
 import { CLI } from './cli.js';
 import { closeDb } from './store.js';
+import { getErrorMessage } from './constants.js';
 
 // Load environment variables
 config();
@@ -43,8 +44,7 @@ program
         await cli.start();
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error: ${message}`);
+      console.error(`Error: ${getErrorMessage(error)}`);
       process.exit(1);
     } finally {
       closeDb();

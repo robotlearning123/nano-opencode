@@ -1,4 +1,5 @@
 import type { Tool } from '../types.js';
+import { getErrorMessage } from '../constants.js';
 import { readFileTool } from './read.js';
 import { writeFileTool } from './writefile.js';
 import { editFileTool } from './edit.js';
@@ -33,7 +34,6 @@ export async function executeTool(
   try {
     return await tool.execute(args);
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return `Error executing ${name}: ${message}`;
+    return `Error executing ${name}: ${getErrorMessage(error)}`;
   }
 }

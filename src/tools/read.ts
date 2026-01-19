@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import type { Tool } from '../types.js';
+import { getErrorMessage } from '../constants.js';
 
 export const readFileTool: Tool = {
   name: 'read_file',
@@ -51,8 +52,7 @@ export const readFileTool: Tool = {
 
       return formatted || '(empty file)';
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return `Error reading file: ${message}`;
+      return `Error reading file: ${getErrorMessage(error)}`;
     }
   },
 };

@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import type { Tool } from '../types.js';
+import { getErrorMessage } from '../constants.js';
 
 export const editFileTool: Tool = {
   name: 'edit_file',
@@ -63,8 +64,7 @@ export const editFileTool: Tool = {
       const replacedCount = replaceAll ? occurrences : 1;
       return `Successfully replaced ${replacedCount} occurrence(s) in ${filePath}`;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return `Error editing file: ${message}`;
+      return `Error editing file: ${getErrorMessage(error)}`;
     }
   },
 };

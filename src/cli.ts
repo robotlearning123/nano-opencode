@@ -4,6 +4,7 @@ import ora from 'ora';
 import type { Message, StreamChunk, LLMProvider, Session } from './types.js';
 import { allTools, executeTool } from './tools/index.js';
 import { createSession, addMessage, getSession, listSessions, updateSessionTitle } from './store.js';
+import { getErrorMessage } from './constants.js';
 
 export class CLI {
   private provider: LLMProvider;
@@ -242,8 +243,7 @@ export class CLI {
       }
     } catch (error) {
       spinner.stop();
-      const message = error instanceof Error ? error.message : String(error);
-      console.log(chalk.red(`\nError: ${message}\n`));
+      console.log(chalk.red(`\nError: ${getErrorMessage(error)}\n`));
     }
   }
 }
