@@ -31,7 +31,7 @@ export const editFileTool: Tool = {
     const filePath = resolve(process.cwd(), args.path as string);
     const oldString = args.old_string as string;
     const newString = args.new_string as string;
-    const replaceAll = args.replace_all as boolean || false;
+    const replaceAll = (args.replace_all as boolean) ?? false;
 
     if (!existsSync(filePath)) {
       return `Error: File not found: ${filePath}`;

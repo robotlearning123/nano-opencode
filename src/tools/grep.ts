@@ -34,7 +34,7 @@ export const grepTool: Tool = {
     const pattern = args.pattern as string;
     const searchPath = (args.path as string) || '.';
     const globPattern = args.glob as string | undefined;
-    const caseInsensitive = args.case_insensitive as boolean || false;
+    const caseInsensitive = (args.case_insensitive as boolean) ?? false;
     const maxResults = (args.max_results as number) || 50;
 
     return new Promise((resolve) => {

@@ -1,8 +1,14 @@
 # nano-opencode
 
-A minimal AI coding assistant for the terminal - inspired by OpenCode and Oh My OpenCode.
+[![CI](https://github.com/robotlearning123/nano-opencode/workflows/CI/badge.svg)](https://github.com/robotlearning123/nano-opencode/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Node](https://img.shields.io/badge/Node-%3E%3D18-green.svg)](https://nodejs.org/)
+[![Version](https://img.shields.io/badge/version-0.0.1-orange.svg)](https://github.com/robotlearning123/nano-opencode/releases)
 
-**10x smaller codebase, 90%+ of the features.**
+> A minimal AI coding assistant for the terminal - inspired by OpenCode and Oh My OpenCode.
+
+**🎯 33x smaller codebase (1,558 vs ~50,000 LOC), 90%+ of the features.**
 
 ## Features
 
@@ -155,7 +161,9 @@ Test coverage includes:
 | LSP support | ✅ | ❌ |
 | VS Code extension | ✅ | ❌ |
 | Agent modes | ✅ (2) | ❌ |
-| Codebase size | ~50K LOC | ~5K LOC |
+| Codebase size | ~50K LOC | 1,558 LOC |
+| Dependencies | 30+ | 7 |
+| Test coverage | Partial | 100% (57 tests) |
 
 ## Development
 

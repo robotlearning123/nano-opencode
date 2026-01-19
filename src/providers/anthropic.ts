@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { LLMProvider, Message, Tool, StreamChunk, ToolCall } from '../types.js';
+import { getSystemPrompt } from '../constants.js';
 
 export class AnthropicProvider implements LLMProvider {
   name = 'anthropic';
@@ -24,7 +25,7 @@ export class AnthropicProvider implements LLMProvider {
     const response = await this.client.messages.create({
       model: this.model,
       max_tokens: this.maxTokens,
-      system: this.getSystemPrompt(),
+      system: getSystemPrompt(),
       messages: anthropicMessages,
       tools: anthropicTools,
       stream: true,
@@ -76,24 +77,6 @@ export class AnthropicProvider implements LLMProvider {
       content: fullText,
       toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
     };
-  }
-
-  private getSystemPrompt(): string {
-    return `You are nano-opencode, a helpful AI coding assistant running in the terminal.
-
-You have access to tools to help users with software engineering tasks:
-- Read, write, and edit files
-- Execute shell commands
-- Search code with glob patterns and grep
-
-Guidelines:
-- Be concise and direct
-- Use tools to complete tasks rather than just describing what to do
-- When editing files, read them first to understand the context
-- Execute commands to verify your changes work
-- If unsure about something, ask the user for clarification
-
-Current working directory: ${process.cwd()}`;
   }
 
   private convertMessages(messages: Message[]): Anthropic.MessageParam[] {

@@ -8,6 +8,20 @@ import type { Session, Message } from './types.js';
 const DATA_DIR = join(homedir(), '.config', 'nano-opencode');
 const DB_PATH = join(DATA_DIR, 'sessions.db');
 
+interface SessionRow {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface MessageRow {
+  role: string;
+  content: string;
+  tool_calls: string | null;
+  tool_results: string | null;
+}
+
 let db: Database.Database | null = null;
 
 function getDb(): Database.Database {
@@ -49,15 +63,16 @@ export function createSession(title?: string): Session {
   const database = getDb();
   const id = randomUUID();
   const now = new Date().toISOString();
+  const sessionTitle = title ?? 'New Session';
 
   database.prepare(`
     INSERT INTO sessions (id, title, created_at, updated_at)
     VALUES (?, ?, ?, ?)
-  `).run(id, title || 'New Session', now, now);
+  `).run(id, sessionTitle, now, now);
 
   return {
     id,
-    title: title || 'New Session',
+    title: sessionTitle,
     messages: [],
     createdAt: new Date(now),
     updatedAt: new Date(now),
@@ -66,24 +81,13 @@ export function createSession(title?: string): Session {
 
 export function getSession(id: string): Session | null {
   const database = getDb();
-
-  const row = database.prepare('SELECT * FROM sessions WHERE id = ?').get(id) as {
-    id: string;
-    title: string;
-    created_at: string;
-    updated_at: string;
-  } | undefined;
+  const row = database.prepare('SELECT * FROM sessions WHERE id = ?').get(id) as SessionRow | undefined;
 
   if (!row) return null;
 
   const messages = database
     .prepare('SELECT * FROM messages WHERE session_id = ? ORDER BY id')
-    .all(id) as Array<{
-    role: string;
-    content: string;
-    tool_calls: string | null;
-    tool_results: string | null;
-  }>;
+    .all(id) as MessageRow[];
 
   return {
     id: row.id,
@@ -101,15 +105,9 @@ export function getSession(id: string): Session | null {
 
 export function listSessions(limit = 20): Session[] {
   const database = getDb();
-
   const rows = database
     .prepare('SELECT * FROM sessions ORDER BY updated_at DESC LIMIT ?')
-    .all(limit) as Array<{
-    id: string;
-    title: string;
-    created_at: string;
-    updated_at: string;
-  }>;
+    .all(limit) as SessionRow[];
 
   return rows.map((row) => ({
     id: row.id,

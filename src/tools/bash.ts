@@ -26,7 +26,6 @@ export const bashTool: Tool = {
       const proc = spawn('bash', ['-c', command], {
         cwd: process.cwd(),
         env: process.env,
-        timeout,
       });
 
       let stdout = '';
@@ -41,31 +40,22 @@ export const bashTool: Tool = {
       });
 
       proc.on('close', (code) => {
-        let result = '';
-
-        if (stdout) {
-          result += stdout;
-        }
-
-        if (stderr) {
-          result += (result ? '\n' : '') + `stderr:\n${stderr}`;
-        }
-
-        if (code !== 0) {
-          result += (result ? '\n' : '') + `Exit code: ${code}`;
-        }
-
-        resolve(result || '(no output)');
+        const parts: string[] = [];
+        if (stdout) parts.push(stdout);
+        if (stderr) parts.push(`stderr:\n${stderr}`);
+        if (code !== 0) parts.push(`Exit code: ${code}`);
+        resolve(parts.join('\n') || '(no output)');
       });
 
       proc.on('error', (error) => {
         resolve(`Error: ${error.message}`);
       });
 
-      // Handle timeout
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         proc.kill('SIGTERM');
       }, timeout);
+
+      proc.on('exit', () => clearTimeout(timeoutId));
     });
   },
 };

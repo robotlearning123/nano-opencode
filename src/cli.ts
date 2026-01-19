@@ -13,18 +13,8 @@ export class CLI {
 
   constructor(provider: LLMProvider, sessionId?: string) {
     this.provider = provider;
-
-    if (sessionId) {
-      const existing = getSession(sessionId);
-      if (existing) {
-        this.session = existing;
-      } else {
-        this.session = createSession();
-      }
-    } else {
-      this.session = createSession();
-    }
-
+    const existing = sessionId ? getSession(sessionId) : null;
+    this.session = existing ?? createSession();
     this.rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,

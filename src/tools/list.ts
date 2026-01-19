@@ -21,7 +21,7 @@ export const listDirTool: Tool = {
   },
   execute: async (args) => {
     const dirPath = resolve(process.cwd(), (args.path as string) || '.');
-    const showHidden = args.show_hidden as boolean || false;
+    const showHidden = (args.show_hidden as boolean) ?? false;
 
     try {
       const entries = readdirSync(dirPath);
