@@ -81,7 +81,7 @@ git push --tags
 4. Create GitHub release:
    - Go to https://github.com/yourusername/nano-opencode/releases/new
    - Choose the tag
-   - Title: `v1.0.0 - Initial Release`
+   - Title: `v0.0.1 - Initial Release`
    - Description: Copy from CHANGELOG.md
    - Publish release
 

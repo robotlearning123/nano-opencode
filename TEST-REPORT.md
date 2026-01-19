@@ -150,7 +150,7 @@
 
 ## Conclusion
 
-**nano-opencode v1.0.0 is production-ready!**
+**nano-opencode v0.0.1 is production-ready!**
 
 - ✅ All 33 tests passing
 - ✅ Zero failures
@@ -167,7 +167,7 @@
 
 1. Push to GitHub
 2. Publish to npm
-3. Create release v1.0.0
+3. Create release v0.0.1
 4. Share with community
 
 **Tested by**: Claude Sonnet 4.5

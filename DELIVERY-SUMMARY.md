@@ -1,4 +1,4 @@
-# nano-opencode v1.0.0 - Delivery Summary
+# nano-opencode v0.0.1 - Delivery Summary
 
 **Delivered**: 2026-01-19
 **Status**: ✅ COMPLETE AND FULLY TESTED
@@ -75,7 +75,7 @@ Successfully built **nano-opencode**, a minimal AI coding assistant that achieve
    - Build and test metrics
 
 3. **CHANGELOG.md** (36 lines) - Version history with:
-   - v1.0.0 release notes
+   - v0.0.1 release notes
    - Complete feature list
    - Metrics summary
 
@@ -267,7 +267,7 @@ Successfully built **nano-opencode**, a minimal AI coding assistant that achieve
 
 ## Conclusion
 
-**nano-opencode v1.0.0 is complete, fully tested, and production-ready.**
+**nano-opencode v0.0.1 is complete, fully tested, and production-ready.**
 
 The project successfully demonstrates that a minimal, focused implementation can achieve 90%+ of the functionality of a much larger system while being 33x smaller and dramatically simpler to understand and maintain.
 

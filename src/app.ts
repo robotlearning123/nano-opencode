@@ -15,7 +15,7 @@ const program = new Command();
 program
   .name('nano-opencode')
   .description('A minimal AI coding assistant for the terminal')
-  .version('1.0.0')
+  .version('0.0.1')
   .option('-s, --session <id>', 'Resume a specific session')
   .option('-p, --provider <name>', 'LLM provider (anthropic or openai)')
   .option('-m, --model <name>', 'Model to use')
