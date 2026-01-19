@@ -1,0 +1,78 @@
+#!/usr/bin/env node
+
+import { Command } from 'commander';
+import { config } from 'dotenv';
+import { loadConfig } from './config.js';
+import { createProvider } from './providers/index.js';
+import { CLI } from './cli.js';
+import { closeDb } from './store.js';
+
+// Load environment variables
+config();
+
+const program = new Command();
+
+program
+  .name('nano-opencode')
+  .description('A minimal AI coding assistant for the terminal')
+  .version('1.0.0')
+  .option('-s, --session <id>', 'Resume a specific session')
+  .option('-p, --provider <name>', 'LLM provider (anthropic or openai)')
+  .option('-m, --model <name>', 'Model to use')
+  .option('--prompt <text>', 'Run a single prompt and exit')
+  .action(async (options) => {
+    const appConfig = loadConfig();
+
+    // Override with CLI options
+    if (options.provider) {
+      appConfig.provider = options.provider;
+    }
+    if (options.model) {
+      appConfig.model = options.model;
+    }
+
+    try {
+      const provider = createProvider(appConfig);
+
+      if (options.prompt) {
+        // Non-interactive mode: run single prompt
+        await runSinglePrompt(provider, options.prompt);
+      } else {
+        // Interactive mode
+        const cli = new CLI(provider, options.session);
+        await cli.start();
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${message}`);
+      process.exit(1);
+    } finally {
+      closeDb();
+    }
+  });
+
+async function runSinglePrompt(provider: ReturnType<typeof createProvider>, prompt: string): Promise<void> {
+  const { allTools, executeTool } = await import('./tools/index.js');
+
+  const messages = [{ role: 'user' as const, content: prompt }];
+
+  const response = await provider.chat(messages, allTools, (chunk) => {
+    if (chunk.type === 'text' && chunk.content) {
+      process.stdout.write(chunk.content);
+    } else if (chunk.type === 'tool_use' && chunk.toolCall) {
+      console.log(`\n[Tool: ${chunk.toolCall.name}]`);
+    }
+  });
+
+  console.log();
+
+  // Handle tool calls in non-interactive mode
+  if (response.toolCalls && response.toolCalls.length > 0) {
+    for (const toolCall of response.toolCalls) {
+      const result = await executeTool(toolCall.name, toolCall.arguments);
+      console.log(result);
+    }
+  }
+}
+
+program.parse();
