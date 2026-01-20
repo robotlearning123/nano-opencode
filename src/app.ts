@@ -4,12 +4,9 @@ import { Command } from 'commander';
 import { config } from 'dotenv';
 import { loadConfig } from './config.js';
 import { createProvider } from './providers/index.js';
-import { CLI } from './cli.js';
 import { closeDb } from './store.js';
 import { getErrorMessage } from './constants.js';
-import { initializeMCP, shutdownMCP } from './mcp/index.js';
 
-// Load environment variables
 config();
 
 const program = new Command();
@@ -19,33 +16,27 @@ program
   .description('A minimal AI coding assistant for the terminal')
   .version('0.0.1')
   .option('-s, --session <id>', 'Resume a specific session')
-  .option('-p, --provider <name>', 'LLM provider (anthropic or openai)')
+  .option('-p, --provider <name>', 'LLM provider (anthropic, openai, gemini)')
   .option('-m, --model <name>', 'Model to use')
   .option('--prompt <text>', 'Run a single prompt and exit')
   .action(async (options) => {
     const appConfig = loadConfig();
-
-    // Override with CLI options
-    if (options.provider) {
-      appConfig.provider = options.provider;
-    }
-    if (options.model) {
-      appConfig.model = options.model;
-    }
+    if (options.provider) appConfig.provider = options.provider;
+    if (options.model) appConfig.model = options.model;
 
     try {
-      // Initialize MCP servers if configured
+      // Lazy load MCP only if configured
       if (appConfig.mcp?.servers) {
+        const { initializeMCP } = await import('./mcp/index.js');
         await initializeMCP(appConfig.mcp);
       }
 
-      const provider = createProvider(appConfig);
+      const provider = await createProvider(appConfig);
 
       if (options.prompt) {
-        // Non-interactive mode: run single prompt
         await runSinglePrompt(provider, options.prompt);
       } else {
-        // Interactive mode
+        const { CLI } = await import('./cli.js');
         const cli = new CLI(provider, options.session);
         await cli.start();
       }
@@ -53,15 +44,18 @@ program
       console.error(`Error: ${getErrorMessage(error)}`);
       process.exit(1);
     } finally {
+      const { shutdownMCP } = await import('./mcp/index.js');
       await shutdownMCP();
       closeDb();
     }
   });
 
-async function runSinglePrompt(provider: ReturnType<typeof createProvider>, prompt: string): Promise<void> {
-  const { getAllTools, executeTool } = await import('./tools/index.js');
-  const { toolBox } = await import('./ui/index.js');
-  const chalk = (await import('chalk')).default;
+async function runSinglePrompt(provider: Awaited<ReturnType<typeof createProvider>>, prompt: string): Promise<void> {
+  const [{ getAllTools, executeTool }, { toolBox }, chalk] = await Promise.all([
+    import('./tools/index.js'),
+    import('./ui/index.js'),
+    import('chalk').then(m => m.default),
+  ]);
 
   const messages = [{ role: 'user' as const, content: prompt }];
   let hasOutput = false;
@@ -79,12 +73,9 @@ async function runSinglePrompt(provider: ReturnType<typeof createProvider>, prom
     }
   });
 
-  if (hasOutput) {
-    console.log('\n' + chalk.dim('─'.repeat(50)));
-  }
+  if (hasOutput) console.log('\n' + chalk.dim('─'.repeat(50)));
 
-  // Handle tool calls in non-interactive mode
-  if (response.toolCalls && response.toolCalls.length > 0) {
+  if (response.toolCalls?.length) {
     for (const toolCall of response.toolCalls) {
       const result = await executeTool(toolCall.name, toolCall.arguments);
       console.log(toolBox(toolCall.name, result));
