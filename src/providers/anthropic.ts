@@ -17,7 +17,8 @@ export class AnthropicProvider implements LLMProvider {
   async chat(
     messages: Message[],
     tools: Tool[],
-    onChunk: (chunk: StreamChunk) => void
+    onChunk: (chunk: StreamChunk) => void,
+    systemPrompt?: string
   ): Promise<Message> {
     const anthropicMessages = this.convertMessages(messages);
     const anthropicTools = this.convertTools(tools);
@@ -25,7 +26,7 @@ export class AnthropicProvider implements LLMProvider {
     const response = await this.client.messages.create({
       model: this.model,
       max_tokens: this.maxTokens,
-      system: getSystemPrompt(),
+      system: systemPrompt ?? getSystemPrompt(),
       messages: anthropicMessages,
       tools: anthropicTools,
       stream: true,
@@ -62,8 +63,12 @@ export class AnthropicProvider implements LLMProvider {
             };
             toolCalls.push(toolCall);
             onChunk({ type: 'tool_use', toolCall });
-          } catch {
-            // Invalid JSON, skip
+          } catch (error) {
+            // Log JSON parse failure for debugging
+            console.error(
+              `Warning: Failed to parse tool arguments for ${currentToolUse.name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              `\nInput was: ${currentToolUse.input?.slice(0, 200)}${(currentToolUse.input?.length ?? 0) > 200 ? '...' : ''}`
+            );
           }
           currentToolUse = null;
         }

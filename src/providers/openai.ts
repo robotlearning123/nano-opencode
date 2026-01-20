@@ -17,9 +17,10 @@ export class OpenAIProvider implements LLMProvider {
   async chat(
     messages: Message[],
     tools: Tool[],
-    onChunk: (chunk: StreamChunk) => void
+    onChunk: (chunk: StreamChunk) => void,
+    systemPrompt?: string
   ): Promise<Message> {
-    const openaiMessages = this.convertMessages(messages);
+    const openaiMessages = this.convertMessages(messages, systemPrompt);
     const openaiTools = this.convertTools(tools);
 
     const response = await this.client.chat.completions.create({
@@ -68,8 +69,12 @@ export class OpenAIProvider implements LLMProvider {
               arguments: args,
             };
             onChunk({ type: 'tool_use', toolCall });
-          } catch {
-            // Invalid JSON, skip
+          } catch (error) {
+            // Log JSON parse failure for debugging
+            console.error(
+              `Warning: Failed to parse tool arguments for ${tc.name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              `\nInput was: ${tc.arguments?.slice(0, 200)}${(tc.arguments?.length ?? 0) > 200 ? '...' : ''}`
+            );
           }
         }
         onChunk({ type: 'done' });
@@ -84,8 +89,9 @@ export class OpenAIProvider implements LLMProvider {
           name: tc.name,
           arguments: JSON.parse(tc.arguments || '{}'),
         });
-      } catch {
-        // Skip invalid
+      } catch (error) {
+        // Already logged above during streaming, skip here
+        // This is a secondary pass for building the return value
       }
     }
 
@@ -96,11 +102,11 @@ export class OpenAIProvider implements LLMProvider {
     };
   }
 
-  private convertMessages(messages: Message[]): OpenAI.ChatCompletionMessageParam[] {
+  private convertMessages(messages: Message[], systemPrompt?: string): OpenAI.ChatCompletionMessageParam[] {
     const result: OpenAI.ChatCompletionMessageParam[] = [
       {
         role: 'system',
-        content: getSystemPrompt(),
+        content: systemPrompt ?? getSystemPrompt(),
       },
     ];
 

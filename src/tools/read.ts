@@ -1,7 +1,7 @@
-import { readFileSync, existsSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync } from 'fs';
 import type { Tool } from '../types.js';
 import { getErrorMessage } from '../constants.js';
+import { validatePathExists } from './helpers.js';
 
 export const readFileTool: Tool = {
   name: 'read_file',
@@ -25,29 +25,22 @@ export const readFileTool: Tool = {
     required: ['path'],
   },
   execute: async (args) => {
-    const filePath = resolve(process.cwd(), args.path as string);
-    const offset = (args.offset as number) || 1;
+    const pathResult = validatePathExists(args.path as string);
+    if (!pathResult.ok) return pathResult.error;
+
+    const offset = (args.offset as number) ?? 1;
     const limit = args.limit as number | undefined;
 
-    if (!existsSync(filePath)) {
-      return `Error: File not found: ${filePath}`;
-    }
-
     try {
-      const content = readFileSync(filePath, 'utf-8');
+      const content = readFileSync(pathResult.path, 'utf-8');
       const lines = content.split('\n');
 
       const startLine = Math.max(0, offset - 1);
       const endLine = limit ? Math.min(startLine + limit, lines.length) : lines.length;
-
       const selectedLines = lines.slice(startLine, endLine);
 
-      // Format with line numbers
       const formatted = selectedLines
-        .map((line, i) => {
-          const lineNum = startLine + i + 1;
-          return `${String(lineNum).padStart(4, ' ')}\t${line}`;
-        })
+        .map((line, i) => `${String(startLine + i + 1).padStart(4, ' ')}\t${line}`)
         .join('\n');
 
       return formatted || '(empty file)';

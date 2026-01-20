@@ -8,7 +8,7 @@
 
 > A minimal AI coding assistant for the terminal - inspired by OpenCode and Oh My OpenCode.
 
-**🎯 33x smaller codebase (1,558 vs ~50,000 LOC), 90%+ of the features.**
+**🎯 ~7,500 lines of TypeScript with full-featured agent system, hooks, skills, and MCP support.**
 
 ## Why nano-opencode?
 
@@ -22,12 +22,15 @@ nano-opencode proves this: well-designed tools and clear prompts outperform mass
 
 ## Features
 
-- 🤖 **Multi-Model Support**: Works with Claude (Anthropic) and GPT (OpenAI)
-- 📁 **File Operations**: Read, write, edit files with intelligent context
-- 🔍 **Code Search**: Glob patterns and grep for finding code
-- 💬 **Session Management**: Persistent conversation history with SQLite
-- 🎯 **Tool Calling**: Autonomous tool execution with streaming responses
-- 🚀 **Simple & Fast**: Minimal dependencies, fast startup, easy to understand
+- 🤖 **Multi-Model Support**: Anthropic, OpenAI, and Gemini
+- 📁 **File Operations**: Read, write, edit with security protections
+- 🔍 **Code Search**: Glob patterns and grep with ripgrep
+- 💬 **Session Management**: Persistent history with SQLite
+- 🎯 **Agent System**: 10 built-in agents (sisyphus, oracle, etc.)
+- 🔌 **MCP Support**: Model Context Protocol for extensions
+- 🪝 **Hook System**: Extensible lifecycle hooks
+- 📚 **Skills**: Template-based skill system
+- 🛡️ **Security**: Path traversal and dangerous command detection
 
 ## Installation
 
@@ -129,28 +132,20 @@ nano-opencode includes these built-in tools:
 
 ```
 src/
-├── app.ts              (78 lines)  - CLI entry point
-├── cli.ts              (249 lines) - Interactive terminal interface
-├── config.ts           (56 lines)  - Configuration management
-├── store.ts            (156 lines) - SQLite session persistence
-├── types.ts            (70 lines)  - TypeScript type definitions
-├── constants.ts        (23 lines)  - Constants and defaults
-├── providers/          (331 lines) - AI provider integrations
-│   ├── anthropic.ts               - Claude streaming support
-│   ├── openai.ts                  - OpenAI GPT support
-│   └── index.ts                   - Provider factory
-└── tools/              (551 lines) - Tool implementations
-    ├── read.ts                    - File reading
-    ├── writefile.ts               - File writing
-    ├── edit.ts                    - File editing
-    ├── bash.ts                    - Shell execution
-    ├── glob.ts                    - Pattern matching
-    ├── grep.ts                    - Content search
-    ├── list.ts                    - Directory listing
-    └── index.ts                   - Tool registry
+├── app.ts           - CLI entry point
+├── cli.ts           - Interactive terminal interface
+├── config.ts        - Configuration management
+├── store.ts         - SQLite session persistence
+├── types.ts         - TypeScript type definitions
+├── utils.ts         - Security utilities
+├── agents/          - Agent system (10 built-in agents)
+├── hooks/           - Hook system for extensibility
+├── skills/          - Skill templates
+├── providers/       - AI providers (Anthropic, OpenAI, Gemini)
+├── tools/           - Tool implementations (16 tools)
+├── mcp/             - Model Context Protocol support
+└── ui/              - Terminal UI formatting
 ```
-
-**Total**: 1,558 lines of clean, maintainable TypeScript
 
 ## Testing
 
@@ -168,44 +163,44 @@ npm run build
 npm run dev
 ```
 
-**Test Results**: 35/35 tests passing (100%)
+**Test Results**: 74/74 tests passing (100%)
 
 ## Metrics
 
-| Metric | OpenCode | nano-opencode | Improvement |
-|--------|----------|---------------|-------------|
-| Lines of Code | ~50,000 | ~1,558 | **97% smaller** |
-| TypeScript Files | ~200+ | 16 | **92% fewer** |
-| Dependencies | 30+ | 7 | **77% fewer** |
-| Startup Time | ~500ms | <100ms | **5x faster** |
-| Build Time | ~10s | <2s | **5x faster** |
+| Metric | Value |
+|--------|-------|
+| Lines of Code | ~7,500 |
+| TypeScript Files | 63 |
+| Test Files | 7 |
+| Tests | 74 |
+| Dependencies | 8 |
 
 ## Performance
 
 - **Startup Time**: < 100ms
 - **Build Time**: < 2 seconds
-- **Test Runtime**: ~1 second
-- **Test Coverage**: 100% (35/35 passing)
+- **Test Runtime**: ~2 seconds
+- **Tests Passing**: 74/74
 
 ## Comparison with OpenCode
 
-### ✅ Features Retained (90%+)
+### ✅ Features Included
 
-- Multi-model AI support (Claude, OpenAI)
+- Multi-model AI support (Anthropic, OpenAI, Gemini)
 - File operations (read, write, edit)
-- Shell command execution
+- Shell command execution with safety checks
 - Code search (glob, grep)
-- Session management with persistence
+- Session management with SQLite
 - Streaming responses
-- Tool calling with autonomous execution
+- 10 built-in agents with tool filtering
+- Hook system for extensibility
+- Skill templates
+- MCP (Model Context Protocol) support
 
-### ❌ Features Removed (for simplicity)
+### ❌ Not Included
 
-- Rich TUI (using simple CLI instead)
-- LSP support
-- Multiple agent modes
+- Rich TUI (simple CLI instead)
 - VS Code extension
-- Complex configuration system
 
 ## Dependencies
 
@@ -233,12 +228,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 ## Documentation
 
 - [CHANGELOG.md](CHANGELOG.md) - Version history
-- [METRICS.md](METRICS.md) - Detailed performance metrics
-- [DELIVERY-SUMMARY.md](DELIVERY-SUMMARY.md) - Project delivery summary
-- [CODE-REVIEW.md](CODE-REVIEW.md) - Comprehensive code review (500+ lines)
-- [COMPLETION-CERTIFICATE.md](COMPLETION-CERTIFICATE.md) - Build and test validation
-- [PUBLISHING.md](PUBLISHING.md) - Publishing guide to npm
-- [TEST-REPORT.md](TEST-REPORT.md) - Complete test results
+- [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
 
 ## License
 

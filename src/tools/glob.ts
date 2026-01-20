@@ -1,8 +1,8 @@
 import { glob } from 'glob';
-import { statSync } from 'fs';
+import { stat } from 'fs/promises';
 import { resolve } from 'path';
 import type { Tool } from '../types.js';
-import { getErrorMessage } from '../constants.js';
+import { getErrorMessage, EXCLUDED_GLOB_PATTERNS } from '../constants.js';
 
 export const globTool: Tool = {
   name: 'glob',
@@ -28,7 +28,7 @@ export const globTool: Tool = {
     try {
       const matches = await glob(pattern, {
         cwd: searchPath,
-        ignore: ['**/node_modules/**', '**/.git/**'],
+        ignore: EXCLUDED_GLOB_PATTERNS,
         nodir: true,
       });
 
@@ -36,17 +36,21 @@ export const globTool: Tool = {
         return 'No files found matching the pattern.';
       }
 
-      // Sort by modification time (most recent first)
-      const withStats = matches.map((file) => {
-        try {
-          const fullPath = resolve(searchPath, file);
-          const stat = statSync(fullPath);
-          return { file, mtime: stat.mtime };
-        } catch {
-          return { file, mtime: new Date(0) };
-        }
-      });
+      // Get stats for all files in parallel (async)
+      const withStats = await Promise.all(
+        matches.map(async (file) => {
+          try {
+            const fullPath = resolve(searchPath, file);
+            const fileStat = await stat(fullPath);
+            return { file, mtime: fileStat.mtime };
+          } catch {
+            // File may have been deleted between glob and stat
+            return { file, mtime: new Date(0) };
+          }
+        })
+      );
 
+      // Sort by modification time (most recent first)
       withStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
 
       const result = withStats.map((f) => f.file).join('\n');

@@ -1,7 +1,7 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { resolve } from 'path';
+import { readFileSync, writeFileSync } from 'fs';
 import type { Tool } from '../types.js';
 import { getErrorMessage } from '../constants.js';
+import { validatePathExists } from './helpers.js';
 
 export const editFileTool: Tool = {
   name: 'edit_file',
@@ -29,40 +29,32 @@ export const editFileTool: Tool = {
     required: ['path', 'old_string', 'new_string'],
   },
   execute: async (args) => {
-    const filePath = resolve(process.cwd(), args.path as string);
+    const pathResult = validatePathExists(args.path as string);
+    if (!pathResult.ok) return pathResult.error;
+
     const oldString = args.old_string as string;
     const newString = args.new_string as string;
     const replaceAll = (args.replace_all as boolean) ?? false;
 
-    if (!existsSync(filePath)) {
-      return `Error: File not found: ${filePath}`;
-    }
-
     try {
-      const content = readFileSync(filePath, 'utf-8');
+      const content = readFileSync(pathResult.path, 'utf-8');
 
       if (!content.includes(oldString)) {
         return `Error: The specified old_string was not found in the file. Make sure it matches exactly, including whitespace and indentation.`;
       }
 
-      // Count occurrences
       const occurrences = content.split(oldString).length - 1;
 
       if (occurrences > 1 && !replaceAll) {
         return `Error: Found ${occurrences} occurrences of old_string. Use replace_all=true to replace all, or provide a more specific old_string.`;
       }
 
-      let newContent: string;
-      if (replaceAll) {
-        newContent = content.split(oldString).join(newString);
-      } else {
-        newContent = content.replace(oldString, newString);
-      }
+      const newContent = replaceAll
+        ? content.split(oldString).join(newString)
+        : content.replace(oldString, newString);
 
-      writeFileSync(filePath, newContent, 'utf-8');
-
-      const replacedCount = replaceAll ? occurrences : 1;
-      return `Successfully replaced ${replacedCount} occurrence(s) in ${filePath}`;
+      writeFileSync(pathResult.path, newContent, 'utf-8');
+      return `Successfully replaced ${replaceAll ? occurrences : 1} occurrence(s) in ${pathResult.path}`;
     } catch (error) {
       return `Error editing file: ${getErrorMessage(error)}`;
     }

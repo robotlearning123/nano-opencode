@@ -1,6 +1,19 @@
-import { spawn } from 'child_process';
 import type { Tool } from '../types.js';
-import { getErrorMessage } from '../constants.js';
+import { EXCLUDED_RG_PATTERNS, EXCLUDED_GREP_DIRS, DEFAULT_GREP_MAX_RESULTS } from '../constants.js';
+import { runSpawn } from './helpers.js';
+
+const COMMON_FILE_TYPES = [
+  '*.ts', '*.js', '*.tsx', '*.jsx', '*.json', '*.md', '*.txt',
+  '*.py', '*.go', '*.rs', '*.java', '*.c', '*.cpp', '*.h',
+  '*.css', '*.html', '*.yaml', '*.yml', '*.toml', '*.xml',
+];
+
+function formatGrepResult(stdout: string, maxResults?: number): string {
+  if (!stdout.trim()) return 'No matches found.';
+  const lines = stdout.trim().split('\n');
+  const limited = maxResults ? lines.slice(0, maxResults) : lines;
+  return `Found ${limited.length} match(es):\n${limited.join('\n')}`;
+}
 
 export const grepTool: Tool = {
   name: 'grep',
@@ -8,26 +21,11 @@ export const grepTool: Tool = {
   parameters: {
     type: 'object',
     properties: {
-      pattern: {
-        type: 'string',
-        description: 'The regex pattern to search for',
-      },
-      path: {
-        type: 'string',
-        description: 'The directory or file to search in. Default is current directory.',
-      },
-      glob: {
-        type: 'string',
-        description: 'Glob pattern to filter files (e.g., "*.ts", "*.{js,jsx}")',
-      },
-      case_insensitive: {
-        type: 'boolean',
-        description: 'Make the search case-insensitive. Default is false.',
-      },
-      max_results: {
-        type: 'number',
-        description: 'Maximum number of results to return. Default is 50.',
-      },
+      pattern: { type: 'string', description: 'The regex pattern to search for' },
+      path: { type: 'string', description: 'The directory or file to search in. Default is current directory.' },
+      glob: { type: 'string', description: 'Glob pattern to filter files (e.g., "*.ts", "*.{js,jsx}")' },
+      case_insensitive: { type: 'boolean', description: 'Make the search case-insensitive. Default is false.' },
+      max_results: { type: 'number', description: `Maximum number of results to return. Default is ${DEFAULT_GREP_MAX_RESULTS}.` },
     },
     required: ['pattern'],
   },
@@ -36,120 +34,37 @@ export const grepTool: Tool = {
     const searchPath = (args.path as string) || '.';
     const globPattern = args.glob as string | undefined;
     const caseInsensitive = (args.case_insensitive as boolean) ?? false;
-    const maxResults = (args.max_results as number) || 50;
+    const maxResults = (args.max_results as number) ?? DEFAULT_GREP_MAX_RESULTS;
 
-    return new Promise((resolve) => {
-      // Try ripgrep first, fall back to grep
-      const rgArgs = [
-        '--line-number',
-        '--no-heading',
-        '--color=never',
-        '-m', String(maxResults),
-      ];
-
-      if (caseInsensitive) {
-        rgArgs.push('-i');
-      }
-
-      if (globPattern) {
-        rgArgs.push('--glob', globPattern);
-      }
-
-      // Exclude common directories
-      rgArgs.push('--glob', '!node_modules');
-      rgArgs.push('--glob', '!.git');
-      rgArgs.push('--glob', '!dist');
-      rgArgs.push('--glob', '!build');
-
-      rgArgs.push(pattern, searchPath);
-
-      const proc = spawn('rg', rgArgs, {
-        cwd: process.cwd(),
-        env: process.env,
-      });
-
-      let stdout = '';
-      let stderr = '';
-
-      proc.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
-
-      proc.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      proc.on('close', (code) => {
-        if (code === 0 || code === 1) {
-          // code 1 means no matches
-          if (!stdout.trim()) {
-            resolve('No matches found.');
-          } else {
-            const lines = stdout.trim().split('\n');
-            resolve(`Found ${lines.length} match(es):\n${stdout.trim()}`);
-          }
-        } else {
-          // ripgrep might not be installed, try grep
-          resolve(fallbackGrep(pattern, searchPath, caseInsensitive, maxResults));
-        }
-      });
-
-      proc.on('error', () => {
-        // ripgrep not installed
-        resolve(fallbackGrep(pattern, searchPath, caseInsensitive, maxResults));
-      });
-    });
-  },
-};
-
-async function fallbackGrep(
-  pattern: string,
-  searchPath: string,
-  caseInsensitive: boolean,
-  maxResults: number
-): Promise<string> {
-  return new Promise((resolve) => {
-    const grepArgs = [
-      '-r',
-      '-n',
-      '--include=*.ts',
-      '--include=*.js',
-      '--include=*.tsx',
-      '--include=*.jsx',
-      '--include=*.json',
-      '--include=*.md',
-      '--exclude-dir=node_modules',
-      '--exclude-dir=.git',
-      '--exclude-dir=dist',
+    // Build ripgrep args
+    const rgArgs = [
+      '--line-number', '--no-heading', '--color=never', '--no-ignore',
+      '-m', String(maxResults),
+      ...(caseInsensitive ? ['-i'] : []),
+      '--glob', globPattern || '*',
+      ...EXCLUDED_RG_PATTERNS.flatMap(ex => ['--glob', ex]),
+      pattern, searchPath,
     ];
 
-    if (caseInsensitive) {
-      grepArgs.push('-i');
+    const rgResult = await runSpawn({ command: 'rg', args: rgArgs, timeout: 30000 });
+
+    // ripgrep succeeded or found no matches (code 1)
+    if (rgResult.exitCode === 0 || rgResult.exitCode === 1) {
+      return formatGrepResult(rgResult.stdout);
     }
 
-    grepArgs.push(pattern, searchPath);
+    // Fallback to grep
+    const grepArgs = [
+      '-r', '-n',
+      ...(globPattern ? [`--include=${globPattern}`] : COMMON_FILE_TYPES.map(t => `--include=${t}`)),
+      ...EXCLUDED_GREP_DIRS,
+      ...(caseInsensitive ? ['-i'] : []),
+      pattern, searchPath,
+    ];
 
-    const proc = spawn('grep', grepArgs, {
-      cwd: process.cwd(),
-    });
-
-    let stdout = '';
-
-    proc.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    proc.on('close', () => {
-      if (!stdout.trim()) {
-        resolve('No matches found.');
-      } else {
-        const lines = stdout.trim().split('\n').slice(0, maxResults);
-        resolve(`Found ${lines.length} match(es):\n${lines.join('\n')}`);
-      }
-    });
-
-    proc.on('error', (error) => {
-      resolve(`Error: ${getErrorMessage(error)}`);
-    });
-  });
-}
+    const grepResult = await runSpawn({ command: 'grep', args: grepArgs, timeout: 30000 });
+    return grepResult.exitCode === -1
+      ? `Error: ${grepResult.stderr}`
+      : formatGrepResult(grepResult.stdout, maxResults);
+  },
+};

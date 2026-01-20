@@ -1,5 +1,7 @@
 import { spawn } from 'child_process';
 import type { Tool } from '../types.js';
+import { DEFAULT_BASH_TIMEOUT_MS, MAX_BASH_TIMEOUT_MS } from '../constants.js';
+import { checkDangerousCommand, formatCommandWarnings } from '../utils.js';
 
 export const bashTool: Tool = {
   name: 'bash',
@@ -13,14 +15,25 @@ export const bashTool: Tool = {
       },
       timeout: {
         type: 'number',
-        description: 'Timeout in milliseconds. Default is 60000 (60 seconds).',
+        description: `Timeout in milliseconds. Default is ${DEFAULT_BASH_TIMEOUT_MS} (${DEFAULT_BASH_TIMEOUT_MS / 1000} seconds). Max is ${MAX_BASH_TIMEOUT_MS}.`,
       },
     },
     required: ['command'],
   },
   execute: async (args) => {
     const command = args.command as string;
-    const timeout = (args.timeout as number) || 60000;
+
+    // Use ?? instead of || to allow timeout: 0 (though it would be silly)
+    let timeout = (args.timeout as number) ?? DEFAULT_BASH_TIMEOUT_MS;
+
+    // Cap timeout to max
+    if (timeout > MAX_BASH_TIMEOUT_MS) {
+      timeout = MAX_BASH_TIMEOUT_MS;
+    }
+
+    // Check for dangerous commands and generate warnings
+    const warnings = checkDangerousCommand(command);
+    const warningPrefix = formatCommandWarnings(warnings);
 
     return new Promise((resolve) => {
       const proc = spawn('bash', ['-c', command], {
@@ -30,6 +43,8 @@ export const bashTool: Tool = {
 
       let stdout = '';
       let stderr = '';
+      let killed = false;
+      let timeoutId: NodeJS.Timeout | undefined;
 
       proc.stdout.on('data', (data) => {
         stdout += data.toString();
@@ -39,23 +54,61 @@ export const bashTool: Tool = {
         stderr += data.toString();
       });
 
+      // Handle process completion
       proc.on('close', (code) => {
+        // Clear timeout on any completion
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = undefined;
+        }
+
         const parts: string[] = [];
+
+        // Add warnings first
+        if (warningPrefix) {
+          parts.push(warningPrefix.trim());
+        }
+
+        // Add timeout message if killed
+        if (killed) {
+          parts.push('[Command killed: timeout exceeded]');
+        }
+
         if (stdout) parts.push(stdout);
         if (stderr) parts.push(`stderr:\n${stderr}`);
-        if (code !== 0) parts.push(`Exit code: ${code}`);
+        if (code !== 0 && code !== null) parts.push(`Exit code: ${code}`);
+
         resolve(parts.join('\n') || '(no output)');
       });
 
+      // Handle spawn errors (command not found, etc.)
       proc.on('error', (error) => {
-        resolve(`Error: ${error.message}`);
+        // Clear timeout on error
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = undefined;
+        }
+
+        const parts: string[] = [];
+        if (warningPrefix) {
+          parts.push(warningPrefix.trim());
+        }
+        parts.push(`Error: ${error.message}`);
+        resolve(parts.join('\n'));
       });
 
-      const timeoutId = setTimeout(() => {
+      // Set up timeout
+      timeoutId = setTimeout(() => {
+        killed = true;
         proc.kill('SIGTERM');
-      }, timeout);
 
-      proc.on('exit', () => clearTimeout(timeoutId));
+        // Give it a moment to terminate gracefully, then SIGKILL
+        setTimeout(() => {
+          if (!proc.killed) {
+            proc.kill('SIGKILL');
+          }
+        }, 1000);
+      }, timeout);
     });
   },
 };

@@ -1,7 +1,8 @@
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { dirname } from 'path';
 import type { Tool } from '../types.js';
 import { getErrorMessage } from '../constants.js';
+import { validatePath } from './helpers.js';
 
 export const writeFileTool: Tool = {
   name: 'write_file',
@@ -21,20 +22,19 @@ export const writeFileTool: Tool = {
     required: ['path', 'content'],
   },
   execute: async (args) => {
-    const filePath = resolve(process.cwd(), args.path as string);
+    const pathResult = validatePath(args.path as string);
+    if (!pathResult.ok) return pathResult.error;
+
     const content = args.content as string;
 
     try {
-      // Create directory if it doesn't exist
-      const dir = dirname(filePath);
+      const dir = dirname(pathResult.path);
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
       }
 
-      writeFileSync(filePath, content, 'utf-8');
-
-      const lines = content.split('\n').length;
-      return `Successfully wrote ${lines} lines to ${filePath}`;
+      writeFileSync(pathResult.path, content, 'utf-8');
+      return `Successfully wrote ${content.split('\n').length} lines to ${pathResult.path}`;
     } catch (error) {
       return `Error writing file: ${getErrorMessage(error)}`;
     }
