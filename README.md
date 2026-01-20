@@ -5,9 +5,9 @@
 ## Quick Start
 
 ```bash
-# Install
+# Install (bun recommended for speed)
 git clone https://github.com/robotlearning123/nano-opencode.git
-cd nano-opencode && npm install && npm run build
+cd nano-opencode && bun install
 
 # Set API key (choose one)
 export ANTHROPIC_API_KEY=your_key
@@ -15,7 +15,8 @@ export OPENAI_API_KEY=your_key
 export GEMINI_API_KEY=your_key
 
 # Run
-npm start
+bun dev                    # Development (fastest, no build)
+bun run build && bun start # Production
 ```
 
 ## Features
@@ -135,18 +136,21 @@ src/
 ## Development
 
 ```bash
-npm run dev      # Development mode with hot reload
-npm test         # Run tests (74 passing)
-npm run build    # Build TypeScript
-npm run typecheck # Type check only
+bun dev          # Run directly (no build needed)
+bun run test     # Run tests (74 passing)
+bun run build    # Build TypeScript
+bun run typecheck # Type check only
 ```
 
 ## Stats
 
-- **~7,000 lines** of TypeScript
-- **51 source files**
-- **74 tests** passing
-- **< 100ms** startup time
+| Metric | Value |
+|--------|-------|
+| Lines | ~7,000 TypeScript |
+| Files | 51 source files |
+| Tests | 74 passing |
+| Startup | <70ms (bun) |
+| Install | ~5s (bun) |
 
 ## License
 

@@ -12,9 +12,11 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/app.js",
-    "dev": "tsx src/app.ts",
+    "dev": "bun src/app.ts",
+    "dev:node": "tsx src/app.ts",
     "typecheck": "tsc --noEmit",
-    "test": "npm run build && node --import tsx --test test/*.test.ts"
+    "test": "node --import tsx --test test/*.test.ts",
+    "test:watch": "node --import tsx --test --watch test/*.test.ts"
   },
   "keywords": [
     "ai",
