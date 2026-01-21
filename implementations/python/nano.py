@@ -10,9 +10,10 @@ import os, sys, json, subprocess
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+API_KEY = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
 MODEL = os.environ.get("MODEL", "claude-sonnet-4-20250514")
-API_URL = "https://api.anthropic.com/v1/messages"
+BASE_URL = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+API_URL = f"{BASE_URL.rstrip('/')}/v1/messages"
 
 TOOLS = [
     {"name": "read_file", "description": "Read file", "input_schema": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}},
@@ -67,5 +68,5 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python nano.py 'your prompt'"); sys.exit(1)
     if not API_KEY:
-        print("Set ANTHROPIC_API_KEY"); sys.exit(1)
+        print("Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN"); sys.exit(1)
     print(agent(" ".join(sys.argv[1:])))

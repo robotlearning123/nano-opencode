@@ -175,8 +175,8 @@ async function chat(userMessage: string): Promise<string> {
 // === CLI ===
 async function main() {
   // Check API key early
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('Set ANTHROPIC_API_KEY environment variable');
+  if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
+    console.error('Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN environment variable');
     process.exit(1);
   }
 

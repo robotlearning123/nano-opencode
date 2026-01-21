@@ -10,9 +10,10 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from '
 import { execFileSync } from 'child_process';
 
 // === CONFIG ===
-const API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const API_KEY = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN || '';
 const MODEL = process.env.MODEL || 'claude-sonnet-4-20250514';
-const API_URL = 'https://api.anthropic.com/v1/messages';
+const BASE_URL = process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
+const API_URL = `${BASE_URL.replace(/\/$/, '')}/v1/messages`;
 
 // === TOOLS ===
 const TOOLS = [
@@ -80,6 +81,6 @@ async function agent(prompt: string): Promise<string> {
 // === MAIN ===
 const prompt = process.argv.slice(2).join(' ');
 if (!prompt) { console.log('Usage: bun nano-minimal.ts "your prompt"'); process.exit(1); }
-if (!API_KEY) { console.log('Set ANTHROPIC_API_KEY'); process.exit(1); }
+if (!API_KEY) { console.log('Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN'); process.exit(1); }
 
 agent(prompt).then(console.log).catch(e => console.error('Error:', e));
