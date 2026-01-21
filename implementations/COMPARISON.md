@@ -1,11 +1,20 @@
 # Multi-Language Implementation Comparison
 
+## Quick Links
+
+| Version | Description | LOC |
+|---------|-------------|-----|
+| **Minimal** | Basic agent (~5 tools) | 72-200 LOC |
+| **SWE-bench** | Extended agent (15 tools) | 250-350 LOC |
+| **Benchmark** | Performance testing tool | 300 LOC |
+
 ## Summary
 
 All implementations share the same core:
-1. **5 tools**: read_file, write_file, edit_file, bash, list_dir
+1. **Tools**: read_file, write_file, edit_file, bash, list_dir (varies by impl)
 2. **Agent loop**: Send message → Execute tool calls → Repeat until done
-3. **Proxy support**: ANTHROPIC_BASE_URL for custom endpoints
+3. **Model**: `claude-sonnet-4-20250514` (configurable via MODEL env)
+4. **Proxy support**: ANTHROPIC_BASE_URL for custom endpoints
 
 ## Line Count Comparison
 
@@ -14,134 +23,179 @@ All implementations share the same core:
 | **nano.py** | 72 | Python | Zero (stdlib) |
 | **nano.go** | 85 | Go | Zero (stdlib) |
 | **nano-minimal.ts** | 86 | TypeScript | Zero (fetch) |
+| **nano.zig** | 92 | Zig | Zero (stdlib + curl) |
 | **nano.rs** | 118 | Rust | 3 crates |
-| **nano.ts** | 216 | TypeScript | SDK + glob |
+| **nano.c** | 200 | C | Zero (stdlib + curl) |
+
+## Binary Size Comparison
+
+| Language | Binary Size | Notes |
+|----------|-------------|-------|
+| **C** | **17 KB** | Smallest! Uses curl for HTTPS |
+| Rust | 2.0 MB | Static linking with TLS |
+| Zig | 2.2 MB | Static linking |
+| Go | 7.9 MB | Includes runtime |
+
+## Startup Performance
+
+Measured as average of 3 runs (time to show usage/error):
+
+| Language | Startup Time | Relative |
+|----------|-------------|----------|
+| **Rust** | **1 ms** | 1x (baseline) |
+| **Zig** | **1 ms** | 1x |
+| C | 4 ms | 4x |
+| Go | 4 ms | 4x |
+| TypeScript | 19 ms | 19x |
+| Python | 38 ms | 38x |
 
 ## Feature Comparison
 
-| Feature | Python | TS Minimal | TS Full | Rust | Go |
-|---------|--------|------------|---------|------|-----|
-| Tools | 5 | 5 | 7 | 5 | 5 |
-| Interactive REPL | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Streaming | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Custom base URL | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Zero dependencies | ✅ | ✅ | ❌ | ❌ | ✅ |
-| Single file | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-## Performance (Estimated)
-
-| Metric | Python | TS Minimal | TS Full | Rust | Go |
-|--------|--------|------------|---------|------|-----|
-| Startup | ~50ms | ~30ms | ~80ms | ~5ms | ~10ms |
-| Memory | ~30MB | ~50MB | ~80MB | ~5MB | ~10MB |
-| Binary size | N/A | N/A | N/A | ~2MB | ~5MB |
-| Compile time | N/A | N/A | N/A | ~30s | ~2s |
+| Feature | Python | TS | Go | Rust | Zig | C |
+|---------|--------|-----|-----|------|-----|---|
+| Tools | 5 | 5 | 5 | 5 | 3 | 4 |
+| Custom base URL | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Zero runtime deps | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Single file | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Native TLS | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
 
 ## Platform Support
 
-| Platform | Python | TS | Rust | Go |
-|----------|--------|-----|------|-----|
-| Linux x64 | ✅ | ✅ | ✅ | ✅ |
-| macOS ARM | ✅ | ✅ | ✅ | ✅ |
-| Windows | ✅ | ✅ | ✅ | ✅ |
-| Raspberry Pi | ✅ | ✅ | ✅ | ✅ |
-| ESP32/MCU | ❌ | ❌ | ⚠️ | ❌ |
-| WASM | ⚠️ | ✅ | ✅ | ✅ |
-| Docker | ✅ | ✅ | ✅ | ✅ |
+| Platform | Python | TS | Go | Rust | Zig | C |
+|----------|--------|-----|-----|------|-----|---|
+| Linux x64 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| macOS ARM | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Windows | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Raspberry Pi | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ESP32/MCU | ❌ | ❌ | ❌ | ⚠️ | ⚠️ | ⚠️ |
+| WASM | ⚠️ | ✅ | ✅ | ✅ | ✅ | ⚠️ |
 
 ⚠️ = Possible with modifications
-
-## Code Structure Comparison
-
-### Python (72 LOC)
-```python
-# Config: 4 lines
-# Tools JSON: 5 lines
-# Tool execution: 17 lines
-# API call: 5 lines
-# Agent loop: 15 lines
-# Main: 6 lines
-```
-
-### Go (85 LOC)
-```go
-// Config/imports: 16 lines
-// Tools JSON: 6 lines
-// Types: 4 lines
-// Tool execution: 14 lines
-// API call: 10 lines
-// Agent loop: 12 lines
-// Main: 8 lines
-```
-
-### TypeScript Minimal (86 LOC)
-```typescript
-// Config: 5 lines
-// Tools array: 6 lines
-// Tool execution: 15 lines
-// Types: 2 lines
-// API call: 10 lines
-// Agent loop: 18 lines
-// Main: 4 lines
-```
-
-### Rust (118 LOC)
-```rust
-// Config/tools: 15 lines
-// Types: 8 lines
-// Tool execution: 30 lines
-// API call: 15 lines
-// Agent loop: 20 lines
-// Main: 15 lines
-```
 
 ## Best Use Cases
 
 | Language | Best For |
 |----------|----------|
-| **Python** | Pi, data science, ML, quick scripts |
-| **Go** | Cloud, K8s, single binary deploy, servers |
-| **TypeScript** | Web dev, VS Code, Bun ecosystem |
-| **Rust** | Embedded, WASM, high-performance, no GC |
+| **Python** | Data science, ML, quick scripts, Raspberry Pi |
+| **TypeScript** | Web dev, VS Code extensions, Bun ecosystem |
+| **Go** | Cloud services, K8s, single binary deployment |
+| **Rust** | Embedded, WASM, high-performance, memory safety |
+| **Zig** | Embedded, C interop, freestanding targets |
+| **C** | Minimal size, legacy systems, maximum portability |
 
-## Tested ✅
+## SWE-bench Extended Agents
 
-| Implementation | API Test | Tool Test |
-|----------------|----------|-----------|
-| Python | ✅ | ✅ read_file |
-| TypeScript Minimal | ✅ | ✅ read_file |
-| TypeScript Full | ✅ | ✅ read_file |
-| Go | ✅ | ✅ read_file |
-| Rust | ⚠️ | ⚠️ (toolchain issue) |
+For real-world software engineering tasks (GitHub issues, debugging, refactoring):
 
-## Usage Examples
+| File | Language | LOC | Tools |
+|------|----------|-----|-------|
+| `python/nano_swe.py` | Python | ~250 | 15 |
+| `typescript/nano-swe.ts` | TypeScript | ~300 | 15 |
+
+### SWE-bench Tools (15 total)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  FILE OPERATIONS          │  CODE SEARCH           │  GIT OPERATIONS        │
+│  ├─ read_file             │  ├─ grep               │  ├─ git_status         │
+│  ├─ write_file            │  ├─ find_files         │  ├─ git_diff           │
+│  ├─ edit_file             │  └─ find_definition    │  └─ git_log            │
+│  └─ multi_edit            │                        │                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  DIRECTORY                │  SHELL & TESTING       │  PLANNING              │
+│  ├─ list_dir              │  ├─ bash               │  └─ think              │
+│  └─ tree                  │  └─ run_tests          │                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Features
+
+- **Atomic multi-file edits** with rollback on failure
+- **Intelligent code search** with grep, find, and symbol definition lookup
+- **Test framework auto-detection** (pytest, npm test, cargo test, go test)
+- **Git integration** for status, diff, and history
+- **Think tool** for complex reasoning without action
+
+### Usage
 
 ```bash
 # Python
-ANTHROPIC_API_KEY=sk-... python nano.py "read config.json"
+python nano_swe.py "fix the bug in issue #123"
+python nano_swe.py "add input validation to the login function"
+python nano_swe.py "refactor the database module to use connection pooling"
+
+# TypeScript
+bun nano-swe.ts "fix the type error in src/utils.ts"
+bun nano-swe.ts "add error handling to the API endpoints"
+```
+
+## Benchmark Tool
+
+Test API performance with the included benchmark script:
+
+```bash
+# Quick benchmark (5 iterations per test)
+python benchmark.py
+
+# Full benchmark (20 iterations)
+python benchmark.py --full
+
+# Compare endpoints
+python benchmark.py --compare
+
+# Test specific endpoint
+python benchmark.py --endpoint z.ai
+python benchmark.py --endpoint anthropic
+```
+
+### Metrics Measured
+
+- **TTFB**: Time to first byte (network + inference start)
+- **Total Time**: Complete response time
+- **Tokens/sec**: Output throughput
+- **Error Rate**: Request failures
+
+## Build Commands
+
+```bash
+# Python (no build needed)
+python3 python/nano.py "prompt"
 
 # TypeScript (Bun)
-ANTHROPIC_API_KEY=sk-... bun nano-minimal.ts "list files"
+bun typescript/nano-minimal.ts "prompt"
 
 # Go
-ANTHROPIC_API_KEY=sk-... go run nano.go "edit file.txt"
+cd go && go build -o nano nano.go
+./nano "prompt"
 
 # Rust
-ANTHROPIC_API_KEY=sk-... cargo run -- "run tests"
+cd rust && cargo build --release
+./target/release/nano-opencode "prompt"
 
-# With proxy (all languages)
-ANTHROPIC_BASE_URL=https://proxy.example.com/v1 \
-ANTHROPIC_API_KEY=your-key \
-python nano.py "hello"
+# Zig
+cd zig && zig build -Doptimize=ReleaseFast
+./zig-out/bin/nano "prompt"
+
+# C
+cd c && make
+./nano "prompt"
 ```
+
+## Environment Variables
+
+All implementations support:
+- `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` - API key (required)
+- `ANTHROPIC_BASE_URL` - Custom API endpoint (optional)
+- `MODEL` - Model name (default: `claude-sonnet-4-20250514`)
 
 ## Conclusion
 
-The core agent loop is **remarkably consistent** across languages:
+**Key findings:**
 
-1. All implementations are **<120 LOC** (except TS Full with extras)
-2. All support **custom proxy URLs**
-3. All implement the **same 5 tools**
-4. All follow the **same agent loop pattern**
+1. **Smallest binary**: C at 17KB (uses external curl)
+2. **Fastest startup**: Rust/Zig at 1ms
+3. **Fewest lines**: Python at 72 LOC
+4. **Most portable**: Go (single static binary with TLS)
+5. **Best for embedded**: Zig/Rust (memory safety, no GC)
 
-This proves that AI coding agents don't need to be complex. The essential functionality fits in ~100 lines of any language.
+The core agent loop is **remarkably consistent** across all 6 languages - proving that AI coding agents don't need to be complex. The essential functionality fits in ~100 lines of any language.

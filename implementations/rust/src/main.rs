@@ -2,7 +2,7 @@
 // Usage: ANTHROPIC_API_KEY=sk-... cargo run "your prompt"
 // Build: cargo build --release
 
-use std::{env, fs, process::Command, io::Write};
+use std::{env, fs, process::Command};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -23,7 +23,7 @@ struct Message { role: String, content: Value }
 #[derive(Deserialize)]
 struct Response { content: Vec<Block>, stop_reason: String }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 struct Block { r#type: String, id: Option<String>, name: Option<String>, input: Option<Value>, text: Option<String> }
 
 fn run(name: &str, input: &Value) -> String {

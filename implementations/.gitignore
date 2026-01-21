@@ -1,0 +1,13 @@
+# Binary outputs
+c/nano
+zig/zig-out/
+zig/.zig-cache/
+rust/target/
+go/nano
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
