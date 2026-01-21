@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nano-opencode.dev/schemas/provider.json",
+  "title": "Provider Interface",
+  "description": "Language-agnostic LLM provider definition for nano-opencode",
+  "type": "object",
+  "required": ["name", "type", "api"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique provider identifier"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["chat", "completion", "embedding"],
+      "description": "Provider capability type"
+    },
+    "api": {
+      "type": "object",
+      "required": ["base_url"],
+      "properties": {
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "API base URL"
+        },
+        "auth": {
+          "type": "string",
+          "enum": ["bearer", "x-api-key", "basic", "none"],
+          "default": "bearer",
+          "description": "Authentication method"
+        },
+        "version": {
+          "type": "string",
+          "description": "API version header value"
+        }
+      }
+    },
+    "models": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of available model identifiers"
+    },
+    "default_model": {
+      "type": "string",
+      "description": "Default model to use if not specified"
+    },
+    "rate_limits": {
+      "type": "object",
+      "properties": {
+        "requests_per_minute": { "type": "integer" },
+        "tokens_per_minute": { "type": "integer" }
+      },
+      "description": "Rate limiting configuration"
+    },
+    "supports": {
+      "type": "object",
+      "properties": {
+        "streaming": { "type": "boolean", "default": true },
+        "tools": { "type": "boolean", "default": true },
+        "vision": { "type": "boolean", "default": false },
+        "system_prompt": { "type": "boolean", "default": true }
+      },
+      "description": "Supported features"
+    }
+  }
+}

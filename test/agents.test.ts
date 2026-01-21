@@ -107,16 +107,18 @@ describe('Agent System', () => {
       assert.strictEqual(instance, undefined);
     });
 
-    it('listAgents returns all 10 built-in agents', () => {
+    it('listAgents returns essential built-in agents', () => {
       const agents = listAgents();
-      assert.ok(agents.length >= 10);
+      // At minimum, should have 5 essential agents (more if TS fallback loads)
+      assert.ok(agents.length >= 5);
 
       const names = agents.map(a => a.name);
+      // Essential agents (from YAML or TS fallback)
       assert.ok(names.includes('sisyphus'));
       assert.ok(names.includes('oracle'));
-      assert.ok(names.includes('librarian'));
       assert.ok(names.includes('explore'));
       assert.ok(names.includes('junior'));
+      assert.ok(names.includes('prometheus'));
     });
 
     it('getDefaultAgent returns sisyphus', () => {

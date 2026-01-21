@@ -2,10 +2,11 @@ import { readFileSync, writeFileSync } from 'fs';
 import type { Tool } from '../types.js';
 import { getErrorMessage } from '../constants.js';
 import { validatePathExists } from './helpers.js';
+import { createBackup } from './undo.js';
 
 export const editFileTool: Tool = {
   name: 'edit_file',
-  description: 'Edit a file by replacing a specific string with another. The old_string must match exactly (including whitespace).',
+  description: 'Edit a file by replacing a specific string with another. The old_string must match exactly (including whitespace). Automatically creates a backup for undo.',
   parameters: {
     type: 'object',
     properties: {
@@ -52,6 +53,9 @@ export const editFileTool: Tool = {
       const newContent = replaceAll
         ? content.split(oldString).join(newString)
         : content.replace(oldString, newString);
+
+      // Create backup before modifying
+      createBackup(pathResult.path, 'edit');
 
       writeFileSync(pathResult.path, newContent, 'utf-8');
       return `Successfully replaced ${replaceAll ? occurrences : 1} occurrence(s) in ${pathResult.path}`;

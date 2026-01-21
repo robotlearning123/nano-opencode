@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nano-opencode.dev/schemas/hook.json",
+  "title": "Hook Interface",
+  "description": "Language-agnostic hook definition for nano-opencode lifecycle events",
+  "type": "object",
+  "required": ["name", "lifecycle"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique hook identifier"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what the hook does"
+    },
+    "lifecycle": {
+      "oneOf": [
+        { "$ref": "#/$defs/lifecycleEvent" },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/lifecycleEvent" },
+          "minItems": 1
+        }
+      ],
+      "description": "Lifecycle event(s) this hook responds to"
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "default": 100,
+      "description": "Execution priority (lower = runs first)"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the hook is enabled by default"
+    },
+    "when": {
+      "type": "object",
+      "properties": {
+        "tool": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Only trigger for these tools"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Glob pattern for file-based triggers"
+        }
+      },
+      "description": "Conditional trigger rules"
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "shell": {
+          "type": "string",
+          "description": "Shell command to execute"
+        },
+        "transform": {
+          "type": "string",
+          "description": "Transformation expression"
+        }
+      },
+      "description": "Action to perform (for declarative hooks)"
+    }
+  },
+  "$defs": {
+    "lifecycleEvent": {
+      "type": "string",
+      "enum": [
+        "chat.message.before",
+        "chat.message.after",
+        "tool.execute.before",
+        "tool.execute.after",
+        "session.start",
+        "session.end",
+        "message.transform"
+      ]
+    }
+  }
+}

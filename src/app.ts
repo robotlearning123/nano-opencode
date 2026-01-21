@@ -9,6 +9,9 @@ import { getErrorMessage } from './constants.js';
 
 config();
 
+// Global minimal mode flag
+export let minimalMode = false;
+
 const program = new Command();
 
 program
@@ -19,14 +22,21 @@ program
   .option('-p, --provider <name>', 'LLM provider (anthropic, openai, gemini)')
   .option('-m, --model <name>', 'Model to use')
   .option('--prompt <text>', 'Run a single prompt and exit')
+  .option('--minimal', 'Run in minimal mode (no MCP, LSP, or background tasks)')
   .action(async (options) => {
     const appConfig = loadConfig();
     if (options.provider) appConfig.provider = options.provider;
     if (options.model) appConfig.model = options.model;
 
+    // Enable minimal mode
+    if (options.minimal) {
+      minimalMode = true;
+      console.log('Running in minimal mode (MCP, LSP, background tasks disabled)');
+    }
+
     try {
-      // Lazy load MCP only if configured
-      if (appConfig.mcp?.servers) {
+      // Lazy load MCP only if configured AND not in minimal mode
+      if (!minimalMode && appConfig.mcp?.servers) {
         const { initializeMCP } = await import('./mcp/index.js');
         await initializeMCP(appConfig.mcp);
       }
@@ -44,8 +54,10 @@ program
       console.error(`Error: ${getErrorMessage(error)}`);
       process.exit(1);
     } finally {
-      const { shutdownMCP } = await import('./mcp/index.js');
-      await shutdownMCP();
+      if (!minimalMode) {
+        const { shutdownMCP } = await import('./mcp/index.js');
+        await shutdownMCP();
+      }
       closeDb();
     }
   });

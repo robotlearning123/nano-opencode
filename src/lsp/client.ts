@@ -1,19 +1,17 @@
 /**
  * LSP Client - minimal JSON-RPC client for language servers
+ * Uses the unified RPC client with Content-Length framing
  */
 
-import { spawn, type ChildProcess } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import { dirname, extname, resolve } from 'path';
+import { RpcClient } from '../rpc/index.js';
 import type { Position, Location, Diagnostic, Hover, LanguageServerConfig } from './types.js';
 import { DEFAULT_SERVERS, EXT_TO_LANG } from './types.js';
 
 export class LSPClient {
-  private process: ChildProcess | null = null;
+  private rpc: RpcClient | null = null;
   private config: LanguageServerConfig;
-  private requestId = 0;
-  private pendingRequests = new Map<number, { resolve: Function; reject: Function }>();
-  private buffer = '';
   private initialized = false;
   private rootUri: string;
   private openFiles = new Set<string>();
@@ -24,22 +22,23 @@ export class LSPClient {
   }
 
   async start(): Promise<void> {
-    if (this.process) return;
+    if (this.rpc) return;
 
-    this.process = spawn(this.config.command, this.config.args || [], {
-      stdio: ['pipe', 'pipe', 'pipe'],
+    this.rpc = new RpcClient({
+      command: this.config.command,
+      args: this.config.args,
+      framing: 'content-length',
+      timeout: 10000,
     });
 
-    this.process.stdout?.on('data', (data) => this.handleData(data.toString()));
-    this.process.stderr?.on('data', (data) => console.error(`[LSP] ${data}`));
-    this.process.on('error', (err) => console.error(`[LSP] Error: ${err.message}`));
-    this.process.on('close', () => { this.process = null; this.initialized = false; });
-
+    await this.rpc.connect();
     await this.initialize();
   }
 
   private async initialize(): Promise<void> {
-    await this.request('initialize', {
+    if (!this.rpc) throw new Error('Not connected');
+
+    await this.rpc.request('initialize', {
       processId: process.pid,
       rootUri: this.rootUri,
       capabilities: {
@@ -51,62 +50,9 @@ export class LSPClient {
         },
       },
     });
-    this.notify('initialized', {});
+
+    this.rpc.notify('initialized', {});
     this.initialized = true;
-  }
-
-  private handleData(data: string): void {
-    this.buffer += data;
-
-    while (true) {
-      const headerEnd = this.buffer.indexOf('\r\n\r\n');
-      if (headerEnd === -1) break;
-
-      const header = this.buffer.slice(0, headerEnd);
-      const match = header.match(/Content-Length: (\d+)/);
-      if (!match) break;
-
-      const contentLength = parseInt(match[1], 10);
-      const contentStart = headerEnd + 4;
-      if (this.buffer.length < contentStart + contentLength) break;
-
-      const content = this.buffer.slice(contentStart, contentStart + contentLength);
-      this.buffer = this.buffer.slice(contentStart + contentLength);
-
-      try {
-        const msg = JSON.parse(content);
-        if (msg.id !== undefined && this.pendingRequests.has(msg.id)) {
-          const { resolve, reject } = this.pendingRequests.get(msg.id)!;
-          this.pendingRequests.delete(msg.id);
-          msg.error ? reject(new Error(msg.error.message)) : resolve(msg.result);
-        }
-      } catch {}
-    }
-  }
-
-  private send(msg: object): void {
-    if (!this.process?.stdin) return;
-    const content = JSON.stringify(msg);
-    const header = `Content-Length: ${Buffer.byteLength(content)}\r\n\r\n`;
-    this.process.stdin.write(header + content);
-  }
-
-  private request(method: string, params: object): Promise<unknown> {
-    const id = ++this.requestId;
-    return new Promise((resolve, reject) => {
-      this.pendingRequests.set(id, { resolve, reject });
-      this.send({ jsonrpc: '2.0', id, method, params });
-      setTimeout(() => {
-        if (this.pendingRequests.has(id)) {
-          this.pendingRequests.delete(id);
-          reject(new Error('LSP request timeout'));
-        }
-      }, 10000);
-    });
-  }
-
-  private notify(method: string, params: object): void {
-    this.send({ jsonrpc: '2.0', method, params });
   }
 
   async openFile(filePath: string): Promise<void> {
@@ -117,7 +63,7 @@ export class LSPClient {
     const ext = extname(filePath);
     const languageId = EXT_TO_LANG[ext] || 'plaintext';
 
-    this.notify('textDocument/didOpen', {
+    this.rpc?.notify('textDocument/didOpen', {
       textDocument: { uri, languageId, version: 1, text: content },
     });
     this.openFiles.add(uri);
@@ -127,10 +73,10 @@ export class LSPClient {
     if (!this.initialized) await this.start();
     await this.openFile(filePath);
 
-    const result = await this.request('textDocument/definition', {
+    const result = await this.rpc?.request<Location | Location[] | null>('textDocument/definition', {
       textDocument: { uri: `file://${resolve(filePath)}` },
       position: { line, character },
-    }) as Location | Location[] | null;
+    });
 
     if (!result) return [];
     return Array.isArray(result) ? result : [result];
@@ -140,11 +86,11 @@ export class LSPClient {
     if (!this.initialized) await this.start();
     await this.openFile(filePath);
 
-    const result = await this.request('textDocument/references', {
+    const result = await this.rpc?.request<Location[] | null>('textDocument/references', {
       textDocument: { uri: `file://${resolve(filePath)}` },
       position: { line, character },
       context: { includeDeclaration: true },
-    }) as Location[] | null;
+    });
 
     return result || [];
   }
@@ -153,10 +99,10 @@ export class LSPClient {
     if (!this.initialized) await this.start();
     await this.openFile(filePath);
 
-    const result = await this.request('textDocument/hover', {
+    const result = await this.rpc?.request<Hover | null>('textDocument/hover', {
       textDocument: { uri: `file://${resolve(filePath)}` },
       position: { line, character },
-    }) as Hover | null;
+    });
 
     if (!result) return null;
     const contents = result.contents;
@@ -165,23 +111,22 @@ export class LSPClient {
     return null;
   }
 
-  async getDiagnostics(filePath: string): Promise<Diagnostic[]> {
-    if (!this.initialized) await this.start();
-    await this.openFile(filePath);
-    // Most servers send diagnostics via notifications, return empty for now
-    // Full implementation would track publishDiagnostics notifications
+  async getDiagnostics(_filePath: string): Promise<Diagnostic[]> {
+    // Most servers send diagnostics via notifications
     return [];
   }
 
   stop(): void {
-    if (this.process) {
-      this.notify('shutdown', {});
+    if (this.rpc) {
+      this.rpc.notify('shutdown', {});
       setTimeout(() => {
-        this.notify('exit', {});
-        this.process?.kill();
-        this.process = null;
+        this.rpc?.notify('exit', {});
+        this.rpc?.disconnect();
+        this.rpc = null;
       }, 100);
     }
+    this.initialized = false;
+    this.openFiles.clear();
   }
 }
 
@@ -198,7 +143,6 @@ class LSPManager {
       const config = DEFAULT_SERVERS[lang];
       if (!config) return null;
 
-      // Find root directory
       const rootPath = this.findRoot(dirname(filePath), config.rootPatterns || []);
       this.clients.set(lang, new LSPClient(config, rootPath));
     }

@@ -3,10 +3,11 @@ import { dirname } from 'path';
 import type { Tool } from '../types.js';
 import { getErrorMessage } from '../constants.js';
 import { validatePath } from './helpers.js';
+import { createBackup } from './undo.js';
 
 export const writeFileTool: Tool = {
   name: 'write_file',
-  description: 'Write content to a file. Creates the file if it does not exist, or overwrites it if it does.',
+  description: 'Write content to a file. Creates the file if it does not exist, or overwrites it if it does. Automatically creates a backup for undo.',
   parameters: {
     type: 'object',
     properties: {
@@ -32,6 +33,9 @@ export const writeFileTool: Tool = {
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
       }
+
+      // Create backup before overwriting (if file exists)
+      createBackup(pathResult.path, 'write');
 
       writeFileSync(pathResult.path, content, 'utf-8');
       return `Successfully wrote ${content.split('\n').length} lines to ${pathResult.path}`;

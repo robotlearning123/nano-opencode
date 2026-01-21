@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nano-opencode.dev/schemas/agent.json",
+  "title": "Agent Interface",
+  "description": "Language-agnostic agent definition for nano-opencode",
+  "type": "object",
+  "required": ["name", "description", "prompt"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique agent identifier (lowercase with hyphens)"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 200,
+      "description": "Short description of the agent's purpose"
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 50,
+      "description": "System prompt defining the agent's behavior and capabilities"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model identifier (e.g., 'claude-sonnet-4-20250514')"
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2,
+      "default": 1,
+      "description": "Sampling temperature for model responses"
+    },
+    "max_turns": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 50,
+      "description": "Maximum conversation turns before stopping"
+    },
+    "allowed_tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Whitelist of tool names this agent can use"
+    },
+    "disallowed_tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Blacklist of tool names this agent cannot use"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["orchestrator", "specialist", "advisor", "utility"],
+      "description": "Agent category for organization"
+    }
+  }
+}

@@ -12,6 +12,14 @@ import { initHooks, listHooks, enableHook, disableHook, toggleHook } from './hoo
 import { mcpRegistry } from './mcp/index.js';
 import { listSkills, getSkill, getSkillDirectories } from './skills/index.js';
 import { getAllTools } from './tools/index.js';
+import {
+  listMemoryFiles,
+  saveToMemory,
+  formatMemoryEntry,
+  hasMemory,
+  clearMemoryCache,
+  loadMemoryContext,
+} from './memory/index.js';
 
 type PromptFn = () => Promise<string>;
 
@@ -31,6 +39,8 @@ export const commands = {
       ['/auth status', 'Show auth status'],
       ['/mcp', 'List MCP servers'],
       ['/skill [name]', 'List/show skills'],
+      ['/memory', 'Show active memory files'],
+      ['/remember <text>', 'Save insight to memory'],
     ];
     console.log(chalk.cyan('\nCommands:'));
     for (const [cmd, desc] of cmds) {
@@ -228,5 +238,79 @@ export const commands = {
     console.log(chalk.cyan(`\n${skill.name}`));
     console.log(chalk.gray(skill.frontmatter.description || '(no description)'));
     console.log(chalk.dim('\n' + skill.content.slice(0, 300) + '...\n'));
+  },
+
+  memory(cmd?: string): void {
+    if (cmd === 'refresh') {
+      clearMemoryCache();
+      console.log(chalk.green('\nMemory cache cleared.\n'));
+      return;
+    }
+
+    const files = listMemoryFiles();
+    if (!files.length) {
+      console.log(chalk.cyan('\nNo memory files found.'));
+      console.log(chalk.gray('Create NANO.md in:'));
+      console.log(chalk.gray('  ~/.nano/NANO.md    (global preferences)'));
+      console.log(chalk.gray('  ./NANO.md          (project context)\n'));
+      return;
+    }
+
+    console.log(chalk.cyan('\nActive Memory Files:'));
+    for (const f of files) {
+      console.log(chalk.white(`  ${f}`));
+    }
+
+    // Show preview of combined context
+    const context = loadMemoryContext();
+    if (context.combined) {
+      const preview = context.combined.slice(0, 500);
+      console.log(chalk.dim('\nPreview:'));
+      console.log(chalk.gray(preview + (context.combined.length > 500 ? '...' : '')));
+    }
+    console.log();
+  },
+
+  async remember(args: string[], promptFn: PromptFn): Promise<void> {
+    const text = args.join(' ').trim();
+
+    if (!text) {
+      console.log(chalk.cyan('\nSave insight to memory:'));
+      console.log(chalk.gray('  /remember <text>              Save to project NANO.md'));
+      console.log(chalk.gray('  /remember --global <text>     Save to global ~/.nano/NANO.md'));
+      console.log(chalk.gray('  /remember --category <cat>    Save with category header\n'));
+      return;
+    }
+
+    // Parse flags
+    let scope: 'global' | 'project' = 'project';
+    let category: string | undefined;
+    let content = text;
+
+    if (text.startsWith('--global ')) {
+      scope = 'global';
+      content = text.slice('--global '.length).trim();
+    }
+
+    const catMatch = content.match(/^--category\s+(\S+)\s+/);
+    if (catMatch) {
+      category = catMatch[1];
+      content = content.slice(catMatch[0].length).trim();
+    }
+
+    if (!content) {
+      console.log(chalk.red('No content to save.\n'));
+      return;
+    }
+
+    // Format and save
+    const formatted = formatMemoryEntry(content, category);
+    const result = saveToMemory(formatted, scope);
+
+    if (result.success) {
+      console.log(chalk.green(`\n${result.message}\n`));
+    } else {
+      console.log(chalk.red(`\n${result.message}\n`));
+    }
   },
 };

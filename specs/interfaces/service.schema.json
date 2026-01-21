@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nano-opencode.dev/schemas/service.json",
+  "title": "Service Interface",
+  "description": "Language-agnostic service definition for MCP/LSP servers",
+  "type": "object",
+  "required": ["name", "type", "command"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique service identifier"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["mcp", "lsp"],
+      "description": "Service protocol type"
+    },
+    "command": {
+      "type": "string",
+      "description": "Command to start the service"
+    },
+    "args": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Command arguments"
+    },
+    "env": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Environment variables"
+    },
+    "lazy": {
+      "type": "boolean",
+      "default": true,
+      "description": "Start on-demand instead of at startup"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000,
+      "default": 30000,
+      "description": "Connection timeout in milliseconds"
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Glob pattern that triggers this service"
+          }
+        }
+      },
+      "description": "File patterns that auto-start this service"
+    },
+    "extensions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "File extensions this service handles (LSP only)"
+    },
+    "root_patterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Files that indicate project root (LSP only)"
+    }
+  }
+}
