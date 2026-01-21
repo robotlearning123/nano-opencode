@@ -4,8 +4,9 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from 'fs';
-import { join, basename, extname } from 'path';
+import { join, basename, extname, dirname } from 'path';
 import { homedir } from 'os';
+import { fileURLToPath } from 'url';
 import * as yaml from 'js-yaml';
 import type {
   PluginType,
@@ -18,8 +19,12 @@ import type {
   SkillFrontmatter,
 } from './types.js';
 
+// Get __dirname equivalent in ESM (Node.js 18 compatible)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Plugin directories
-const BUILTIN_DIR = join(import.meta.dirname || __dirname, '../../builtin');
+const BUILTIN_DIR = join(__dirname, '../../builtin');
 const USER_DIR = join(homedir(), '.nano');
 const PROJECT_DIR = join(process.cwd(), '.nano');
 
