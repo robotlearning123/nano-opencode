@@ -502,25 +502,183 @@ def print_summary(data: Dict[str, Any], agent: str):
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def build_agents(script_dir: Path) -> Dict[str, bool]:
+    """Build compiled agents (Go, Rust, Zig, C)"""
+    builds = {}
+
+    # Go
+    go_dir = script_dir / "go"
+    if (go_dir / "nano.go").exists():
+        print("Building Go agent...")
+        result = subprocess.run(["go", "build", "-o", "nano", "nano.go"],
+                              cwd=go_dir, capture_output=True)
+        builds["go"] = result.returncode == 0
+        if builds["go"]:
+            print("  ✅ Go built successfully")
+        else:
+            print(f"  ❌ Go build failed: {result.stderr.decode()[:200]}")
+
+    # Rust
+    rust_dir = script_dir / "rust"
+    if (rust_dir / "Cargo.toml").exists():
+        print("Building Rust agent...")
+        result = subprocess.run(["cargo", "build", "--release"],
+                              cwd=rust_dir, capture_output=True, timeout=120)
+        builds["rust"] = result.returncode == 0
+        if builds["rust"]:
+            print("  ✅ Rust built successfully")
+        else:
+            print(f"  ❌ Rust build failed: {result.stderr.decode()[:200]}")
+
+    # Zig
+    zig_dir = script_dir / "zig"
+    if (zig_dir / "nano.zig").exists() and not (zig_dir / "zig-out" / "bin" / "nano").exists():
+        print("Building Zig agent...")
+        result = subprocess.run(["zig", "build", "-Doptimize=ReleaseFast"],
+                              cwd=zig_dir, capture_output=True, timeout=120)
+        builds["zig"] = result.returncode == 0
+        if builds["zig"]:
+            print("  ✅ Zig built successfully")
+        else:
+            print(f"  ❌ Zig build failed: {result.stderr.decode()[:200]}")
+    else:
+        builds["zig"] = (zig_dir / "zig-out" / "bin" / "nano").exists()
+
+    # C
+    c_dir = script_dir / "c"
+    if (c_dir / "nano.c").exists() and not (c_dir / "nano").exists():
+        print("Building C agent...")
+        result = subprocess.run(["make"], cwd=c_dir, capture_output=True)
+        builds["c"] = result.returncode == 0
+        if builds["c"]:
+            print("  ✅ C built successfully")
+        else:
+            print(f"  ❌ C build failed: {result.stderr.decode()[:200]}")
+    else:
+        builds["c"] = (c_dir / "nano").exists()
+
+    return builds
+
+def get_all_agents(script_dir: Path) -> Dict[str, Dict]:
+    """Get all available agents with their commands and metadata"""
+    agents = {
+        # SWE agents (15 tools - full featured)
+        "py-swe": {
+            "cmd": ["python3", str(script_dir / "python" / "nano_swe.py")],
+            "type": "swe",
+            "lang": "Python",
+            "tools": 15,
+            "exists": (script_dir / "python" / "nano_swe.py").exists()
+        },
+        "ts-swe": {
+            "cmd": ["bun", str(script_dir / "typescript" / "nano-swe.ts")],
+            "type": "swe",
+            "lang": "TypeScript",
+            "tools": 15,
+            "exists": (script_dir / "typescript" / "nano-swe.ts").exists()
+        },
+
+        # Minimal agents (5 tools - basic)
+        "py-mini": {
+            "cmd": ["python3", str(script_dir / "python" / "nano.py")],
+            "type": "minimal",
+            "lang": "Python",
+            "tools": 5,
+            "exists": (script_dir / "python" / "nano.py").exists()
+        },
+        "ts-mini": {
+            "cmd": ["bun", str(script_dir / "typescript" / "nano-minimal.ts")],
+            "type": "minimal",
+            "lang": "TypeScript",
+            "tools": 5,
+            "exists": (script_dir / "typescript" / "nano-minimal.ts").exists()
+        },
+        "ts-std": {
+            "cmd": ["bun", str(script_dir / "typescript" / "nano.ts")],
+            "type": "standard",
+            "lang": "TypeScript",
+            "tools": 5,
+            "exists": (script_dir / "typescript" / "nano.ts").exists()
+        },
+
+        # Compiled agents
+        "go": {
+            "cmd": [str(script_dir / "go" / "nano")],
+            "type": "minimal",
+            "lang": "Go",
+            "tools": 5,
+            "exists": (script_dir / "go" / "nano").exists()
+        },
+        "rust": {
+            "cmd": [str(script_dir / "rust" / "target" / "release" / "nano-opencode")],
+            "type": "minimal",
+            "lang": "Rust",
+            "tools": 5,
+            "exists": (script_dir / "rust" / "target" / "release" / "nano-opencode").exists()
+        },
+        "zig": {
+            "cmd": [str(script_dir / "zig" / "zig-out" / "bin" / "nano")],
+            "type": "minimal",
+            "lang": "Zig",
+            "tools": 3,
+            "exists": (script_dir / "zig" / "zig-out" / "bin" / "nano").exists()
+        },
+        "c": {
+            "cmd": [str(script_dir / "c" / "nano")],
+            "type": "minimal",
+            "lang": "C",
+            "tools": 4,
+            "exists": (script_dir / "c" / "nano").exists()
+        },
+    }
+    return agents
+
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="SWE-bench Test Suite")
-    parser.add_argument("--agent", choices=["python", "typescript", "mini-py", "mini-ts"], default="python")
-    parser.add_argument("--compare", action="store_true", help="Compare all agents")
-    parser.add_argument("--mini", action="store_true", help="Include minimal agents in comparison")
+    parser = argparse.ArgumentParser(description="SWE-bench Test Suite for ALL nano-opencode agents")
+    parser.add_argument("--agent", help="Specific agent to test (py-swe, ts-swe, py-mini, ts-mini, go, rust, zig, c)")
+    parser.add_argument("--all", action="store_true", help="Test ALL agent implementations")
+    parser.add_argument("--swe", action="store_true", help="Test only SWE agents (15 tools)")
+    parser.add_argument("--mini", action="store_true", help="Test only minimal agents (5 tools)")
+    parser.add_argument("--compiled", action="store_true", help="Test only compiled agents (Go, Rust, Zig, C)")
+    parser.add_argument("--build", action="store_true", help="Build compiled agents before testing")
     parser.add_argument("--difficulty", choices=["easy", "medium", "hard"])
     parser.add_argument("--test", help="Run specific test ID")
     parser.add_argument("--output", "-o", help="Save JSON results")
+    parser.add_argument("--timeout", type=int, default=180, help="Timeout per test in seconds")
     args = parser.parse_args()
 
     script_dir = Path(__file__).parent
 
-    agents = {
-        "python": ["python3", str(script_dir / "python" / "nano_swe.py")],
-        "typescript": ["bun", str(script_dir / "typescript" / "nano-swe.ts")],
-        "mini-py": ["python3", str(script_dir / "python" / "nano.py")],
-        "mini-ts": ["bun", str(script_dir / "typescript" / "nano-minimal.ts")],
-    }
+    # Build agents if requested
+    if args.build or args.all or args.compiled:
+        print("\n" + "="*70)
+        print("BUILDING COMPILED AGENTS")
+        print("="*70)
+        build_agents(script_dir)
+        print()
+
+    # Get all agents
+    all_agents = get_all_agents(script_dir)
+
+    # Determine which agents to test
+    if args.agent:
+        if args.agent not in all_agents:
+            print(f"Unknown agent: {args.agent}")
+            print(f"Available: {', '.join(all_agents.keys())}")
+            sys.exit(1)
+        agent_list = [args.agent]
+    elif args.all:
+        agent_list = list(all_agents.keys())
+    elif args.swe:
+        agent_list = [k for k, v in all_agents.items() if v["type"] == "swe"]
+    elif args.mini:
+        agent_list = [k for k, v in all_agents.items() if v["type"] == "minimal"]
+    elif args.compiled:
+        agent_list = ["go", "rust", "zig", "c"]
+    else:
+        # Default: test SWE agents
+        agent_list = ["py-swe", "ts-swe"]
 
     # Filter tests
     tests = TEST_CASES
@@ -529,55 +687,105 @@ def main():
     if args.difficulty:
         tests = [t for t in tests if t.difficulty == args.difficulty]
 
-    if args.compare:
-        all_results = {}
-        agent_list = ["python", "typescript"]
-        if args.mini:
-            agent_list += ["mini-py", "mini-ts"]
+    # Show test plan
+    print("\n" + "="*70)
+    print("SWE-BENCH FULL TEST SUITE")
+    print("="*70)
+    print(f"Agents to test: {', '.join(agent_list)}")
+    print(f"Test cases: {len(tests)}")
+    print(f"Timeout per test: {args.timeout}s")
+    print("="*70)
 
-        for name in agent_list:
-            cmd = agents[name]
-            if not Path(cmd[1]).exists():
-                print(f"Skipping {name}: {cmd[1]} not found")
-                continue
-            print(f"\n{'#'*70}\n# TESTING: {name}\n{'#'*70}")
-            data = run_suite(cmd, tests)
+    all_results = {}
+
+    for name in agent_list:
+        agent = all_agents[name]
+
+        # Check if agent exists
+        if not agent["exists"]:
+            print(f"\n⚠️  Skipping {name}: binary not found")
+            print(f"   Path: {agent['cmd'][-1] if agent['cmd'] else 'N/A'}")
+            continue
+
+        print(f"\n{'#'*70}")
+        print(f"# TESTING: {name} ({agent['lang']}, {agent['tools']} tools, {agent['type']})")
+        print(f"{'#'*70}")
+
+        try:
+            data = run_suite(agent["cmd"], tests)
             data["agent"] = name
+            data["lang"] = agent["lang"]
+            data["type"] = agent["type"]
+            data["tools"] = agent["tools"]
             all_results[name] = data
-            print_summary(data, name)
+            print_summary(data, f"{name} ({agent['lang']})")
+        except Exception as e:
+            print(f"❌ Error testing {name}: {e}")
+            all_results[name] = {
+                "agent": name,
+                "lang": agent["lang"],
+                "type": agent["type"],
+                "tools": agent["tools"],
+                "total": len(tests),
+                "passed": 0,
+                "failed": len(tests),
+                "pass_rate": 0.0,
+                "total_time": 0,
+                "avg_time": 0,
+                "by_difficulty": {},
+                "results": [],
+                "error": str(e)
+            }
 
-        # Comparison
+    # Final comparison
+    if len(all_results) > 1:
         print(f"""
-╔══════════════════════════════════════════════════════════════════════╗
-║                      AGENT COMPARISON                                 ║
-╠══════════════════════════════════════════════════════════════════════╣
-║  Agent          │ Pass Rate │ Avg Time │ Easy  │ Medium │ Hard       ║
-╠═════════════════╪═══════════╪══════════╪═══════╪════════╪════════════╣""")
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                          FULL AGENT COMPARISON                                  ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║  Agent      │ Lang       │ Tools │ Type    │ Pass % │ Avg Time │ E  │ M  │ H   ║
+╠═════════════╪════════════╪═══════╪═════════╪════════╪══════════╪════╪════╪═════╣""")
 
-        for name, d in all_results.items():
-            easy = d["by_difficulty"].get("easy", {"passed": 0, "total": 0})
-            med = d["by_difficulty"].get("medium", {"passed": 0, "total": 0})
-            hard = d["by_difficulty"].get("hard", {"passed": 0, "total": 0})
-            print(f"║  {name:<14} │ {d['pass_rate']:>7.1f}% │ {d['avg_time']:>7.1f}s │ {easy['passed']}/{easy['total']:<3} │ {med['passed']}/{med['total']:<4} │ {hard['passed']}/{hard['total']:<3}       ║")
+        for name, d in sorted(all_results.items(), key=lambda x: -x[1].get("pass_rate", 0)):
+            easy = d.get("by_difficulty", {}).get("easy", {"passed": 0, "total": 0})
+            med = d.get("by_difficulty", {}).get("medium", {"passed": 0, "total": 0})
+            hard = d.get("by_difficulty", {}).get("hard", {"passed": 0, "total": 0})
 
-        print("╚═════════════════╧═══════════╧══════════╧═══════╧════════╧════════════╝")
+            e_str = f"{easy['passed']}/{easy['total']}" if easy['total'] > 0 else "-"
+            m_str = f"{med['passed']}/{med['total']}" if med['total'] > 0 else "-"
+            h_str = f"{hard['passed']}/{hard['total']}" if hard['total'] > 0 else "-"
 
-        if args.output:
-            with open(args.output, "w") as f:
-                json.dump(all_results, f, indent=2)
+            print(f"║  {name:<10} │ {d.get('lang', '?'):<10} │ {d.get('tools', '?'):>5} │ {d.get('type', '?'):<7} │ {d.get('pass_rate', 0):>5.1f}% │ {d.get('avg_time', 0):>7.1f}s │ {e_str:<2} │ {m_str:<2} │ {h_str:<3} ║")
+
+        print("╚═════════════╧════════════╧═══════╧═════════╧════════╧══════════╧════╧════╧═════╝")
+
+        # Summary by type
+        print(f"""
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                              SUMMARY BY AGENT TYPE                              │
+├────────────────────────────────────────────────────────────────────────────────┤""")
+
+        for agent_type in ["swe", "standard", "minimal"]:
+            type_agents = {k: v for k, v in all_results.items() if v.get("type") == agent_type}
+            if type_agents:
+                avg_pass = sum(v.get("pass_rate", 0) for v in type_agents.values()) / len(type_agents)
+                avg_time = sum(v.get("avg_time", 0) for v in type_agents.values()) / len(type_agents)
+                print(f"│  {agent_type.upper():<10} agents: {len(type_agents)} tested │ Avg Pass Rate: {avg_pass:>5.1f}% │ Avg Time: {avg_time:>6.1f}s │")
+
+        print("└────────────────────────────────────────────────────────────────────────────────┘")
+
+    # Save results
+    if args.output:
+        output_path = Path(args.output)
+        with open(output_path, "w") as f:
+            json.dump(all_results, f, indent=2)
+        print(f"\n📄 Results saved to: {output_path}")
     else:
-        cmd = agents[args.agent]
-        if not Path(cmd[1]).exists():
-            print(f"Agent not found: {cmd[1]}")
-            sys.exit(1)
-
-        data = run_suite(cmd, tests)
-        data["agent"] = args.agent
-        print_summary(data, args.agent)
-
-        if args.output:
-            with open(args.output, "w") as f:
-                json.dump(data, f, indent=2)
+        # Auto-save to /tmp
+        output_path = Path("/tmp/swe_bench_full_results.json")
+        with open(output_path, "w") as f:
+            json.dump(all_results, f, indent=2)
+        print(f"\n📄 Results auto-saved to: {output_path}")
 
 if __name__ == "__main__":
     main()
