@@ -41,6 +41,20 @@ program
         await initializeMCP(appConfig.mcp);
       }
 
+      // Load OpenCode plugins if opencode.json exists (not in minimal mode)
+      if (!minimalMode) {
+        const { hasOpenCodeConfig, initOpenCodeCompat } = await import('./compat/index.js');
+        if (hasOpenCodeConfig()) {
+          console.log('Loading OpenCode plugins...');
+          const { tools, plugins } = await initOpenCodeCompat();
+          if (tools.length > 0) {
+            const { registerOpenCodeTools } = await import('./tools/index.js');
+            registerOpenCodeTools(tools as import('./types.js').Tool[]);
+            console.log(`Loaded ${plugins.length} plugin(s), ${tools.length} tool(s)`);
+          }
+        }
+      }
+
       const provider = await createProvider(appConfig);
 
       if (options.prompt) {

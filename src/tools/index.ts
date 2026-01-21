@@ -39,6 +39,9 @@ const coreTools: Tool[] = [
 // Dynamic tools (from MCP servers, plugins, etc.)
 let dynamicTools: Tool[] = [];
 
+// OpenCode plugin tools
+let openCodeTools: Tool[] = [];
+
 // Tool cache for performance
 let toolCache: Tool[] | null = null;
 
@@ -47,9 +50,17 @@ let toolCache: Tool[] | null = null;
  */
 export function getAllTools(): Tool[] {
   if (!toolCache) {
-    toolCache = [...coreTools, ...dynamicTools];
+    toolCache = [...coreTools, ...dynamicTools, ...openCodeTools];
   }
   return toolCache;
+}
+
+/**
+ * Register OpenCode plugin tools
+ */
+export function registerOpenCodeTools(tools: Tool[]): void {
+  openCodeTools = tools;
+  invalidateToolCache();
 }
 
 /**
