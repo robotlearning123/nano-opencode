@@ -229,22 +229,54 @@ Inspiration: Aider voice support
 ### 4.1 Multi-Language Implementations
 ```
 Priority: P1 - Community growth
+Core insight: The agent loop is <100 LOC in any language!
 ```
 
-- [ ] **Python Implementation** (~2K LOC)
-  - Target: Data scientists, ML engineers
-  - Jupyter notebook integration
-  - pip installable
+#### Current Implementations (DONE!)
+| File | LOC | Language | Dependencies | Platforms |
+|------|-----|----------|--------------|-----------|
+| `nano.py` | **71** | Python | None (stdlib) | All (Pi, embedded, WASM) |
+| `nano-minimal.ts` | **85** | TypeScript | None (fetch) | Node 18+, Bun, Deno |
+| `nano.ts` | **210** | TypeScript | Anthropic SDK | Node, Bun |
+| `src/` | ~5K | TypeScript | Full deps | Desktop, server |
 
-- [ ] **Rust Implementation** (~4K LOC)
+#### Feature Tiers
+| Tier | LOC | Features |
+|------|-----|----------|
+| **Micro** | 70-100 | 5 tools, single-turn, zero deps |
+| **Mini** | 200-300 | 7 tools, agent loop, REPL |
+| **Standard** | 500-1K | 10+ tools, sessions, multi-provider |
+| **Full** | 2-3K | MCP, LSP, plugins, hooks |
+
+#### Planned Implementations
+- [x] **Python Micro** (71 LOC) - ✅ DONE
+  - Zero dependencies, runs on Raspberry Pi
+  - `python nano.py "your prompt"`
+
+- [x] **TypeScript Micro** (85 LOC) - ✅ DONE
+  - Zero SDK deps, uses raw fetch
+  - `bun nano-minimal.ts "your prompt"`
+
+- [ ] **Rust Micro** (~100 LOC)
   - Target: Embedded, IoT, robotics
-  - no_std support for microcontrollers
-  - Cross-compile for ARM
+  - no_std variant for microcontrollers
+  - Cross-compile for ARM, ESP32
 
-- [ ] **Go Implementation** (~3K LOC)
-  - Target: Cloud/DevOps
-  - Single binary deployment
-  - Docker-native
+- [ ] **Go Micro** (~90 LOC)
+  - Target: Cloud/DevOps, single binary
+  - Docker-native, K8s friendly
+
+- [ ] **Zig Micro** (~150 LOC)
+  - Target: Embedded, WASM, game dev
+  - C interop for legacy systems
+
+- [ ] **C Micro** (~300 LOC)
+  - Target: Bare metal, MCU
+  - Minimal memory footprint
+
+- [ ] **Lua Micro** (~80 LOC)
+  - Target: Neovim plugin
+  - Native Lua integration
 
 ### 4.2 IDE Integrations
 ```
