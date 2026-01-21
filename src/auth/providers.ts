@@ -43,6 +43,28 @@ export interface StoredAuth {
 const AUTH_DIR = join(homedir(), '.config', 'nano-opencode');
 const PROVIDERS_FILE = join(AUTH_DIR, 'auth-providers.json');
 
+// OAuth response types
+interface DeviceCodeResponse {
+  device_code: string;
+  user_code: string;
+  verification_uri?: string;
+  verification_url?: string;
+  verification_uri_complete?: string;
+  interval?: number;
+}
+
+interface TokenResponse {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  error?: string;
+  error_description?: string;
+}
+
+interface CopilotTokenResponse {
+  token: string;
+}
+
 /**
  * GitHub Copilot Auth Provider
  * Uses device flow OAuth to authenticate with GitHub Copilot subscription
@@ -73,7 +95,8 @@ export const copilotProvider: AuthProvider = {
       }),
     });
 
-    const { device_code, user_code, verification_uri, interval } = await deviceResponse.json();
+    const deviceData = await deviceResponse.json() as DeviceCodeResponse;
+    const { device_code, user_code, verification_uri, interval } = deviceData;
 
     console.log(`\n  Visit: ${verification_uri}`);
     console.log(`  Enter code: ${user_code}\n`);
@@ -99,7 +122,7 @@ export const copilotProvider: AuthProvider = {
         }),
       });
 
-      const data = await tokenResponse.json();
+      const data = await tokenResponse.json() as TokenResponse;
 
       if (data.access_token) {
         // Get Copilot token using GitHub token
@@ -144,7 +167,7 @@ async function getCopilotToken(githubToken: string): Promise<string> {
   });
 
   if (!response.ok) throw new Error('Failed to get Copilot token');
-  const data = await response.json();
+  const data = await response.json() as CopilotTokenResponse;
   return data.token;
 }
 
@@ -174,7 +197,7 @@ export const antigravityProvider: AuthProvider = {
       }),
     });
 
-    const { device_code, user_code, verification_url, interval } = await deviceResponse.json();
+    const { device_code, user_code, verification_url, interval } = await deviceResponse.json() as DeviceCodeResponse;
 
     console.log(`\n  Visit: ${verification_url}`);
     console.log(`  Enter code: ${user_code}\n`);
@@ -195,7 +218,7 @@ export const antigravityProvider: AuthProvider = {
         }),
       });
 
-      const data = await tokenResponse.json();
+      const data = await tokenResponse.json() as TokenResponse;
 
       if (data.access_token) {
         return {
@@ -225,7 +248,7 @@ export const antigravityProvider: AuthProvider = {
       }),
     });
 
-    const data = await response.json();
+    const data = await response.json() as TokenResponse;
     if (!data.access_token) throw new Error('Failed to refresh token');
 
     return {
@@ -266,7 +289,7 @@ export const codexProvider: AuthProvider = {
       }),
     });
 
-    const { device_code, user_code, verification_uri_complete, interval } = await deviceResponse.json();
+    const { device_code, user_code, verification_uri_complete, interval } = await deviceResponse.json() as DeviceCodeResponse;
 
     console.log(`\n  Visit: ${verification_uri_complete}`);
     console.log(`  Code will auto-fill, just confirm.\n`);
@@ -287,7 +310,7 @@ export const codexProvider: AuthProvider = {
         }),
       });
 
-      const data = await tokenResponse.json();
+      const data = await tokenResponse.json() as TokenResponse;
 
       if (data.access_token) {
         return {
@@ -317,7 +340,7 @@ export const codexProvider: AuthProvider = {
       }),
     });
 
-    const data = await response.json();
+    const data = await response.json() as TokenResponse;
     if (!data.access_token) throw new Error('Failed to refresh token');
 
     return {
