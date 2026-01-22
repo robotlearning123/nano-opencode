@@ -191,7 +191,7 @@ function resolveCommandVariable(command: string, errors: string[]): string {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     return output.trim();
-  } catch (error) {
+  } catch {
     errors.push(`Command failed: ${command}`);
     return `[Command failed: ${command}]`;
   }

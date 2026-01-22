@@ -39,7 +39,7 @@ export const patchTool: Tool = {
 
     try {
       operations = JSON.parse(args.operations as string);
-    } catch (error) {
+    } catch {
       return 'Error: Invalid JSON in operations parameter';
     }
 
@@ -167,7 +167,7 @@ export const patchTool: Tool = {
       for (const [file, content] of backups) {
         try {
           writeFileSync(file, content, 'utf-8');
-        } catch (e) {
+        } catch {
           rollbackErrors.push(`Failed to restore ${file}`);
         }
       }

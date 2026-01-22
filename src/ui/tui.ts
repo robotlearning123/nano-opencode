@@ -16,13 +16,43 @@ const CLEAR = `${ESC}2J${ESC}H`;
 const RESET = `${ESC}0m`;
 const BOLD = `${ESC}1m`;
 const DIM = `${ESC}2m`;
+const ITALIC = `${ESC}3m`;
 const BLUE = `${ESC}34m`;
 const GREEN = `${ESC}32m`;
 const YELLOW = `${ESC}33m`;
 const CYAN = `${ESC}36m`;
+const MAGENTA = `${ESC}35m`;
 const GRAY = `${ESC}90m`;
 const WHITE = `${ESC}37m`;
+const BG_GRAY = `${ESC}48;5;236m`;
 const SHOW_CURSOR = `${ESC}?25h`;
+
+// Syntax highlighting colors
+const SYN_KEYWORD = `${ESC}38;5;198m`;
+const SYN_STRING = `${ESC}38;5;113m`;
+const SYN_COMMENT = `${ESC}38;5;245m`;
+const SYN_NUMBER = `${ESC}38;5;141m`;
+
+// Simple inline markdown formatting
+function formatInline(text: string): string {
+  return text
+    .replace(/`([^`]+)`/g, `${BG_GRAY}${CYAN}$1${RESET}`) // inline code
+    .replace(/\*\*([^*]+)\*\*/g, `${BOLD}$1${RESET}`) // bold
+    .replace(/\*([^*]+)\*/g, `${ITALIC}$1${RESET}`) // italic
+    .replace(/_([^_]+)_/g, `${ITALIC}$1${RESET}`); // italic alt
+}
+
+// Basic syntax highlighting for code
+function highlightCode(line: string): string {
+  const keywords =
+    /\b(const|let|var|function|class|if|else|return|import|export|from|async|await|for|while|try|catch|throw|new|this|true|false|null|undefined|def|self|print|elif|pass|lambda|with|as|yield|raise|except|finally|in|not|and|or|is|None|True|False)\b/g;
+  return line
+    .replace(keywords, `${SYN_KEYWORD}$1${RESET}`)
+    .replace(/(["'`])(?:(?!\1)[^\\]|\\.)*?\1/g, `${SYN_STRING}$&${RESET}`)
+    .replace(/\/\/.*$/g, `${SYN_COMMENT}$&${RESET}`)
+    .replace(/#.*$/g, `${SYN_COMMENT}$&${RESET}`)
+    .replace(/\b(\d+\.?\d*)\b/g, `${SYN_NUMBER}$1${RESET}`);
+}
 
 export interface TuiMessage {
   role: 'user' | 'assistant' | 'system' | 'tool';
@@ -94,9 +124,11 @@ export class Tui {
     const maxLines = this.height - 6; // header(2) + input(3) + padding(1)
     const startRow = 3;
 
-    // Get last N messages that fit
+    // Get messages (scroll support - no arbitrary limit)
     let lines: string[] = [];
-    for (const msg of this.messages.slice(-20)) {
+
+    for (const msg of this.messages) {
+      let inCodeBlock = false; // Reset per message
       const prefix =
         msg.role === 'user'
           ? `${BLUE}>${RESET} `
@@ -106,12 +138,36 @@ export class Tui {
               ? `${YELLOW}⚙${RESET} `
               : `${GRAY}•${RESET} `;
 
-      // Wrap long lines
-      const wrapped = this.wrapText(msg.content, this.width - 4);
-      lines.push(...wrapped.map((line, i) => (i === 0 ? prefix + line : '  ' + line)));
+      // Process content with markdown for assistant
+      const contentLines = msg.content.split('\n');
+      for (let j = 0; j < contentLines.length; j++) {
+        let line = contentLines[j];
+
+        // Code block handling
+        if (line.startsWith('```')) {
+          inCodeBlock = !inCodeBlock;
+          line = `${DIM}${line}${RESET}`;
+        } else if (inCodeBlock) {
+          line = `  ${BG_GRAY}${highlightCode(line)}${RESET}`;
+        } else if (msg.role === 'assistant') {
+          // Headers
+          if (line.startsWith('### ')) line = `${BOLD}${CYAN}${line.slice(4)}${RESET}`;
+          else if (line.startsWith('## ')) line = `${BOLD}${YELLOW}${line.slice(3)}${RESET}`;
+          else if (line.startsWith('# ')) line = `${BOLD}${MAGENTA}${line.slice(2)}${RESET}`;
+          // Lists
+          else if (line.match(/^[-*] /)) line = `${CYAN}•${RESET} ${formatInline(line.slice(2))}`;
+          else if (line.match(/^\d+\. /))
+            line = `${CYAN}${line.match(/^\d+/)?.[0]}.${RESET} ${formatInline(line.replace(/^\d+\. /, ''))}`;
+          else line = formatInline(line);
+        }
+
+        // Wrap and add prefix
+        const wrapped = this.wrapText(line, this.width - 4);
+        lines.push(...wrapped.map((l, i) => (j === 0 && i === 0 ? prefix + l : '  ' + l)));
+      }
     }
 
-    // Take only what fits
+    // Take only what fits (scroll to bottom)
     lines = lines.slice(-maxLines);
 
     for (let i = 0; i < lines.length; i++) {
@@ -139,7 +195,12 @@ export class Tui {
 
   private renderFooter() {
     this.moveTo(this.height, 1);
-    process.stdout.write(`${DIM}ctrl+c: exit${RESET}${ESC}K`);
+    process.stdout.write(`${DIM}/compact: summarize │ /clear: reset │ /exit: quit${RESET}${ESC}K`);
+  }
+
+  clearMessages() {
+    this.messages = [];
+    this.render();
   }
 
   private wrapText(text: string, maxWidth: number): string[] {
@@ -216,6 +277,11 @@ export class Tui {
 
       if (input.toLowerCase() === '/exit' || input.toLowerCase() === '/quit') {
         break;
+      }
+
+      if (input.toLowerCase() === '/clear') {
+        this.clearMessages();
+        continue;
       }
 
       if (!input.trim()) continue;

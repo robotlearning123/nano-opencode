@@ -11,7 +11,6 @@ import type {
   JsonRpcResponse,
   RpcClientOptions,
   PendingRequest,
-  FramingType,
 } from './types.js';
 
 export class RpcClient {
@@ -113,7 +112,11 @@ export class RpcClient {
         if (pending) {
           this.pendingRequests.delete(msg.id);
           if (pending.timeoutId) clearTimeout(pending.timeoutId);
-          msg.error ? pending.reject(new Error(msg.error.message)) : pending.resolve(msg.result);
+          if (msg.error) {
+            pending.reject(new Error(msg.error.message));
+          } else {
+            pending.resolve(msg.result);
+          }
         }
       }
     } catch {

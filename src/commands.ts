@@ -4,15 +4,10 @@
 
 import chalk from 'chalk';
 import type { Session, AgentInstance } from './types.js';
-import { createSession, getSession, listSessions, updateSessionTitle } from './store.js';
+import { getSession, listSessions } from './store.js';
 import { SUPPORTED_PROVIDERS, ENV_KEY_MAP, type SupportedProvider } from './constants.js';
 import { setAuth, clearAuth, listAccounts, getAuthPath } from './auth.js';
-import {
-  listAuthProviders,
-  addProviderAccount,
-  loadProviderAuth,
-  getAuthProvider,
-} from './auth/providers.js';
+import { listAuthProviders, addProviderAccount, loadProviderAuth } from './auth/providers.js';
 import { createAgent, listAgents } from './agents/index.js';
 import { initHooks, listHooks, enableHook, disableHook, toggleHook } from './hooks/index.js';
 import { mcpRegistry } from './mcp/index.js';
@@ -22,7 +17,6 @@ import {
   listMemoryFiles,
   saveToMemory,
   formatMemoryEntry,
-  hasMemory,
   clearMemoryCache,
   loadMemoryContext,
 } from './memory/index.js';
@@ -336,7 +330,7 @@ export const commands = {
     console.log();
   },
 
-  async remember(args: string[], promptFn: PromptFn): Promise<void> {
+  async remember(args: string[], _promptFn: PromptFn): Promise<void> {
     const text = args.join(' ').trim();
 
     if (!text) {

@@ -89,7 +89,7 @@ export class OpenAIProvider implements LLMProvider {
           name: tc.name,
           arguments: JSON.parse(tc.arguments || '{}'),
         });
-      } catch (error) {
+      } catch {
         // Already logged above during streaming, skip here
         // This is a secondary pass for building the return value
       }

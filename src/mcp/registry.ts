@@ -3,7 +3,7 @@
  */
 
 import type { Tool } from '../types.js';
-import type { MCPServerConfig, MCPToolDefinition } from './types.js';
+import type { MCPServerConfig } from './types.js';
 import { MCPClient } from './client.js';
 import { mcpToolToNanoTool } from './tool-adapter.js';
 

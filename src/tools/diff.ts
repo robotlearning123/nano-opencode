@@ -2,7 +2,7 @@
  * Diff Tool - simple unified diff for comparing files/content
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync } from 'fs';
 import type { Tool } from '../types.js';
 import { validatePathExists } from './helpers.js';
 
@@ -141,7 +141,6 @@ function computeChanges(oldLines: string[], newLines: string[]): Change[] {
   }
 
   // Backtrack to find changes
-  const changes: Change[] = [];
   let i = m,
     j = n;
   const temp: Change[] = [];

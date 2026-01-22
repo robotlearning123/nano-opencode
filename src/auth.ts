@@ -60,7 +60,7 @@ function loadAuthStorage(): AuthStorage {
   try {
     const content = readFileSync(AUTH_FILE, 'utf-8');
     return JSON.parse(content) as AuthStorage;
-  } catch (error) {
+  } catch {
     console.error('Warning: Failed to parse auth file, starting fresh');
     return { accounts: [], activeAccounts: {} };
   }

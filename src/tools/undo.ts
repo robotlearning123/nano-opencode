@@ -12,13 +12,12 @@ import {
   statSync,
   unlinkSync,
 } from 'fs';
-import { join, dirname, basename } from 'path';
+import { join } from 'path';
 import { homedir } from 'os';
 import type { Tool } from '../types.js';
 
 // Backup storage location
 const BACKUP_DIR = join(homedir(), '.config', 'nano-opencode', 'backups');
-const MAX_BACKUPS_PER_FILE = 10;
 const MAX_TOTAL_BACKUPS = 100;
 
 // In-memory backup registry for current session
@@ -45,7 +44,7 @@ function ensureBackupDir(): void {
  */
 function getBackupPath(originalPath: string): string {
   const timestamp = Date.now();
-  const safeName = originalPath.replace(/[\/\\:]/g, '_').slice(-100);
+  const safeName = originalPath.replace(/[/\\:]/g, '_').slice(-100);
   return join(BACKUP_DIR, `${timestamp}_${safeName}`);
 }
 

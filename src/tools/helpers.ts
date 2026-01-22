@@ -2,9 +2,8 @@
  * Common helpers for tools
  */
 
-import { spawn, type ChildProcess } from 'child_process';
+import { spawn } from 'child_process';
 import { existsSync } from 'fs';
-import { resolve } from 'path';
 import { getErrorMessage } from '../constants.js';
 import { validatePathWithinCwd } from '../utils.js';
 
