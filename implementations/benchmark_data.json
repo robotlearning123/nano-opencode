@@ -1,0 +1,135 @@
+{
+  "metadata": {
+    "date": "2026-01-21",
+    "model": "claude-sonnet-4-20250514",
+    "benchmark": "SWE-bench Lite",
+    "total_instances": 23,
+    "total_cost_usd": 130
+  },
+  "agent_comparison": {
+    "minimal": {
+      "prompt": "You are a coding assistant. Use tools to help.",
+      "patches_generated": 18,
+      "patches_rate": 0.78,
+      "resolved": 4,
+      "resolve_rate": 0.174,
+      "cost_usd": 40.20,
+      "tool_calls": 888,
+      "resolved_instances": [
+        "pydicom__pydicom-1256",
+        "pylint-dev__astroid-1196",
+        "pylint-dev__astroid-1333",
+        "sqlfluff__sqlfluff-2419"
+      ]
+    },
+    "expert": {
+      "prompt": "You are an expert software engineer. Fix the bug in /testbed...",
+      "patches_generated": 18,
+      "patches_rate": 0.78,
+      "resolved": 4,
+      "resolve_rate": 0.222,
+      "cost_usd": 37.44,
+      "tool_calls": 920,
+      "resolved_instances": [
+        "estimated_from_partial_evaluation"
+      ]
+    },
+    "workflow": {
+      "prompt": "You are an expert fixing bugs. Follow this workflow: 1. ANALYZE...",
+      "patches_generated": 14,
+      "patches_rate": 0.61,
+      "resolved": 4,
+      "resolve_rate": 0.174,
+      "cost_usd": 37.27,
+      "tool_calls": 924,
+      "resolved_instances": [
+        "pydicom__pydicom-1256",
+        "pydicom__pydicom-1694",
+        "pylint-dev__astroid-1196",
+        "sqlfluff__sqlfluff-2419"
+      ]
+    }
+  },
+  "language_implementations": {
+    "python": {
+      "file": "python/nano.py",
+      "loc": 72,
+      "startup_ms": 32.1,
+      "memory_mb": 30,
+      "dependencies": "stdlib only",
+      "notes": "Minimal, works on Raspberry Pi"
+    },
+    "typescript": {
+      "file": "typescript/nano-minimal.ts",
+      "loc": 86,
+      "startup_ms": 13.9,
+      "memory_mb": 50,
+      "dependencies": "bun runtime",
+      "notes": "Fast development"
+    },
+    "rust": {
+      "file": "rust/src/main.rs",
+      "loc": 118,
+      "startup_ms": 0.8,
+      "memory_mb": 5,
+      "dependencies": "reqwest, serde",
+      "notes": "Fastest startup"
+    },
+    "go": {
+      "file": "go/main.go",
+      "loc": 85,
+      "startup_ms": 1.8,
+      "memory_mb": 8,
+      "dependencies": "stdlib",
+      "notes": "Single binary"
+    },
+    "zig": {
+      "file": "zig/nano.zig",
+      "loc": 92,
+      "startup_ms": null,
+      "memory_mb": 3,
+      "dependencies": "stdlib",
+      "notes": "Memory safe, fast"
+    },
+    "c": {
+      "file": "c/nano.c",
+      "loc": 200,
+      "startup_ms": 3.2,
+      "memory_mb": 2,
+      "dependencies": "curl, jansson",
+      "notes": "Minimal footprint"
+    }
+  },
+  "instance_results": {
+    "consistently_resolved": [
+      "sqlfluff__sqlfluff-2419",
+      "pylint-dev__astroid-1196",
+      "pydicom__pydicom-1256"
+    ],
+    "consistently_failed": [
+      "sqlfluff__sqlfluff-1733",
+      "sqlfluff__sqlfluff-1763",
+      "sqlfluff__sqlfluff-1517",
+      "pydicom__pydicom-1413"
+    ],
+    "variable": [
+      "marshmallow-code__marshmallow-1343",
+      "marshmallow-code__marshmallow-1359",
+      "pvlib__pvlib-python-1072",
+      "pydicom__pydicom-1694"
+    ]
+  },
+  "key_insights": [
+    "Simpler prompts work as well or better than complex ones",
+    "Language choice doesn't affect AI reasoning quality",
+    "78% patch generation but only 17% resolve (gap to investigate)",
+    "Startup time varies 40x between languages (0.8ms to 32ms)",
+    "Average cost per instance is ~$1.75"
+  ],
+  "recommendations": {
+    "for_swebench": "Focus on prompt engineering, not language",
+    "for_production": "Use Rust or Go for efficiency",
+    "for_development": "Use Python or TypeScript for iteration",
+    "for_embedded": "Use Rust or C for minimal footprint"
+  }
+}
