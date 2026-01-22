@@ -8,6 +8,7 @@
  */
 
 import * as readline from 'readline'
+import path from 'node:path'
 
 // ANSI escape codes
 const ESC = '\x1b['
@@ -77,7 +78,7 @@ export class Tui {
 
   private renderHeader() {
     const model = this.opts.model || 'default'
-    const title = this.opts.title || process.cwd().split('/').pop()
+    const title = this.opts.title || path.basename(process.cwd())
     const header = `${Tui.LOGO} ${DIM}│${RESET} ${YELLOW}${title}${RESET} ${DIM}│${RESET} ${GREEN}${model}${RESET}`
     const line = `${DIM}${'─'.repeat(this.width)}${RESET}`
 

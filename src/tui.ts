@@ -9,6 +9,7 @@
 import { config } from 'dotenv'
 config()
 
+import path from 'node:path'
 import { createTui } from './ui/tui.js'
 import { loadConfig } from './config.js'
 import Anthropic from '@anthropic-ai/sdk'
@@ -17,9 +18,22 @@ async function main() {
   // Load config
   const cfg = loadConfig()
 
-  // Initialize provider (use env vars for baseURL since Config doesn't have it)
+  // Validate provider - TUI only supports Anthropic
+  if (cfg.provider && cfg.provider !== 'anthropic') {
+    console.error(`TUI currently supports only Anthropic (detected: ${cfg.provider}).`)
+    process.exit(1)
+  }
+
+  // Validate API key
+  const apiKey = cfg.apiKey || process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    console.error('Missing ANTHROPIC_API_KEY (or apiKey in config).')
+    process.exit(1)
+  }
+
+  // Initialize provider
   const client = new Anthropic({
-    apiKey: cfg.apiKey || process.env.ANTHROPIC_API_KEY,
+    apiKey,
     baseURL: process.env.ANTHROPIC_BASE_URL,
   })
 
@@ -28,7 +42,7 @@ async function main() {
 
   // Create TUI
   const tui = createTui({
-    title: process.cwd().split('/').pop(),
+    title: path.basename(process.cwd()),
     model: model.split('/').pop() || model,
     onSubmit: async (input: string) => {
       messages.push({ role: 'user', content: input })
