@@ -1,0 +1,25 @@
+{
+    "total_instances": 1,
+    "submitted_instances": 3,
+    "completed_instances": 1,
+    "resolved_instances": 0,
+    "unresolved_instances": 1,
+    "empty_patch_instances": 0,
+    "error_instances": 0,
+    "completed_ids": [
+        "sqlfluff__sqlfluff-1625"
+    ],
+    "incomplete_ids": [],
+    "empty_patch_ids": [],
+    "submitted_ids": [
+        "sqlfluff__sqlfluff-1625",
+        "sqlfluff__sqlfluff-1733",
+        "sqlfluff__sqlfluff-2419"
+    ],
+    "resolved_ids": [],
+    "unresolved_ids": [
+        "sqlfluff__sqlfluff-1625"
+    ],
+    "error_ids": [],
+    "schema_version": 2
+}

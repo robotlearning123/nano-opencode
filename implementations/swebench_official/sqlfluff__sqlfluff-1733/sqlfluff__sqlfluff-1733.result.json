@@ -1,0 +1,9 @@
+{
+  "instance_id": "sqlfluff__sqlfluff-1733",
+  "model_name_or_path": "anthropic/claude-sonnet-4-20250514",
+  "model_patch": "diff --git a/src/sqlfluff/rules/L036.py b/src/sqlfluff/rules/L036.py\nindex ed5533b81..39d8c9be0 100644\n--- a/src/sqlfluff/rules/L036.py\n+++ b/src/sqlfluff/rules/L036.py\n@@ -115,7 +115,7 @@ class Rule_L036(BaseRule):\n                     if not i\n                     else select_targets_info.select_targets[i - 1],\n                     select_if=lambda s: s.is_type(\"whitespace\"),\n-                    loop_while=lambda s: s.is_type(\"whitespace\", \"comma\") or s.is_meta,\n+                    loop_while=lambda s: s.is_type(\"whitespace\", \"comma\") or (s.is_meta and not s.is_type(\"indent\")),\n                 )\n                 fixes += [LintFix(\"delete\", ws) for ws in ws_to_delete]\n                 fixes.append(LintFix(\"create\", select_target, NewlineSegment()))\n@@ -335,3 +335,4 @@ class Rule_L036(BaseRule):\n             )\n         else:\n             return None\n+\n",
+  "exit_status": "MaxTurns",
+  "cost": 3.2383830000000007,
+  "tool_calls": 50,
+  "time": 218.2346966266632
+}

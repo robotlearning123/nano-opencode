@@ -1,0 +1,22 @@
+diff --git a/src/sqlfluff/rules/L031.py b/src/sqlfluff/rules/L031.py
+index 838c6ce5d..a4d32365d 100644
+--- a/src/sqlfluff/rules/L031.py
++++ b/src/sqlfluff/rules/L031.py
+@@ -62,6 +62,12 @@ class Rule_L031(BaseRule):
+             if not from_clause_segment:
+                 return None
+ 
++            # Check if there are any join clauses. If not, skip this rule
++            # since it's specifically about aliases in join conditions.
++            join_clauses = list(from_clause_segment.recursive_crawl("join_clause"))
++            if not join_clauses:
++                return None
++
+             from_expression = from_clause_segment.get_child("from_expression")
+             from_expression_element = None
+             if from_expression:
+@@ -217,3 +223,4 @@ class Rule_L031(BaseRule):
+             )
+ 
+         return violation_buff or None
++

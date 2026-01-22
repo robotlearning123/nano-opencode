@@ -1,0 +1,93 @@
+diff --git a/pvlib/irradiance.py b/pvlib/irradiance.py
+index 6580030..1f8efe8 100644
+--- a/pvlib/irradiance.py
++++ b/pvlib/irradiance.py
+@@ -886,9 +886,12 @@ def reindl(surface_tilt, surface_azimuth, dhi, dni, ghi, dni_extra,
+     # these are the () and [] sub-terms of the second term of eqn 8
+     term1 = 1 - AI
+     term2 = 0.5 * (1 + tools.cosd(surface_tilt))
+-    term3 = 1 + np.sqrt(HB / ghi) * (tools.sind(0.5 * surface_tilt) ** 3)
++    term3 = 1 + np.sqrt(HB / np.maximum(ghi, 1e-10)) * (
++        tools.sind(0.5 * surface_tilt) ** 3)
+ 
+     sky_diffuse = dhi * (AI * Rb + term1 * term2 * term3)
++    # When GHI is 0, DHI should also be 0, but ensure result is 0
++    sky_diffuse = np.where(ghi <= 0, 0, sky_diffuse)
+     sky_diffuse = np.maximum(sky_diffuse, 0)
+ 
+     return sky_diffuse
+diff --git a/pvlib/pvsystem.py b/pvlib/pvsystem.py
+index 33696bc..9ef7dff 100644
+--- a/pvlib/pvsystem.py
++++ b/pvlib/pvsystem.py
+@@ -2428,7 +2428,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
+ 
+ 
+ def max_power_point(photocurrent, saturation_current, resistance_series,
+-                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+                     method='brentq'):
+     """
+     Given the single diode equation coefficients, calculates the maximum power
+@@ -2475,7 +2475,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
+     """
+     i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
+         photocurrent, saturation_current, resistance_series,
+-        resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++        resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+         method=method.lower()
+     )
+     if isinstance(photocurrent, pd.Series):
+diff --git a/pvlib/singlediode.py b/pvlib/singlediode.py
+index b800e1c..c33dd0a 100644
+--- a/pvlib/singlediode.py
++++ b/pvlib/singlediode.py
+@@ -56,7 +56,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
+ 
+ def bishop88(diode_voltage, photocurrent, saturation_current,
+              resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+-             NsVbi=np.Inf, breakdown_factor=0., breakdown_voltage=-5.5,
++             NsVbi=np.inf, breakdown_factor=0., breakdown_voltage=-5.5,
+              breakdown_exp=3.28, gradients=False):
+     r"""
+     Explicit calculation of points on the IV curve described by the single
+@@ -204,7 +204,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
+ 
+ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton'):
+     """
+@@ -292,7 +292,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+ 
+ def bishop88_v_from_i(current, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton'):
+     """
+@@ -378,7 +378,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
+ 
+ 
+ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
+-                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+                  breakdown_factor=0., breakdown_voltage=-5.5,
+                  breakdown_exp=3.28, method='newton'):
+     """
+diff --git a/pvlib/tests/test_singlediode.py b/pvlib/tests/test_singlediode.py
+index ee20e48..a5186f4 100644
+--- a/pvlib/tests/test_singlediode.py
++++ b/pvlib/tests/test_singlediode.py
+@@ -203,7 +203,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
+         # other conditions with breakdown model on and recombination model off
+         (
+             (1.e-4, -5.5, 3.28),
+-            (0., np.Inf),
++            (0., np.inf),
+             POA,
+             TCELL,
+             {

@@ -1,0 +1,9 @@
+{
+  "instance_id": "sqlfluff__sqlfluff-1733",
+  "model_name_or_path": "anthropic/claude-sonnet-4-20250514",
+  "model_patch": "",
+  "exit_status": "MaxTurns",
+  "cost": 3.099429,
+  "tool_calls": 50,
+  "time": 261.5725440979004
+}

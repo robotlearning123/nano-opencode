@@ -1,0 +1,211 @@
+diff --git a/pvlib/singlediode.py b/pvlib/singlediode.py
+index b800e1c..abc5c12 100644
+--- a/pvlib/singlediode.py
++++ b/pvlib/singlediode.py
+@@ -56,7 +56,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
+ 
+ def bishop88(diode_voltage, photocurrent, saturation_current,
+              resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+-             NsVbi=np.Inf, breakdown_factor=0., breakdown_voltage=-5.5,
++             NsVbi=np.inf, breakdown_factor=0., breakdown_voltage=-5.5,
+              breakdown_exp=3.28, gradients=False):
+     r"""
+     Explicit calculation of points on the IV curve described by the single
+@@ -204,7 +204,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
+ 
+ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton'):
+     """
+@@ -233,458 +233,4 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+         :math:`\\mu \\tau`. [V]
+     NsVbi : numeric, default np.inf
+         PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+-        (a-Si) modules that is the product of the PV module number of series
+-        cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
+-        [V].
+-    breakdown_factor : numeric, default 0
+-        fraction of ohmic current involved in avalanche breakdown :math:`a`.
+-        Default of 0 excludes the reverse bias term from the model. [unitless]
+-    breakdown_voltage : numeric, default -5.5
+-        reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
+-        [V]
+-    breakdown_exp : numeric, default 3.28
+-        avalanche breakdown exponent :math:`m` [unitless]
+-    method : str, default 'newton'
+-       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
+-       if ``breakdown_factor`` is not 0.
+-
+-    Returns
+-    -------
+-    current : numeric
+-        current (I) at the specified voltage (V). [A]
+-    """
+-    # collect args
+-    args = (photocurrent, saturation_current, resistance_series,
+-            resistance_shunt, nNsVth, d2mutau, NsVbi,
+-            breakdown_factor, breakdown_voltage, breakdown_exp)
+-
+-    def fv(x, v, *a):
+-        # calculate voltage residual given diode voltage "x"
+-        return bishop88(x, *a)[1] - v
+-
+-    if method.lower() == 'brentq':
+-        # first bound the search using voc
+-        voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+-
+-        # brentq only works with scalar inputs, so we need a set up function
+-        # and np.vectorize to repeatedly call the optimizer with the right
+-        # arguments for possible array input
+-        def vd_from_brent(voc, v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
+-                          breakdown_factor, breakdown_voltage, breakdown_exp):
+-            return brentq(fv, 0.0, voc,
+-                          args=(v, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
+-                                breakdown_factor, breakdown_voltage,
+-                                breakdown_exp))
+-
+-        vd_from_brent_vectorized = np.vectorize(vd_from_brent)
+-        vd = vd_from_brent_vectorized(voc_est, voltage, *args)
+-    elif method.lower() == 'newton':
+-        # make sure all args are numpy arrays if max size > 1
+-        # if voltage is an array, then make a copy to use for initial guess, v0
+-        args, v0 = _prepare_newton_inputs((voltage,), args, voltage)
+-        vd = newton(func=lambda x, *a: fv(x, voltage, *a), x0=v0,
+-                    fprime=lambda x, *a: bishop88(x, *a, gradients=True)[4],
+-                    args=args)
+-    else:
+-        raise NotImplementedError("Method '%s' isn't implemented" % method)
+-    return bishop88(vd, *args)[0]
+-
+-
+-def bishop88_v_from_i(current, photocurrent, saturation_current,
+-                      resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
+-                      breakdown_voltage=-5.5, breakdown_exp=3.28,
+-                      method='newton'):
+-    """
+-    Find voltage given any current.
+-
+-    Parameters
+-    ----------
+-    current : numeric
+-        current (I) in amperes [A]
+-    photocurrent : numeric
+-        photogenerated current (Iph or IL) [A]
+-    saturation_current : numeric
+-        diode dark or saturation current (Io or Isat) [A]
+-    resistance_series : numeric
+-        series resistance (Rs) in [Ohm]
+-    resistance_shunt : numeric
+-        shunt resistance (Rsh) [Ohm]
+-    nNsVth : numeric
+-        product of diode ideality factor (n), number of series cells (Ns), and
+-        thermal voltage (Vth = k_b * T / q_e) in volts [V]
+-    d2mutau : numeric, default 0
+-        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+-        (a-Si) modules that accounts for recombination current in the
+-        intrinsic layer. The value is the ratio of intrinsic layer thickness
+-        squared :math:`d^2` to the diffusion length of charge carriers
+-        :math:`\\mu \\tau`. [V]
+-    NsVbi : numeric, default np.inf
+-        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+-        (a-Si) modules that is the product of the PV module number of series
+-        cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
+-        [V].
+-    breakdown_factor : numeric, default 0
+-        fraction of ohmic current involved in avalanche breakdown :math:`a`.
+-        Default of 0 excludes the reverse bias term from the model. [unitless]
+-    breakdown_voltage : numeric, default -5.5
+-        reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
+-        [V]
+-    breakdown_exp : numeric, default 3.28
+-        avalanche breakdown exponent :math:`m` [unitless]
+-    method : str, default 'newton'
+-       Either ``'newton'`` or ``'brentq'``. ''method'' must be ``'newton'``
+-       if ``breakdown_factor`` is not 0.
+-
+-    Returns
+-    -------
+-    voltage : numeric
+-        voltage (V) at the specified current (I) in volts [V]
+-    """
+-    # collect args
+-    args = (photocurrent, saturation_current, resistance_series,
+-            resistance_shunt, nNsVth, d2mutau, NsVbi, breakdown_factor,
+-            breakdown_voltage, breakdown_exp)
+-    # first bound the search using voc
+-    voc_est = estimate_voc(photocurrent, saturation_current, nNsVth)
+-
+-    def fi(x, i, *a):
+-        # calculate current residual given diode voltage "x"
+-        return bishop88(x, *a)[0] - i
+-
+-    if method.lower() == 'brentq':
+-        # brentq only works with scalar inputs, so we need a set up function
+-        # and np.vectorize to repeatedly call the optimizer with the right
+-        # arguments for possible array input
+-        def vd_from_brent(voc, i, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
+-                          breakdown_factor, breakdown_voltage, breakdown_exp):
+-            return brentq(fi, 0.0, voc,
+-                          args=(i, iph, isat, rs, rsh, gamma, d2mutau, NsVbi,
+-                                breakdown_factor, breakdown_voltage,
+-                                breakdown_exp))
+-
+-        vd_from_brent_vectorized = np.vectorize(vd_from_brent)
+-        vd = vd_from_brent_vectorized(voc_est, current, *args)
+-    elif method.lower() == 'newton':
+-        # make sure all args are numpy arrays if max size > 1
+-        # if voc_est is an array, then make a copy to use for initial guess, v0
+-        args, v0 = _prepare_newton_inputs((current,), args, voc_est)
+-        vd = newton(func=lambda x, *a: fi(x, current, *a), x0=v0,
+-                    fprime=lambda x, *a: bishop88(x, *a, gradients=True)[3],
+-                    args=args)
+-    else:
+-        raise NotImplementedError("Method '%s' isn't implemented" % method)
+-    return bishop88(vd, *args)[1]
+-
+-
+-def bishop88_mpp(photocurrent, saturation_current, resistance_series,
+-                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
+-                 breakdown_factor=0., breakdown_voltage=-5.5,
+-                 breakdown_exp=3.28, method='newton'):
+-    """
+-    Find max power point.
+-
+-    Parameters
+-    ----------
+-    photocurrent : numeric
+-        photogenerated current (Iph or IL) [A]
+-    saturation_current : numeric
+-        diode dark or saturation current (Io or Isat) [A]
+-    resistance_series : numeric
+-        series resistance (Rs) in [Ohm]
+-    resistance_shunt : numeric
+-        shunt resistance (Rsh) [Ohm]
+-    nNsVth : numeric
+-        product of diode ideality factor (n), number of series cells (Ns), and
+-        thermal voltage (Vth = k_b * T / q_e) in volts [V]
+-    d2mutau : numeric, default 0
+-        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+-        (a-Si) modules that accounts for recombination current in the
+-        intrinsic layer. The value is the ratio of intrinsic layer thickness
+-        squared :math:`d^2` to the diffusion length of charge carriers
+-        :math:`\\mu \\tau`. [V]
+-    NsVbi : numeric, default np.inf
+-        PVsyst parameter for cadmium-telluride (CdTe) and amorphous-silicon
+-        (a-Si) modules that is the product of the PV module number of series
+-        cells ``Ns`` and the builtin voltage ``Vbi`` of the intrinsic layer.
+-        [V].
+-    breakdown_factor : numeric, default 0
+-        fraction of ohmic current involved in avalanche breakdown :math:`a`.
+-        Default of 0 excludes the reverse bias term from the model. [unitless]
+-    breakdown_voltage : numeric, default -5.5
+-        reverse breakdown voltage of the photovoltaic junction :math:`V_{br}`
+-        [V]
+-    breakdown_exp : numeric, default 3.28
+-        avalanche breakdown exponent :math:`m` [unitless]
+-    method : str, default 'newton'
+-       Eith

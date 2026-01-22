@@ -1,0 +1,579 @@
++ source /opt/miniconda3/bin/activate
+++ _CONDA_ROOT=/opt/miniconda3
+++ . /opt/miniconda3/etc/profile.d/conda.sh
++++ export CONDA_EXE=/opt/miniconda3/bin/conda
++++ CONDA_EXE=/opt/miniconda3/bin/conda
++++ export _CE_M=
++++ _CE_M=
++++ export _CE_CONDA=
++++ _CE_CONDA=
++++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ '[' -z '' ']'
++++ export CONDA_SHLVL=0
++++ CONDA_SHLVL=0
++++ '[' -n '' ']'
++++++ dirname /opt/miniconda3/bin/conda
+++++ dirname /opt/miniconda3/bin
++++ PATH=/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++++ export PATH
++++ '[' -z '' ']'
++++ PS1=
+++ conda activate
+++ local cmd=activate
+++ case "$cmd" in
+++ __conda_activate activate
+++ '[' -n '' ']'
+++ local ask_conda
++++ PS1=
++++ __conda_exe shell.posix activate
++++ /opt/miniconda3/bin/conda shell.posix activate
+++ ask_conda='PS1='\''(base) '\''
+export PATH='\''/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3'\''
+export CONDA_SHLVL='\''1'\''
+export CONDA_DEFAULT_ENV='\''base'\''
+export CONDA_PROMPT_MODIFIER='\''(base) '\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
+++ eval 'PS1='\''(base) '\''
+export PATH='\''/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3'\''
+export CONDA_SHLVL='\''1'\''
+export CONDA_DEFAULT_ENV='\''base'\''
+export CONDA_PROMPT_MODIFIER='\''(base) '\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
++++ PS1='(base) '
++++ export PATH=/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++++ PATH=/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++++ export CONDA_PREFIX=/opt/miniconda3
++++ CONDA_PREFIX=/opt/miniconda3
++++ export CONDA_SHLVL=1
++++ CONDA_SHLVL=1
++++ export CONDA_DEFAULT_ENV=base
++++ CONDA_DEFAULT_ENV=base
++++ export 'CONDA_PROMPT_MODIFIER=(base) '
++++ CONDA_PROMPT_MODIFIER='(base) '
++++ export CONDA_EXE=/opt/miniconda3/bin/conda
++++ CONDA_EXE=/opt/miniconda3/bin/conda
++++ export _CE_M=
++++ _CE_M=
++++ export _CE_CONDA=
++++ _CE_CONDA=
++++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
+++ __conda_hashr
+++ '[' -n '' ']'
+++ '[' -n '' ']'
+++ hash -r
++ conda activate testbed
++ local cmd=activate
++ case "$cmd" in
++ __conda_activate activate testbed
++ '[' -n '' ']'
++ local ask_conda
+++ PS1='(base) '
+++ __conda_exe shell.posix activate testbed
+++ /opt/miniconda3/bin/conda shell.posix activate testbed
++ ask_conda='PS1='\''(testbed) '\''
+export PATH='\''/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3/envs/testbed'\''
+export CONDA_SHLVL='\''2'\''
+export CONDA_DEFAULT_ENV='\''testbed'\''
+export CONDA_PROMPT_MODIFIER='\''(testbed) '\''
+export CONDA_PREFIX_1='\''/opt/miniconda3'\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
++ eval 'PS1='\''(testbed) '\''
+export PATH='\''/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3/envs/testbed'\''
+export CONDA_SHLVL='\''2'\''
+export CONDA_DEFAULT_ENV='\''testbed'\''
+export CONDA_PROMPT_MODIFIER='\''(testbed) '\''
+export CONDA_PREFIX_1='\''/opt/miniconda3'\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
+++ PS1='(testbed) '
+++ export PATH=/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+++ PATH=/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+++ export CONDA_PREFIX=/opt/miniconda3/envs/testbed
+++ CONDA_PREFIX=/opt/miniconda3/envs/testbed
+++ export CONDA_SHLVL=2
+++ CONDA_SHLVL=2
+++ export CONDA_DEFAULT_ENV=testbed
+++ CONDA_DEFAULT_ENV=testbed
+++ export 'CONDA_PROMPT_MODIFIER=(testbed) '
+++ CONDA_PROMPT_MODIFIER='(testbed) '
+++ export CONDA_PREFIX_1=/opt/miniconda3
+++ CONDA_PREFIX_1=/opt/miniconda3
+++ export CONDA_EXE=/opt/miniconda3/bin/conda
+++ CONDA_EXE=/opt/miniconda3/bin/conda
+++ export _CE_M=
+++ _CE_M=
+++ export _CE_CONDA=
+++ _CE_CONDA=
+++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
+++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++ __conda_hashr
++ '[' -n '' ']'
++ '[' -n '' ']'
++ hash -r
++ cd /testbed
++ git config --global --add safe.directory /testbed
++ cd /testbed
++ git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   src/sqlfluff/core/parser/grammar/delimited.py
+	modified:   src/sqlfluff/core/parser/helpers.py
+
+no changes added to commit (use "git add" and/or "git commit -a")
++ git show
+commit 304a197829f98e7425a46d872ada73176137e5ae
+Author: Barry Pollard <barry@tunetheweb.com>
+Date:   Thu Oct 7 20:03:09 2021 +0100
+
+    Support Group and Groups as table names (#1546)
+
+diff --git a/src/sqlfluff/dialects/dialect_ansi.py b/src/sqlfluff/dialects/dialect_ansi.py
+index f237e857a..18555e005 100644
+--- a/src/sqlfluff/dialects/dialect_ansi.py
++++ b/src/sqlfluff/dialects/dialect_ansi.py
+@@ -439,8 +439,8 @@ ansi_dialect.add(
+     FromClauseTerminatorGrammar=OneOf(
+         "WHERE",
+         "LIMIT",
+-        "GROUP",
+-        "ORDER",
++        Sequence("GROUP", "BY"),
++        Sequence("ORDER", "BY"),
+         "HAVING",
+         "QUALIFY",
+         "WINDOW",
+@@ -448,7 +448,13 @@ ansi_dialect.add(
+         Ref("WithNoSchemaBindingClauseSegment"),
+     ),
+     WhereClauseTerminatorGrammar=OneOf(
+-        "LIMIT", "GROUP", "ORDER", "HAVING", "QUALIFY", "WINDOW", "OVERLAPS"
++        "LIMIT",
++        Sequence("GROUP", "BY"),
++        Sequence("ORDER", "BY"),
++        "HAVING",
++        "QUALIFY",
++        "WINDOW",
++        "OVERLAPS",
+     ),
+     PrimaryKeyGrammar=Sequence("PRIMARY", "KEY"),
+     ForeignKeyGrammar=Sequence("FOREIGN", "KEY"),
+diff --git a/src/sqlfluff/dialects/dialect_exasol.py b/src/sqlfluff/dialects/dialect_exasol.py
+index 2144fd069..c5b34f3eb 100644
+--- a/src/sqlfluff/dialects/dialect_exasol.py
++++ b/src/sqlfluff/dialects/dialect_exasol.py
+@@ -225,8 +225,8 @@ exasol_dialect.replace(
+         "START",
+         "PREFERRING",
+         "LIMIT",
+-        "GROUP",
+-        "ORDER",
++        Sequence("GROUP", "BY"),
++        Sequence("ORDER", "BY"),
+         "HAVING",
+         "QUALIFY",
+         Ref("SetOperatorSegment"),
+@@ -236,8 +236,8 @@ exasol_dialect.replace(
+         "START",
+         "PREFERRING",
+         "LIMIT",
+-        "GROUP",
+-        "ORDER",
++        Sequence("GROUP", "BY"),
++        Sequence("ORDER", "BY"),
+         "HAVING",
+         "QUALIFY",
+         Ref("SetOperatorSegment"),
+@@ -459,9 +459,9 @@ class ConnectByClauseSegment(BaseSegment):
+         ),
+         terminator=OneOf(
+             "PREFERRING",
+-            "GROUP",
++            Sequence("GROUP", "BY"),
+             "QUALIFY",
+-            "ORDER",
++            Sequence("ORDER", "BY"),
+             "LIMIT",
+             Ref("SetOperatorSegment"),
+         ),
+diff --git a/src/sqlfluff/dialects/dialect_tsql.py b/src/sqlfluff/dialects/dialect_tsql.py
+index ab6b2d124..2fada2a91 100644
+--- a/src/sqlfluff/dialects/dialect_tsql.py
++++ b/src/sqlfluff/dialects/dialect_tsql.py
+@@ -102,8 +102,8 @@ tsql_dialect.replace(
+     FromClauseTerminatorGrammar=OneOf(
+         "WHERE",
+         "LIMIT",
+-        "GROUP",
+-        "ORDER",
++        Sequence("GROUP", "BY"),
++        Sequence("ORDER", "BY"),
+         "HAVING",
+         "PIVOT",
+         "UNPIVOT",
+diff --git a/test/fixtures/parser/ansi/select_table_named_group.sql b/test/fixtures/parser/ansi/select_table_named_group.sql
+new file mode 100644
+index 000000000..b12095621
+--- /dev/null
++++ b/test/fixtures/parser/ansi/select_table_named_group.sql
+@@ -0,0 +1,2 @@
++select 1 from group;
++select 1 from groups;
+diff --git a/test/fixtures/parser/ansi/select_table_named_group.yml b/test/fixtures/parser/ansi/select_table_named_group.yml
+new file mode 100644
+index 000000000..9fec72a29
+--- /dev/null
++++ b/test/fixtures/parser/ansi/select_table_named_group.yml
+@@ -0,0 +1,35 @@
++# YML test files are auto-generated from SQL files and should not be edited by
++# hand. To help enforce this, the "hash" field in the file must match a hash
++# computed by SQLFluff when running the tests. Please run
++# `python test/generate_parse_fixture_yml.py`  to generate them after adding or
++# altering SQL files.
++_hash: 58494049fb071ce5281906efd48106c55382e70443878f28a66451a872b1d765
++file:
++- statement:
++    select_statement:
++      select_clause:
++        keyword: select
++        select_clause_element:
++          literal: '1'
++      from_clause:
++        keyword: from
++        from_expression:
++          from_expression_element:
++            table_expression:
++              table_reference:
++                identifier: group
++- statement_terminator: ;
++- statement:
++    select_statement:
++      select_clause:
++        keyword: select
++        select_clause_element:
++          literal: '1'
++      from_clause:
++        keyword: from
++        from_expression:
++          from_expression_element:
++            table_expression:
++              table_reference:
++                identifier: groups
++- statement_terminator: ;
++ git -c core.fileMode=false diff 304a197829f98e7425a46d872ada73176137e5ae
+diff --git a/src/sqlfluff/core/parser/grammar/delimited.py b/src/sqlfluff/core/parser/grammar/delimited.py
+index 39a350373..7e64f60b7 100644
+--- a/src/sqlfluff/core/parser/grammar/delimited.py
++++ b/src/sqlfluff/core/parser/grammar/delimited.py
+@@ -4,7 +4,7 @@ from typing import Tuple, List
+ 
+ from sqlfluff.core.parser.grammar import Ref
+ from sqlfluff.core.parser.segments import BaseSegment, allow_ephemeral
+-from sqlfluff.core.parser.helpers import trim_non_code_segments
++from sqlfluff.core.parser.helpers import trim_non_code_segments, join_segments_raw
+ from sqlfluff.core.parser.match_result import MatchResult
+ from sqlfluff.core.parser.match_wrapper import match_wrapper
+ from sqlfluff.core.parser.context import ParseContext
+@@ -65,7 +65,13 @@ class Delimited(OneOf):
+ 
+         # In more detail, match against delimiter, if we match, put a slice
+         # up to that point onto a list of slices. Carry on.
++        loop_count = 0
+         while True:
++            loop_count += 1
++            print(f"\n=== Delimited: Loop iteration {loop_count} ===")
++            print(f"seg_buff: {join_segments_raw(seg_buff)!r}")
++            print(f"matched_segments so far: {matched_segments.raw_matched()!r}")
++            print(f"===\n")
+             # Check to see whether we've exhausted the buffer, either by iterating through it,
+             # or by consuming all the non-code segments already.
+             # NB: If we're here then we've already tried matching the remaining segments against
+@@ -156,6 +162,11 @@ class Delimited(OneOf):
+                         matched_segments += delimiter_match.matched_segments
+                         # Break this for loop and move on, looking for the next delimiter
+                         seg_buff = delimiter_match.unmatched_segments
++                        # DEBUG
++                        print(f"\n=== Delimited: After delimiter match ===")
++                        print(f"matched_segments so far: {matched_segments.raw_matched()!r}")
++                        print(f"seg_buff (unmatched): {join_segments_raw(seg_buff)!r}")
++                        print(f"===\n")
+                         # Still got some buffer left. Carry on.
+                         continue
+                     # Terminator (or the gap terminator).
+@@ -198,54 +209,4 @@ class Delimited(OneOf):
+                 if self.min_delimiters and len(delimiters) < self.min_delimiters:
+                     return MatchResult.from_unmatched(mutated_segments)
+ 
+-                # We use the whitespace padded match to hoover up whitespace if enabled,
+-                # and default to the longest matcher. We don't care which one matches.
+-                pre_non_code, trimmed_segments, post_non_code = trim_non_code_segments(
+-                    mutated_segments
+-                )
+-                # Check for whitespace gaps.
+-                # We do this explicitly here rather than relying on an
+-                # untrimmed match so we can handle _whitespace_ explicitly
+-                # compared to other non code segments like placeholders.
+-                if not self.allow_gaps and any(
+-                    seg.is_whitespace for seg in pre_non_code + post_non_code
+-                ):
+-                    return MatchResult.from_unmatched(
+-                        mutated_segments
+-                    )  # pragma: no cover TODO?
+-
+-                with parse_context.deeper_match() as ctx:
+-                    mat, _ = self._longest_trimmed_match(
+-                        trimmed_segments,
+-                        self._elements,
+-                        parse_context=ctx,
+-                        # We've already trimmed
+-                        trim_noncode=False,
+-                    )
+-
+-                if mat:
+-                    # We've got something at the end. Return!
+-                    if mat.unmatched_segments:
+-                        # We have something unmatched and so we should let it also have the trailing elements
+-                        return MatchResult(
+-                            matched_segments.matched_segments
+-                            + pre_non_code
+-                            + mat.matched_segments,
+-                            mat.unmatched_segments + post_non_code,
+-                        )
+-                    else:
+-                        # If there's nothing unmatched in the most recent match, then we can consume the trailing
+-                        # non code segments
+-                        return MatchResult.from_matched(
+-                            matched_segments.matched_segments
+-                            + pre_non_code
+-                            + mat.matched_segments
+-                            + post_non_code,
+-                        )
+-                else:
+-                    # No match at the end, are we allowed to trail? If we are then return,
+-                    # otherwise we fail because we can't match the last element.
+-                    if self.allow_trailing:
+-                        return MatchResult(matched_segments.matched_segments, seg_buff)
+-                    else:
+-                        return MatchResult.from_unmatched(mutated_segments)
++                # We use the whitespace padded matc
+diff --git a/src/sqlfluff/core/parser/helpers.py b/src/sqlfluff/core/parser/helpers.py
+index 718b673ed..0922f495f 100644
+--- a/src/sqlfluff/core/parser/helpers.py
++++ b/src/sqlfluff/core/parser/helpers.py
+@@ -27,6 +27,16 @@ def check_still_complete(
+     initial_str = join_segments_raw(segments_in)
+     current_str = join_segments_raw(matched_segments + unmatched_segments)
+     if initial_str != current_str:  # pragma: no cover
++        import traceback
++        print("\n=== check_still_complete FAILURE ===")
++        print(f"segments_in ({len(segments_in)}): {segments_in}")
++        print(f"matched_segments ({len(matched_segments)}): {matched_segments}")
++        print(f"unmatched_segments ({len(unmatched_segments)}): {unmatched_segments}")
++        print(f"initial_str: {initial_str!r}")
++        print(f"current_str: {current_str!r}")
++        print("\nTraceback:")
++        traceback.print_stack()
++        print("=== END ===\n")
+         raise RuntimeError(
+             "Dropped elements in sequence matching! {!r} != {!r}".format(
+                 initial_str, current_str
+@@ -82,3 +92,4 @@ def iter_indices(seq: List, val: Any) -> Iterator[int]:
+     for idx, el in enumerate(seq):
+         if el == val:
+             yield idx
++
++ source /opt/miniconda3/bin/activate
+++ _CONDA_ROOT=/opt/miniconda3
+++ . /opt/miniconda3/etc/profile.d/conda.sh
++++ export CONDA_EXE=/opt/miniconda3/bin/conda
++++ CONDA_EXE=/opt/miniconda3/bin/conda
++++ export _CE_M=
++++ _CE_M=
++++ export _CE_CONDA=
++++ _CE_CONDA=
++++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ '[' -z x ']'
+++ conda activate
+++ local cmd=activate
+++ case "$cmd" in
+++ __conda_activate activate
+++ '[' -n '' ']'
+++ local ask_conda
++++ PS1='(testbed) '
++++ __conda_exe shell.posix activate
++++ /opt/miniconda3/bin/conda shell.posix activate
+++ ask_conda='PS1='\''(base) '\''
+export PATH='\''/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3'\''
+export CONDA_SHLVL='\''3'\''
+export CONDA_DEFAULT_ENV='\''base'\''
+export CONDA_PROMPT_MODIFIER='\''(base) '\''
+export CONDA_PREFIX_2='\''/opt/miniconda3/envs/testbed'\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
+++ eval 'PS1='\''(base) '\''
+export PATH='\''/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3'\''
+export CONDA_SHLVL='\''3'\''
+export CONDA_DEFAULT_ENV='\''base'\''
+export CONDA_PROMPT_MODIFIER='\''(base) '\''
+export CONDA_PREFIX_2='\''/opt/miniconda3/envs/testbed'\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
++++ PS1='(base) '
++++ export PATH=/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++++ PATH=/opt/miniconda3/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
++++ export CONDA_PREFIX=/opt/miniconda3
++++ CONDA_PREFIX=/opt/miniconda3
++++ export CONDA_SHLVL=3
++++ CONDA_SHLVL=3
++++ export CONDA_DEFAULT_ENV=base
++++ CONDA_DEFAULT_ENV=base
++++ export 'CONDA_PROMPT_MODIFIER=(base) '
++++ CONDA_PROMPT_MODIFIER='(base) '
++++ export CONDA_PREFIX_2=/opt/miniconda3/envs/testbed
++++ CONDA_PREFIX_2=/opt/miniconda3/envs/testbed
++++ export CONDA_EXE=/opt/miniconda3/bin/conda
++++ CONDA_EXE=/opt/miniconda3/bin/conda
++++ export _CE_M=
++++ _CE_M=
++++ export _CE_CONDA=
++++ _CE_CONDA=
++++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
+++ __conda_hashr
+++ '[' -n '' ']'
+++ '[' -n '' ']'
+++ hash -r
++ conda activate testbed
++ local cmd=activate
++ case "$cmd" in
++ __conda_activate activate testbed
++ '[' -n '' ']'
++ local ask_conda
+++ PS1='(base) '
+++ __conda_exe shell.posix activate testbed
+++ /opt/miniconda3/bin/conda shell.posix activate testbed
++ ask_conda='PS1='\''(testbed) '\''
+export PATH='\''/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3/envs/testbed'\''
+export CONDA_SHLVL='\''4'\''
+export CONDA_DEFAULT_ENV='\''testbed'\''
+export CONDA_PROMPT_MODIFIER='\''(testbed) '\''
+export CONDA_PREFIX_3='\''/opt/miniconda3'\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
++ eval 'PS1='\''(testbed) '\''
+export PATH='\''/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\''
+export CONDA_PREFIX='\''/opt/miniconda3/envs/testbed'\''
+export CONDA_SHLVL='\''4'\''
+export CONDA_DEFAULT_ENV='\''testbed'\''
+export CONDA_PROMPT_MODIFIER='\''(testbed) '\''
+export CONDA_PREFIX_3='\''/opt/miniconda3'\''
+export CONDA_EXE='\''/opt/miniconda3/bin/conda'\''
+export _CE_M='\'''\''
+export _CE_CONDA='\'''\''
+export CONDA_PYTHON_EXE='\''/opt/miniconda3/bin/python'\'''
+++ PS1='(testbed) '
+++ export PATH=/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+++ PATH=/opt/miniconda3/envs/testbed/bin:/opt/miniconda3/condabin:/opt/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+++ export CONDA_PREFIX=/opt/miniconda3/envs/testbed
+++ CONDA_PREFIX=/opt/miniconda3/envs/testbed
+++ export CONDA_SHLVL=4
+++ CONDA_SHLVL=4
+++ export CONDA_DEFAULT_ENV=testbed
+++ CONDA_DEFAULT_ENV=testbed
+++ export 'CONDA_PROMPT_MODIFIER=(testbed) '
+++ CONDA_PROMPT_MODIFIER='(testbed) '
+++ export CONDA_PREFIX_3=/opt/miniconda3
+++ CONDA_PREFIX_3=/opt/miniconda3
+++ export CONDA_EXE=/opt/miniconda3/bin/conda
+++ CONDA_EXE=/opt/miniconda3/bin/conda
+++ export _CE_M=
+++ _CE_M=
+++ export _CE_CONDA=
+++ _CE_CONDA=
+++ export CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
+++ CONDA_PYTHON_EXE=/opt/miniconda3/bin/python
++ __conda_hashr
++ '[' -n '' ']'
++ '[' -n '' ']'
++ hash -r
++ python -m pip install -e .
+Obtaining file:///testbed
+  Preparing metadata (setup.py): started
+  Preparing metadata (setup.py): finished with status 'done'
+Requirement already satisfied: click>=7.1 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (8.1.7)
+Requirement already satisfied: colorama>=0.3 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (0.4.6)
+Requirement already satisfied: configparser in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (7.1.0)
+Requirement already satisfied: oyaml in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (1.0)
+Requirement already satisfied: Jinja2 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (3.1.4)
+Requirement already satisfied: diff-cover>=2.5.0 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (9.2.0)
+Requirement already satisfied: pathspec in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (0.12.1)
+Requirement already satisfied: appdirs in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (1.4.4)
+Requirement already satisfied: cached-property in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (2.0.1)
+Requirement already satisfied: typing_extensions in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (4.12.2)
+Requirement already satisfied: pytest in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (8.3.3)
+Requirement already satisfied: toml in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (0.10.2)
+Requirement already satisfied: tblib in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from sqlfluff==0.6.8) (3.0.0)
+Requirement already satisfied: Pygments<3.0.0,>=2.9.0 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from diff-cover>=2.5.0->sqlfluff==0.6.8) (2.18.0)
+Requirement already satisfied: chardet>=3.0.0 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from diff-cover>=2.5.0->sqlfluff==0.6.8) (5.2.0)
+Requirement already satisfied: pluggy<2,>=0.13.1 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from diff-cover>=2.5.0->sqlfluff==0.6.8) (1.5.0)
+Requirement already satisfied: MarkupSafe>=2.0 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from Jinja2->sqlfluff==0.6.8) (3.0.2)
+Requirement already satisfied: pyyaml in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from oyaml->sqlfluff==0.6.8) (6.0.2)
+Requirement already satisfied: iniconfig in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from pytest->sqlfluff==0.6.8) (2.0.0)
+Requirement already satisfied: packaging in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from pytest->sqlfluff==0.6.8) (24.2)
+Requirement already satisfied: exceptiongroup>=1.0.0rc8 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from pytest->sqlfluff==0.6.8) (1.2.2)
+Requirement already satisfied: tomli>=1 in /opt/miniconda3/envs/testbed/lib/python3.9/site-packages (from pytest->sqlfluff==0.6.8) (2.1.0)
+Installing collected packages: sqlfluff
+  Attempting uninstall: sqlfluff
+    Found existing installation: sqlfluff 0.6.8
+    Uninstalling sqlfluff-0.6.8:
+      Successfully uninstalled sqlfluff-0.6.8
+  DEPRECATION: Legacy editable install of sqlfluff==0.6.8 from file:///testbed (setup.py develop) is deprecated. pip 25.0 will enforce this behaviour change. A possible replacement is to add a pyproject.toml or enable --use-pep517, and use setuptools >= 64. If the resulting installation is not behaving as expected, try using --config-settings editable_mode=compat. Please consult the setuptools documentation for more information. Discussion can be found at https://github.com/pypa/pip/issues/11457
+  Running setup.py develop for sqlfluff
+Successfully installed sqlfluff
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
++ git checkout 304a197829f98e7425a46d872ada73176137e5ae test/dialects/ansi_test.py
+Updated 0 paths from c2e0eb73a
++ git apply -v -
+Checking patch test/dialects/ansi_test.py...
+Applied patch test/dialects/ansi_test.py cleanly.
++ : '>>>>> Start Test Output'
++ pytest -rA test/dialects/ansi_test.py
+============================= test session starts ==============================
+platform linux -- Python 3.9.20, pytest-8.3.3, pluggy-1.5.0
+rootdir: /testbed
+configfile: pytest.ini
+plugins: hypothesis-6.119.3, sugar-1.0.0, cov-6.0.0
+collected 59 items
+
+test/dialects/ansi_test.py ............../eval.sh: line 61:    73 Killed                  pytest -rA test/dialects/ansi_test.py
++ : '>>>>> End Test Output'
++ git checkout 304a197829f98e7425a46d872ada73176137e5ae test/dialects/ansi_test.py
+Updated 1 path from c2e0eb73a

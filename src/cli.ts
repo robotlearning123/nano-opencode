@@ -9,8 +9,9 @@ import type {
   AgentInstance,
   ToolCall,
 } from './types.js';
-import { getAllTools, executeTool } from './tools/index.js';
-import { createSession, addMessage, updateSessionTitle } from './store.js';
+import { getAllTools, executeTool, isReadOnlyTool } from './tools/index.js';
+import { getTodos } from './tools/todo.js';
+import { createSession, addMessage, updateSessionTitle, getSession } from './store.js';
 import { getErrorMessage } from './constants.js';
 import { createAgent } from './agents/index.js';
 import { banner, statusLine, prompt as uiPrompt, toolBox } from './ui/index.js';
@@ -31,10 +32,13 @@ export class CLI {
   private agent: AgentInstance;
   private turns = 0;
   private currentOperation: AbortController | null = null;
+  private autoContinueCount = 0;
+  private static MAX_AUTO_CONTINUES = 5;
 
   constructor(provider: LLMProvider, sessionId?: string, existingSession?: Session) {
     this.provider = provider;
-    this.session = existingSession ?? createSession();
+    // Restore session by ID, use existing session, or create new
+    this.session = existingSession ?? (sessionId ? getSession(sessionId) : null) ?? createSession();
     this.rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     this.agent = createAgent('sisyphus')!;
 
@@ -118,6 +122,7 @@ export class CLI {
   }
 
   private async chat(userInput: string): Promise<void> {
+    this.autoContinueCount = 0; // Reset on new user input
     const userMsg: Message = { role: 'user', content: userInput };
     this.session.messages.push(userMsg);
     addMessage(this.session.id, userMsg);
@@ -182,43 +187,115 @@ export class CLI {
 
       if (response.toolCalls?.length) {
         const toolResults: Message['toolResults'] = [];
-        for (const tc of response.toolCalls) {
-          // Check if operation was aborted
+
+        // Group consecutive read-only tools for parallel execution
+        let i = 0;
+        while (i < response.toolCalls.length) {
           if (this.currentOperation?.signal.aborted) {
             console.log(chalk.yellow('⚠️ Remaining tools skipped'));
             break;
           }
 
-          // Execute tool.execute.before hooks (safety check)
-          const toolCall: ToolCall = { id: tc.id, name: tc.name, arguments: tc.arguments };
-          const beforeResult = await beforeToolExecute(toolCall, this.session, this.agent);
-          if (!beforeResult.continue) {
-            const blockedMsg = `Tool ${tc.name} blocked by safety hook`;
-            console.log(chalk.red(`\n⛔ ${blockedMsg}\n`));
-            toolResults.push({ toolCallId: tc.id, content: blockedMsg, isError: true });
-            continue;
+          // Collect batch of consecutive read-only tools
+          const batch: typeof response.toolCalls = [];
+          while (i < response.toolCalls.length && isReadOnlyTool(response.toolCalls[i].name)) {
+            batch.push(response.toolCalls[i]);
+            i++;
           }
 
-          // Execute the tool
-          const result = await executeTool(tc.name, tc.arguments);
-          console.log(toolBox(tc.name, result));
+          if (batch.length > 0) {
+            // Execute read-only batch in parallel
+            const batchPromises = batch.map(async (tc) => {
+              const toolCall: ToolCall = { id: tc.id, name: tc.name, arguments: tc.arguments };
+              const beforeResult = await beforeToolExecute(toolCall, this.session, this.agent);
+              if (!beforeResult.continue) {
+                const blockedMsg = `Tool ${tc.name} blocked by safety hook`;
+                console.log(chalk.red(`\n⛔ ${blockedMsg}\n`));
+                return { toolCallId: tc.id, content: blockedMsg, isError: true };
+              }
+              const result = await executeTool(tc.name, tc.arguments);
+              const afterResult = await afterToolExecute(
+                toolCall,
+                { toolCallId: tc.id, content: result },
+                this.session,
+                this.agent
+              );
+              return {
+                toolCallId: tc.id,
+                content: afterResult.modified?.toolResult?.content ?? result,
+                name: tc.name,
+              };
+            });
 
-          // Execute tool.execute.after hooks (may truncate output)
-          const afterResult = await afterToolExecute(
-            toolCall,
-            { toolCallId: tc.id, content: result },
-            this.session,
-            this.agent
-          );
-          const finalContent = afterResult.modified?.toolResult?.content ?? result;
-          toolResults.push({ toolCallId: tc.id, content: finalContent });
+            const batchResults = await Promise.all(batchPromises);
+            for (const r of batchResults) {
+              console.log(toolBox(r.name || 'tool', r.content));
+              toolResults.push({
+                toolCallId: r.toolCallId,
+                content: r.content,
+                isError: r.isError,
+              });
+            }
+            if (batch.length > 1) {
+              console.log(chalk.dim(`  ⚡ ${batch.length} tools executed in parallel`));
+            }
+          }
+
+          // Execute next write tool sequentially (if any)
+          if (i < response.toolCalls.length && !isReadOnlyTool(response.toolCalls[i].name)) {
+            const tc = response.toolCalls[i];
+            const toolCall: ToolCall = { id: tc.id, name: tc.name, arguments: tc.arguments };
+            const beforeResult = await beforeToolExecute(toolCall, this.session, this.agent);
+            if (!beforeResult.continue) {
+              const blockedMsg = `Tool ${tc.name} blocked by safety hook`;
+              console.log(chalk.red(`\n⛔ ${blockedMsg}\n`));
+              toolResults.push({ toolCallId: tc.id, content: blockedMsg, isError: true });
+            } else {
+              const result = await executeTool(tc.name, tc.arguments);
+              console.log(toolBox(tc.name, result));
+              const afterResult = await afterToolExecute(
+                toolCall,
+                { toolCallId: tc.id, content: result },
+                this.session,
+                this.agent
+              );
+              const finalContent = afterResult.modified?.toolResult?.content ?? result;
+              toolResults.push({ toolCallId: tc.id, content: finalContent });
+            }
+            i++;
+          }
         }
+
         const resultMsg: Message = { role: 'user', content: '', toolResults };
         this.session.messages.push(resultMsg);
         addMessage(this.session.id, resultMsg);
 
         // Continue loop if not aborted
         if (!this.currentOperation?.signal.aborted) {
+          this.autoContinueCount = 0; // Reset counter when model is actively working
+          await this.processLoop();
+        }
+      } else {
+        // No tool calls - check for incomplete todos (auto-continue enforcement)
+        const todos = getTodos();
+        const incomplete = todos.filter((t) => t.status !== 'completed');
+        if (
+          incomplete.length > 0 &&
+          this.autoContinueCount < CLI.MAX_AUTO_CONTINUES &&
+          !this.currentOperation?.signal.aborted
+        ) {
+          this.autoContinueCount++;
+          console.log(
+            chalk.cyan(
+              `\n⟳ ${incomplete.length} incomplete todo(s) - auto-continuing (${this.autoContinueCount}/${CLI.MAX_AUTO_CONTINUES})`
+            )
+          );
+          const continueMsg: Message = {
+            role: 'user',
+            content: `Continue with the remaining tasks. Incomplete todos:\n${incomplete.map((t) => `- [${t.status}] ${t.content}`).join('\n')}`,
+          };
+          this.session.messages.push(continueMsg);
+          addMessage(this.session.id, continueMsg);
           await this.processLoop();
         }
       }

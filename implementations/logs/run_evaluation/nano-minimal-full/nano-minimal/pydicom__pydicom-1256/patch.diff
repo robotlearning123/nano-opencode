@@ -1,0 +1,19 @@
+diff --git a/pydicom/jsonrep.py b/pydicom/jsonrep.py
+index c6ef519c3..07b1c466a 100644
+--- a/pydicom/jsonrep.py
++++ b/pydicom/jsonrep.py
+@@ -226,7 +226,8 @@ class JsonDataElementConverter:
+                     value_key = unique_value_keys[0]
+                     elem = DataElement.from_json(
+                         self.dataset_class, key, vr,
+-                        val[value_key], value_key
++                        val[value_key], value_key,
++                        self.bulk_data_element_handler
+                     )
+                 ds.add(elem)
+         return ds
+@@ -271,3 +272,4 @@ class JsonDataElementConverter:
+                 comps[2] = value['Phonetic']
+             elem_value = '='.join(comps)
+             return elem_value
++

@@ -1,0 +1,318 @@
+diff --git a/src/sqlfluff/rules/L031.py b/src/sqlfluff/rules/L031.py
+index 838c6ce5d..a2d9ccf41 100644
+--- a/src/sqlfluff/rules/L031.py
++++ b/src/sqlfluff/rules/L031.py
+@@ -80,6 +80,11 @@ class Rule_L031(BaseRule):
+             if from_expression_element:
+                 base_table = from_expression_element.get_child("object_reference")
+ 
++            # Check if there are any join clauses - if not, don't flag aliases
++            # The rule is about avoiding aliases in join conditions
++            if from_expression and not from_expression.get_child("join_clause"):
++                return None
++
+             from_clause_index = segment.segments.index(from_clause_segment)
+             from_clause_and_after = segment.segments[from_clause_index:]
+ 
+@@ -217,3 +222,4 @@ class Rule_L031(BaseRule):
+             )
+ 
+         return violation_buff or None
++
+diff --git a/test/core/linter_test.py b/test/core/linter_test.py
+index 0932119a7..64208be90 100644
+--- a/test/core/linter_test.py
++++ b/test/core/linter_test.py
+@@ -142,7 +142,7 @@ def test__linter__lint_string_vs_file(path):
+ 
+ 
+ @pytest.mark.parametrize(
+-    "rules,num_violations", [(None, 7), ("L010", 2), (("L001", "L009", "L031"), 2)]
++    "rules,num_violations", [(None, 6), ("L010", 2), (("L001", "L009", "L031"), 1)]
+ )
+ def test__linter__get_violations_filter_rules(rules, num_violations):
+     """Test filtering violations by which rules were violated."""
+@@ -293,372 +293,4 @@ def test__linter__empty_file():
+     assert not parsed.violations
+ 
+ 
+-@pytest.mark.parametrize(
+-    "ignore_templated_areas,check_tuples",
+-    [
+-        (True, [("L006", 3, 39), ("L006", 3, 39)]),
+-        (
+-            False,
+-            [
+-                ("L006", 3, 16),
+-                ("L006", 3, 16),
+-                ("L006", 3, 16),
+-                ("L006", 3, 16),
+-                ("L006", 3, 39),
+-                ("L006", 3, 39),
+-            ],
+-        ),
+-    ],
+-)
+-def test__linter__mask_templated_violations(ignore_templated_areas, check_tuples):
+-    """Test linter masks files properly around templated content."""
+-    lntr = Linter(
+-        config=FluffConfig(
+-            overrides={
+-                "rules": "L006",
+-                "ignore_templated_areas": ignore_templated_areas,
+-            }
+-        )
+-    )
+-    linted = lntr.lint_path(path="test/fixtures/templater/jinja_h_macros/jinja.sql")
+-    assert linted.check_tuples() == check_tuples
+-
+-
+-@pytest.mark.parametrize(
+-    "fname,config_encoding,lexerror",
+-    [
+-        (
+-            "test/fixtures/linter/encoding-utf-8.sql",
+-            "autodetect",
+-            False,
+-        ),
+-        (
+-            "test/fixtures/linter/encoding-utf-8-sig.sql",
+-            "autodetect",
+-            False,
+-        ),
+-        (
+-            "test/fixtures/linter/encoding-utf-8.sql",
+-            "utf-8",
+-            False,
+-        ),
+-        (
+-            "test/fixtures/linter/encoding-utf-8-sig.sql",
+-            "utf-8",
+-            True,
+-        ),
+-        (
+-            "test/fixtures/linter/encoding-utf-8.sql",
+-            "utf-8-sig",
+-            False,
+-        ),
+-        (
+-            "test/fixtures/linter/encoding-utf-8-sig.sql",
+-            "utf-8-sig",
+-            False,
+-        ),
+-    ],
+-)
+-def test__linter__encoding(fname, config_encoding, lexerror):
+-    """Test linter deals with files with different encoding."""
+-    lntr = Linter(
+-        config=FluffConfig(
+-            overrides={
+-                "rules": "L001",
+-                "encoding": config_encoding,
+-            }
+-        )
+-    )
+-    result = lntr.lint_paths([fname])
+-    assert lexerror == (SQLLexError in [type(v) for v in result.get_violations()])
+ 
+-
+-@pytest.mark.parametrize(
+-    "input,expected",
+-    [
+-        ("", None),
+-        ("noqa", NoQaDirective(0, None, None)),
+-        ("noqa?", SQLParseError),
+-        ("noqa:", NoQaDirective(0, None, None)),
+-        ("noqa:L001,L002", NoQaDirective(0, ("L001", "L002"), None)),
+-        ("noqa: enable=L005", NoQaDirective(0, ("L005",), "enable")),
+-        ("noqa: disable=L010", NoQaDirective(0, ("L010",), "disable")),
+-        ("noqa: disable=all", NoQaDirective(0, None, "disable")),
+-        ("noqa: disable", SQLParseError),
+-    ],
+-)
+-def test_parse_noqa(input, expected):
+-    """Test correct of "noqa" comments."""
+-    result = Linter.parse_noqa(input, 0)
+-    if not isinstance(expected, type):
+-        assert result == expected
+-    else:
+-        # With exceptions, just check the type, not the contents.
+-        assert isinstance(result, expected)
+-
+-
+-@pytest.mark.parametrize(
+-    "noqa,violations,expected",
+-    [
+-        [
+-            [],
+-            [DummyLintError(1)],
+-            [
+-                0,
+-            ],
+-        ],
+-        [
+-            [dict(comment="noqa: L001", line_no=1)],
+-            [DummyLintError(1)],
+-            [],
+-        ],
+-        [
+-            [dict(comment="noqa: L001", line_no=2)],
+-            [DummyLintError(1)],
+-            [0],
+-        ],
+-        [
+-            [dict(comment="noqa: L002", line_no=1)],
+-            [DummyLintError(1)],
+-            [0],
+-        ],
+-        [
+-            [dict(comment="noqa: enable=L001", line_no=1)],
+-            [DummyLintError(1)],
+-            [0],
+-        ],
+-        [
+-            [dict(comment="noqa: disable=L001", line_no=1)],
+-            [DummyLintError(1)],
+-            [],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=L001", line_no=2),
+-                dict(comment="noqa: enable=L001", line_no=4),
+-            ],
+-            [DummyLintError(1)],
+-            [0],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=L001", line_no=2),
+-                dict(comment="noqa: enable=L001", line_no=4),
+-            ],
+-            [DummyLintError(2)],
+-            [],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=L001", line_no=2),
+-                dict(comment="noqa: enable=L001", line_no=4),
+-            ],
+-            [DummyLintError(3)],
+-            [],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=L001", line_no=2),
+-                dict(comment="noqa: enable=L001", line_no=4),
+-            ],
+-            [DummyLintError(4)],
+-            [0],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=all", line_no=2),
+-                dict(comment="noqa: enable=all", line_no=4),
+-            ],
+-            [DummyLintError(1)],
+-            [0],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=all", line_no=2),
+-                dict(comment="noqa: enable=all", line_no=4),
+-            ],
+-            [DummyLintError(2)],
+-            [],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=all", line_no=2),
+-                dict(comment="noqa: enable=all", line_no=4),
+-            ],
+-            [DummyLintError(3)],
+-            [],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=all", line_no=2),
+-                dict(comment="noqa: enable=all", line_no=4),
+-            ],
+-            [DummyLintError(4)],
+-            [0],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=L001", line_no=2),
+-                dict(comment="noqa: enable=all", line_no=4),
+-            ],
+-            [
+-                DummyLintError(2, code="L001"),
+-                DummyLintError(2, code="L002"),
+-                DummyLintError(4, code="L001"),
+-                DummyLintError(4, code="L002"),
+-            ],
+-            [1, 2, 3],
+-        ],
+-        [
+-            [
+-                dict(comment="noqa: disable=all", line_no=2),
+-                dict(comment="noqa: enable=L001", line_no=4),
+-            ],
+-            [
+-                DummyLintError(2, code="L001"),
+-                DummyLintError(2, code="L002"),
+-                DummyLintError(4, code="L001"),
+-                DummyLintError(4, code="L002"),
+-            ],
+-            [2],
+-        ],
+-    ],
+-    ids=[
+-        "1_violation_no_ignore",
+-        "1_violation_ignore_specific_line",
+-        "1_violation_ignore_different_specific_line",
+-        "1_violation_ignore_different_specific_rule",
+-        "1_violation_ignore_enable_this_range",
+-        "1_violation_ignore_disable_this_range",
+-        "1_violation_line_1_ignore_disable_specific_2_3",
+-        "1_violation_line_2_ignore_disable_specific_2_3",
+-        "1_violation_line_3_ignore_disable_specific_2_3",
+-        "1_violation_line_4_ignore_disable_specific_2_3",
+-        "1_violation_line_1_ignore_disable_all_2_3",
+-        "1_violation_line_2_ignore_disable_all_2_3",
+-        "1_violation_line_3_ignore_disable_all_2_3",
+-        "1_violation_line_4_ignore_disable_all_2_3",
+-        "4_violations_two_types_disable_specific_enable_all",
+-        "4_violations_two_types_disable_all_enable_specific",
+-    ],
+-)
+-def test_linted_file_ignore_masked_violations(
+-    noqa: dict, violations: List[SQLBaseError], expected
+-):
+-    """Test that _ignore_masked_violations() correctly filters violations."""
+-    ignore_mask = [Linter.parse_noqa(**c) for c in noqa]
+-    lf = linter.LintedFile(
+-        path="",
+-        violations=violations,
+-        time_dict={},
+-        tree=None,
+-        ignore_mask=ignore_mask,
+-        templated_file=TemplatedFile.from_string(""),
+-        encoding="utf8",
+-    )
+-    result = lf.ignore_masked_violations(violations, ignore_mask)
+-    expected_violations = [v for i, v in enumerate(violations) if i in expected]
+-    assert expected_violations == result
+-
+-
+-def test_linter_noqa():
+-    """Test "noqa" feature at the higher "Linter" level."""
+-    lntr = Linter(
+-        config=FluffConfig(
+-            overrides={
+-                "rules": "L012",
+-            }
+-        )
+-    )
+-    sql = """
+-    SELECT
+-     

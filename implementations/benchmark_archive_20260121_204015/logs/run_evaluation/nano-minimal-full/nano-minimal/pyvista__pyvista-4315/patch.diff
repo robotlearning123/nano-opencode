@@ -1,0 +1,285 @@
+diff --git a/pyvista/_vtk.py b/pyvista/_vtk.py
+index 371924c9..3d136ab9 100644
+--- a/pyvista/_vtk.py
++++ b/pyvista/_vtk.py
+@@ -521,7 +521,8 @@ from vtkmodules.vtkRenderingCore import (
+ )
+ from vtkmodules.vtkRenderingFreeType import vtkVectorText
+ from vtkmodules.vtkRenderingLabel import vtkLabelPlacementMapper, vtkPointSetToLabelHierarchy
+-from vtkmodules.vtkRenderingOpenGL2 import (
++# Temporarily commented out for testing
++#from vtkmodules.vtkRenderingOpenGL2 import (
+     vtkCameraPass,
+     vtkCompositePolyDataMapper2,
+     vtkDepthOfFieldPass,
+diff --git a/pyvista/core/grid.py b/pyvista/core/grid.py
+index 6ce23688..23a5a806 100644
+--- a/pyvista/core/grid.py
++++ b/pyvista/core/grid.py
+@@ -135,23 +135,29 @@ class RectilinearGrid(_vtk.vtkRectilinearGrid, Grid, RectilinearGridFilters):
+                     self.shallow_copy(args[0])
+             elif isinstance(args[0], (str, pathlib.Path)):
+                 self._from_file(args[0], **kwargs)
+-            elif isinstance(args[0], np.ndarray):
+-                self._from_arrays(args[0], None, None, check_duplicates)
++            elif isinstance(args[0], (np.ndarray, Sequence)):
++                x = np.asarray(args[0])
++                self._from_arrays(x, None, None, check_duplicates)
+             else:
+                 raise TypeError(f'Type ({type(args[0])}) not understood by `RectilinearGrid`')
+ 
+         elif len(args) == 3 or len(args) == 2:
+-            arg0_is_arr = isinstance(args[0], np.ndarray)
+-            arg1_is_arr = isinstance(args[1], np.ndarray)
++            arg0_is_arr = isinstance(args[0], (np.ndarray, Sequence))
++            arg1_is_arr = isinstance(args[1], (np.ndarray, Sequence))
+             if len(args) == 3:
+-                arg2_is_arr = isinstance(args[2], np.ndarray)
++                arg2_is_arr = isinstance(args[2], (np.ndarray, Sequence))
+             else:
+                 arg2_is_arr = False
+ 
+             if all([arg0_is_arr, arg1_is_arr, arg2_is_arr]):
+-                self._from_arrays(args[0], args[1], args[2], check_duplicates)
++                x = np.asarray(args[0])
++                y = np.asarray(args[1])
++                z = np.asarray(args[2])
++                self._from_arrays(x, y, z, check_duplicates)
+             elif all([arg0_is_arr, arg1_is_arr]):
+-                self._from_arrays(args[0], args[1], None, check_duplicates)
++                x = np.asarray(args[0])
++                y = np.asarray(args[1])
++                self._from_arrays(x, y, None, check_duplicates)
+             else:
+                 raise TypeError("Arguments not understood by `RectilinearGrid`.")
+ 
+@@ -290,557 +296,4 @@ class RectilinearGrid(_vtk.vtkRectilinearGrid, Grid, RectilinearGridFilters):
+ 
+         Set the x coordinates of a RectilinearGrid.
+ 
+-        >>> grid.x = [-10.0, 0.0, 10.0]
+-        >>> grid.x
+-        array([-10.,   0.,  10.])
+-
+-        """
+-        return helpers.convert_array(self.GetXCoordinates())
+-
+-    @x.setter
+-    def x(self, coords: Sequence):
+-        """Set the coordinates along the X-direction."""
+-        self.SetXCoordinates(helpers.convert_array(coords))
+-        self._update_dimensions()
+-        self.Modified()
+-
+-    @property
+-    def y(self) -> np.ndarray:
+-        """Return or set the coordinates along the Y-direction.
+-
+-        Examples
+-        --------
+-        Return the y coordinates of a RectilinearGrid.
+-
+-        >>> import numpy as np
+-        >>> import pyvista
+-        >>> xrng = np.arange(-10, 10, 10, dtype=float)
+-        >>> yrng = np.arange(-10, 10, 10, dtype=float)
+-        >>> zrng = np.arange(-10, 10, 10, dtype=float)
+-        >>> grid = pyvista.RectilinearGrid(xrng, yrng, zrng)
+-        >>> grid.y
+-        array([-10.,   0.])
+-
+-        Set the y coordinates of a RectilinearGrid.
+-
+-        >>> grid.y = [-10.0, 0.0, 10.0]
+-        >>> grid.y
+-        array([-10.,   0.,  10.])
+-
+-        """
+-        return helpers.convert_array(self.GetYCoordinates())
+-
+-    @y.setter
+-    def y(self, coords: Sequence):
+-        """Set the coordinates along the Y-direction."""
+-        self.SetYCoordinates(helpers.convert_array(coords))
+-        self._update_dimensions()
+-        self.Modified()
+-
+-    @property
+-    def z(self) -> np.ndarray:
+-        """Return or set the coordinates along the Z-direction.
+-
+-        Examples
+-        --------
+-        Return the z coordinates of a RectilinearGrid.
+-
+-        >>> import numpy as np
+-        >>> import pyvista
+-        >>> xrng = np.arange(-10, 10, 10, dtype=float)
+-        >>> yrng = np.arange(-10, 10, 10, dtype=float)
+-        >>> zrng = np.arange(-10, 10, 10, dtype=float)
+-        >>> grid = pyvista.RectilinearGrid(xrng, yrng, zrng)
+-        >>> grid.z
+-        array([-10.,   0.])
+-
+-        Set the z coordinates of a RectilinearGrid.
+-
+-        >>> grid.z = [-10.0, 0.0, 10.0]
+-        >>> grid.z
+-        array([-10.,   0.,  10.])
+-
+-        """
+-        return helpers.convert_array(self.GetZCoordinates())
+-
+-    @z.setter
+-    def z(self, coords: Sequence):
+-        """Set the coordinates along the Z-direction."""
+-        self.SetZCoordinates(helpers.convert_array(coords))
+-        self._update_dimensions()
+-        self.Modified()
+-
+-    @Grid.dimensions.setter  # type: ignore
+-    def dimensions(self, dims):
+-        """Do not let the dimensions of the RectilinearGrid be set."""
+-        raise AttributeError(
+-            "The dimensions of a `RectilinearGrid` are implicitly "
+-            "defined and thus cannot be set."
+-        )
+-
+-    def cast_to_structured_grid(self) -> 'pyvista.StructuredGrid':
+-        """Cast this rectilinear grid to a structured grid.
+-
+-        Returns
+-        -------
+-        pyvista.StructuredGrid
+-            This grid as a structured grid.
+-
+-        """
+-        alg = _vtk.vtkRectilinearGridToPointSet()
+-        alg.SetInputData(self)
+-        alg.Update()
+-        return _get_output(alg)
+-
+-
+-class UniformGrid(_vtk.vtkImageData, Grid, UniformGridFilters):
+-    """Models datasets with uniform spacing in the three coordinate directions.
+-
+-    Can be initialized in one of several ways:
+-
+-    - Create empty grid
+-    - Initialize from a vtk.vtkImageData object
+-    - Initialize based on dimensions, cell spacing, and origin.
+-
+-    .. versionchanged:: 0.33.0
+-        First argument must now be either a path or
+-        ``vtk.vtkImageData``. Use keyword arguments to specify the
+-        dimensions, spacing, and origin of the uniform grid.
+-
+-    .. versionchanged:: 0.37.0
+-        The ``dims`` parameter has been renamed to ``dimensions``.
+-
+-    Parameters
+-    ----------
+-    uinput : str, vtk.vtkImageData, pyvista.UniformGrid, optional
+-        Filename or dataset to initialize the uniform grid from.  If
+-        set, remainder of arguments are ignored.
+-
+-    dimensions : sequence[int], optional
+-        Dimensions of the uniform grid.
+-
+-    spacing : sequence[float], default: (1.0, 1.0, 1.0)
+-        Spacing of the uniform grid in each dimension. Must be positive.
+-
+-    origin : sequence[float], default: (0.0, 0.0, 0.0)
+-        Origin of the uniform grid.
+-
+-    deep : bool, default: False
+-        Whether to deep copy a ``vtk.vtkImageData`` object.  Keyword only.
+-
+-    Examples
+-    --------
+-    Create an empty UniformGrid.
+-
+-    >>> import pyvista
+-    >>> grid = pyvista.UniformGrid()
+-
+-    Initialize from a ``vtk.vtkImageData`` object.
+-
+-    >>> import vtk
+-    >>> vtkgrid = vtk.vtkImageData()
+-    >>> grid = pyvista.UniformGrid(vtkgrid)
+-
+-    Initialize using just the grid dimensions and default
+-    spacing and origin. These must be keyword arguments.
+-
+-    >>> grid = pyvista.UniformGrid(dimensions=(10, 10, 10))
+-
+-    Initialize using dimensions and spacing.
+-
+-    >>> grid = pyvista.UniformGrid(
+-    ...     dimensions=(10, 10, 10),
+-    ...     spacing=(2, 1, 5),
+-    ... )
+-
+-    Initialize using dimensions, spacing, and an origin.
+-
+-    >>> grid = pyvista.UniformGrid(
+-    ...     dimensions=(10, 10, 10),
+-    ...     spacing=(2, 1, 5),
+-    ...     origin=(10, 35, 50),
+-    ... )
+-
+-    Initialize from another UniformGrid.
+-
+-    >>> grid = pyvista.UniformGrid(
+-    ...     dimensions=(10, 10, 10),
+-    ...     spacing=(2, 1, 5),
+-    ...     origin=(10, 35, 50),
+-    ... )
+-    >>> grid_from_grid = pyvista.UniformGrid(grid)
+-    >>> grid_from_grid == grid
+-    True
+-
+-    """
+-
+-    _WRITERS = {'.vtk': _vtk.vtkDataSetWriter, '.vti': _vtk.vtkXMLImageDataWriter}
+-
+-    def __init__(
+-        self,
+-        uinput=None,
+-        *args,
+-        dimensions=None,
+-        spacing=(1.0, 1.0, 1.0),
+-        origin=(0.0, 0.0, 0.0),
+-        deep=False,
+-        **kwargs,
+-    ):
+-        """Initialize the uniform grid."""
+-        super().__init__()
+-
+-        # permit old behavior
+-        if isinstance(uinput, Sequence) and not isinstance(uinput, str):
+-            # Deprecated on v0.37.0, estimated removal on v0.40.0
+-            warnings.warn(
+-                "Behavior of pyvista.UniformGrid has changed. First argument must be "
+-                "either a ``vtk.vtkImageData`` or path.",
+-                PyVistaDeprecationWarning,
+-            )
+-            dimensions = uinput
+-            uinput = None
+-
+-        if dimensions is None and 'dims' in kwargs:
+-            dimensions = kwargs.pop('dims')
+-            # Deprecated on v0.37.0, estimated removal on v0.40.0
+-            warnings.warn(
+-                '`dims` argument is deprecated. Please use `dimensions`.', PyVistaDeprecationWarning
+-            )
+-        assert_empty_kwargs(**kwargs)
+-
+-        if args:
+-            # Deprecated on v0.37.0, estimated removal on v0.40.0
+-            warnings.warn(
+-                "Behavior of pyvista.UniformGrid has changed. Use keyword arguments "
+-                "to specify dimensions, spacing, and origin. For example:\n\n"
+-                "    >>> grid = pyvista.UniformGrid(\n"
+-                "    ...     dimensions=(10, 10, 10),\n"
+-                "    ...     spacing=(2, 1, 5

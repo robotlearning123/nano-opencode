@@ -1,0 +1,45 @@
+diff --git a/pydicom/tests/test_valuerep.py b/pydicom/tests/test_valuerep.py
+index ad5a62d99..5fb9f9dc0 100644
+--- a/pydicom/tests/test_valuerep.py
++++ b/pydicom/tests/test_valuerep.py
+@@ -427,6 +427,22 @@ class TestPersonName:
+         )
+         assert hash(pn1) == hash(pn2)
+ 
++    def test_contains(self):
++        """Test that the `in` operator works with PersonName objects."""
++        pn = PersonName("SomeName")
++        assert "S" in pn
++        assert "ome" in pn
++        assert "SomeName" in pn
++        assert "X" not in pn
++        assert "" in pn
++
++        # Test with multi-component name
++        pn = PersonName("Family^Given")
++        assert "Family" in pn
++        assert "Given" in pn
++        assert "^" in pn
++        assert "Name" not in pn
++
+ 
+ class TestDateTime:
+     """Unit tests for DA, DT, TM conversion to datetime objects"""
+diff --git a/pydicom/valuerep.py b/pydicom/valuerep.py
+index e992f7872..d293b92c9 100644
+--- a/pydicom/valuerep.py
++++ b/pydicom/valuerep.py
+@@ -826,6 +826,13 @@ class PersonName:
+                     (len(self._components) > 1 or bool(self._components[0])))
+         return bool(self.original_string)
+ 
++    def __contains__(self, item):
++        """Return True if `item` is contained within the person name string.
++        
++        .. versionadded:: 1.3
++        """
++        return item in str(self)
++
+ 
+ # Alias old class names for backwards compat in user code
+ PersonNameUnicode = PersonName = PersonName

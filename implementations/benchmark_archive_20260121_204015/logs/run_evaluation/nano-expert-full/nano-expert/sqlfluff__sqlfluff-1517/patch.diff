@@ -1,0 +1,121 @@
+diff --git a/src/sqlfluff/core/parser/grammar/delimited.py b/src/sqlfluff/core/parser/grammar/delimited.py
+index 39a350373..7e64f60b7 100644
+--- a/src/sqlfluff/core/parser/grammar/delimited.py
++++ b/src/sqlfluff/core/parser/grammar/delimited.py
+@@ -4,7 +4,7 @@ from typing import Tuple, List
+ 
+ from sqlfluff.core.parser.grammar import Ref
+ from sqlfluff.core.parser.segments import BaseSegment, allow_ephemeral
+-from sqlfluff.core.parser.helpers import trim_non_code_segments
++from sqlfluff.core.parser.helpers import trim_non_code_segments, join_segments_raw
+ from sqlfluff.core.parser.match_result import MatchResult
+ from sqlfluff.core.parser.match_wrapper import match_wrapper
+ from sqlfluff.core.parser.context import ParseContext
+@@ -65,7 +65,13 @@ class Delimited(OneOf):
+ 
+         # In more detail, match against delimiter, if we match, put a slice
+         # up to that point onto a list of slices. Carry on.
++        loop_count = 0
+         while True:
++            loop_count += 1
++            print(f"\n=== Delimited: Loop iteration {loop_count} ===")
++            print(f"seg_buff: {join_segments_raw(seg_buff)!r}")
++            print(f"matched_segments so far: {matched_segments.raw_matched()!r}")
++            print(f"===\n")
+             # Check to see whether we've exhausted the buffer, either by iterating through it,
+             # or by consuming all the non-code segments already.
+             # NB: If we're here then we've already tried matching the remaining segments against
+@@ -156,6 +162,11 @@ class Delimited(OneOf):
+                         matched_segments += delimiter_match.matched_segments
+                         # Break this for loop and move on, looking for the next delimiter
+                         seg_buff = delimiter_match.unmatched_segments
++                        # DEBUG
++                        print(f"\n=== Delimited: After delimiter match ===")
++                        print(f"matched_segments so far: {matched_segments.raw_matched()!r}")
++                        print(f"seg_buff (unmatched): {join_segments_raw(seg_buff)!r}")
++                        print(f"===\n")
+                         # Still got some buffer left. Carry on.
+                         continue
+                     # Terminator (or the gap terminator).
+@@ -198,54 +209,4 @@ class Delimited(OneOf):
+                 if self.min_delimiters and len(delimiters) < self.min_delimiters:
+                     return MatchResult.from_unmatched(mutated_segments)
+ 
+-                # We use the whitespace padded match to hoover up whitespace if enabled,
+-                # and default to the longest matcher. We don't care which one matches.
+-                pre_non_code, trimmed_segments, post_non_code = trim_non_code_segments(
+-                    mutated_segments
+-                )
+-                # Check for whitespace gaps.
+-                # We do this explicitly here rather than relying on an
+-                # untrimmed match so we can handle _whitespace_ explicitly
+-                # compared to other non code segments like placeholders.
+-                if not self.allow_gaps and any(
+-                    seg.is_whitespace for seg in pre_non_code + post_non_code
+-                ):
+-                    return MatchResult.from_unmatched(
+-                        mutated_segments
+-                    )  # pragma: no cover TODO?
+-
+-                with parse_context.deeper_match() as ctx:
+-                    mat, _ = self._longest_trimmed_match(
+-                        trimmed_segments,
+-                        self._elements,
+-                        parse_context=ctx,
+-                        # We've already trimmed
+-                        trim_noncode=False,
+-                    )
+-
+-                if mat:
+-                    # We've got something at the end. Return!
+-                    if mat.unmatched_segments:
+-                        # We have something unmatched and so we should let it also have the trailing elements
+-                        return MatchResult(
+-                            matched_segments.matched_segments
+-                            + pre_non_code
+-                            + mat.matched_segments,
+-                            mat.unmatched_segments + post_non_code,
+-                        )
+-                    else:
+-                        # If there's nothing unmatched in the most recent match, then we can consume the trailing
+-                        # non code segments
+-                        return MatchResult.from_matched(
+-                            matched_segments.matched_segments
+-                            + pre_non_code
+-                            + mat.matched_segments
+-                            + post_non_code,
+-                        )
+-                else:
+-                    # No match at the end, are we allowed to trail? If we are then return,
+-                    # otherwise we fail because we can't match the last element.
+-                    if self.allow_trailing:
+-                        return MatchResult(matched_segments.matched_segments, seg_buff)
+-                    else:
+-                        return MatchResult.from_unmatched(mutated_segments)
++                # We use the whitespace padded matc
+diff --git a/src/sqlfluff/core/parser/helpers.py b/src/sqlfluff/core/parser/helpers.py
+index 718b673ed..0922f495f 100644
+--- a/src/sqlfluff/core/parser/helpers.py
++++ b/src/sqlfluff/core/parser/helpers.py
+@@ -27,6 +27,16 @@ def check_still_complete(
+     initial_str = join_segments_raw(segments_in)
+     current_str = join_segments_raw(matched_segments + unmatched_segments)
+     if initial_str != current_str:  # pragma: no cover
++        import traceback
++        print("\n=== check_still_complete FAILURE ===")
++        print(f"segments_in ({len(segments_in)}): {segments_in}")
++        print(f"matched_segments ({len(matched_segments)}): {matched_segments}")
++        print(f"unmatched_segments ({len(unmatched_segments)}): {unmatched_segments}")
++        print(f"initial_str: {initial_str!r}")
++        print(f"current_str: {current_str!r}")
++        print("\nTraceback:")
++        traceback.print_stack()
++        print("=== END ===\n")
+         raise RuntimeError(
+             "Dropped elements in sequence matching! {!r} != {!r}".format(
+                 initial_str, current_str
+@@ -82,3 +92,4 @@ def iter_indices(seq: List, val: Any) -> Iterator[int]:
+     for idx, el in enumerate(seq):
+         if el == val:
+             yield idx
++

@@ -1,0 +1,9 @@
+{
+  "instance_id": "sqlfluff__sqlfluff-1763",
+  "model_name_or_path": "anthropic/claude-sonnet-4-20250514",
+  "model_patch": "",
+  "exit_status": "Error: KeyError",
+  "cost": 0.0,
+  "tool_calls": 0,
+  "time": 36.76025438308716
+}

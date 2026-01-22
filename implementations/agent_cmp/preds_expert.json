@@ -1,0 +1,17 @@
+{
+  "sqlfluff__sqlfluff-1625": {
+    "instance_id": "sqlfluff__sqlfluff-1625",
+    "model_name_or_path": "nano-expert",
+    "model_patch": "diff --git a/src/sqlfluff/rules/L031.py b/src/sqlfluff/rules/L031.py\nindex 838c6ce5d..2face184f 100644\n--- a/src/sqlfluff/rules/L031.py\n+++ b/src/sqlfluff/rules/L031.py\n@@ -62,6 +62,12 @@ class Rule_L031(BaseRule):\n             if not from_clause_segment:\n                 return None\n \n+            # Only check for aliases if there are join clauses.\n+            # If there are no joins, aliases in the FROM clause are acceptable.\n+            join_clauses = list(from_clause_segment.recursive_crawl(\"join_clause\"))\n+            if not join_clauses:\n+                return None\n+\n             from_expression = from_clause_segment.get_child(\"from_expression\")\n             from_expression_element = None\n             if from_expression:\n@@ -217,3 +223,4 @@ class Rule_L031(BaseRule):\n             )\n \n         return violation_buff or None\n+\ndiff --git a/test/fixtures/rules/std_rule_cases/L031.yml b/test/fixtures/rules/std_rule_cases/L031.yml\nindex 40b41639a..a2947cdec 100644\n--- a/test/fixtures/rules/std_rule_cases/L031.yml\n+++ b/test/fixtures/rules/std_rule_cases/L031.yml\n@@ -79,12 +79,10 @@ test_fail_avoid_aliases_3:\n     order by o desc\n \n alias_single_char_identifiers:\n-  fail_str: \"select b from tbl as a\"\n-  fix_str: \"select b from tbl\"\n+  pass_str: \"select b from tbl as a\"\n \n alias_with_wildcard_identifier:\n-  fail_str: \"select * from tbl as a\"\n-  fix_str: \"select * from tbl\"\n+  pass_str: \"select * from tbl as a\"\n \n select_from_values:\n   pass_str: |\n@@ -168,3 +166,4 @@ issue_1589:\n               rnd>=t.v\n          order by rnd\n          limit 1)\n+\n"
+  },
+  "sqlfluff__sqlfluff-2419": {
+    "instance_id": "sqlfluff__sqlfluff-2419",
+    "model_name_or_path": "nano-expert",
+    "model_patch": "diff --git a/src/sqlfluff/rules/L060.py b/src/sqlfluff/rules/L060.py\nindex 836941edc..41ea0187a 100644\n--- a/src/sqlfluff/rules/L060.py\n+++ b/src/sqlfluff/rules/L060.py\n@@ -59,4 +59,9 @@ class Rule_L060(BaseRule):\n             ],\n         )\n \n-        return LintResult(context.segment, [fix])\n+        return LintResult(\n+            context.segment,\n+            [fix],\n+            description=f\"Use 'COALESCE' instead of '{context.segment.raw_upper}'.\",\n+        )\n+\n"
+  },
+  "sqlfluff__sqlfluff-1733": {
+    "instance_id": "sqlfluff__sqlfluff-1733",
+    "model_name_or_path": "nano-expert",
+    "model_patch": ""
+  }
+}

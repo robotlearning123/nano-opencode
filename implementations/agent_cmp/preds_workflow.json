@@ -1,0 +1,17 @@
+{
+  "sqlfluff__sqlfluff-1625": {
+    "instance_id": "sqlfluff__sqlfluff-1625",
+    "model_name_or_path": "nano-workflow",
+    "model_patch": "diff --git a/src/sqlfluff/rules/L031.py b/src/sqlfluff/rules/L031.py\nindex 838c6ce5d..a0bf80bc7 100644\n--- a/src/sqlfluff/rules/L031.py\n+++ b/src/sqlfluff/rules/L031.py\n@@ -83,6 +83,16 @@ class Rule_L031(BaseRule):\n             from_clause_index = segment.segments.index(from_clause_segment)\n             from_clause_and_after = segment.segments[from_clause_index:]\n \n+            # Check if there are any join clauses. If not, return None.\n+            has_join = False\n+            for clause in from_clause_and_after:\n+                if list(clause.recursive_crawl(\"join_clause\")):\n+                    has_join = True\n+                    break\n+            \n+            if not has_join:\n+                return None\n+\n             for clause in from_clause_and_after:\n                 for from_expression_element in clause.recursive_crawl(\n                     \"from_expression_element\"\n@@ -217,3 +227,4 @@ class Rule_L031(BaseRule):\n             )\n \n         return violation_buff or None\n+\n"
+  },
+  "sqlfluff__sqlfluff-2419": {
+    "instance_id": "sqlfluff__sqlfluff-2419",
+    "model_name_or_path": "nano-workflow",
+    "model_patch": "diff --git a/src/sqlfluff/rules/L060.py b/src/sqlfluff/rules/L060.py\nindex 836941edc..349dde42f 100644\n--- a/src/sqlfluff/rules/L060.py\n+++ b/src/sqlfluff/rules/L060.py\n@@ -59,4 +59,8 @@ class Rule_L060(BaseRule):\n             ],\n         )\n \n-        return LintResult(context.segment, [fix])\n+        # Create a specific description based on which function was used.\n+        description = f\"Use 'COALESCE' instead of '{context.segment.raw}'.\"\n+\n+        return LintResult(context.segment, [fix], description=description)\n+\n"
+  },
+  "sqlfluff__sqlfluff-1733": {
+    "instance_id": "sqlfluff__sqlfluff-1733",
+    "model_name_or_path": "nano-workflow",
+    "model_patch": ""
+  }
+}

@@ -1,0 +1,26 @@
+diff --git a/src/sqlfluff/rules/L031.py b/src/sqlfluff/rules/L031.py
+index 838c6ce5d..a0bf80bc7 100644
+--- a/src/sqlfluff/rules/L031.py
++++ b/src/sqlfluff/rules/L031.py
+@@ -83,6 +83,16 @@ class Rule_L031(BaseRule):
+             from_clause_index = segment.segments.index(from_clause_segment)
+             from_clause_and_after = segment.segments[from_clause_index:]
+ 
++            # Check if there are any join clauses. If not, return None.
++            has_join = False
++            for clause in from_clause_and_after:
++                if list(clause.recursive_crawl("join_clause")):
++                    has_join = True
++                    break
++            
++            if not has_join:
++                return None
++
+             for clause in from_clause_and_after:
+                 for from_expression_element in clause.recursive_crawl(
+                     "from_expression_element"
+@@ -217,3 +227,4 @@ class Rule_L031(BaseRule):
+             )
+ 
+         return violation_buff or None
++
