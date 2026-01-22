@@ -1,0 +1,14 @@
+diff --git a/src/sqlfluff/rules/L060.py b/src/sqlfluff/rules/L060.py
+index 836941edc..349dde42f 100644
+--- a/src/sqlfluff/rules/L060.py
++++ b/src/sqlfluff/rules/L060.py
+@@ -59,4 +59,8 @@ class Rule_L060(BaseRule):
+             ],
+         )
+ 
+-        return LintResult(context.segment, [fix])
++        # Create a specific description based on which function was used.
++        description = f"Use 'COALESCE' instead of '{context.segment.raw}'."
++
++        return LintResult(context.segment, [fix], description=description)
++

@@ -1,0 +1,17 @@
+{
+  "sqlfluff__sqlfluff-1625": {
+    "instance_id": "sqlfluff__sqlfluff-1625",
+    "model_name_or_path": "nano-minimal",
+    "model_patch": ""
+  },
+  "sqlfluff__sqlfluff-2419": {
+    "instance_id": "sqlfluff__sqlfluff-2419",
+    "model_name_or_path": "nano-minimal",
+    "model_patch": "diff --git a/src/sqlfluff/rules/L060.py b/src/sqlfluff/rules/L060.py\nindex 836941edc..166eca02d 100644\n--- a/src/sqlfluff/rules/L060.py\n+++ b/src/sqlfluff/rules/L060.py\n@@ -59,4 +59,10 @@ class Rule_L060(BaseRule):\n             ],\n         )\n \n-        return LintResult(context.segment, [fix])\n+        # Provide a specific error message based on which function was found.\n+        return LintResult(\n+            context.segment,\n+            [fix],\n+            description=f\"Use 'COALESCE' instead of '{context.segment.raw_upper}'.\",\n+        )\n+\n"
+  },
+  "sqlfluff__sqlfluff-1733": {
+    "instance_id": "sqlfluff__sqlfluff-1733",
+    "model_name_or_path": "nano-minimal",
+    "model_patch": "diff --git a/src/sqlfluff/__init__.py b/src/sqlfluff/__init__.py\nindex 677a56fcc..ad048c497 100644\n--- a/src/sqlfluff/__init__.py\n+++ b/src/sqlfluff/__init__.py\n@@ -1,6 +1,5 @@\n \"\"\"Sqlfluff is a SQL linter for humans.\"\"\"\n import sys\n-import pytest\n \n # Expose the public API.\n from sqlfluff.api import lint, fix, parse, list_rules, list_dialects  # noqa: F401\n@@ -26,4 +25,10 @@ elif sys.version_info[1] < 6:\n     )\n \n # Register helper functions to support variable introspection on failure.\n-pytest.register_assert_rewrite(\"sqlfluff.testing\")\n+try:\n+    import pytest\n+    pytest.register_assert_rewrite(\"sqlfluff.testing\")\n+except (ImportError, AttributeError):\n+    # pytest not available or incompatible version\n+    pass\n+\n"
+  }
+}

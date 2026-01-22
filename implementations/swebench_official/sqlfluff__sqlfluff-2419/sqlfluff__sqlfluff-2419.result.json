@@ -1,0 +1,9 @@
+{
+  "instance_id": "sqlfluff__sqlfluff-2419",
+  "model_name_or_path": "anthropic/claude-sonnet-4-20250514",
+  "model_patch": "diff --git a/src/sqlfluff/rules/L060.py b/src/sqlfluff/rules/L060.py\nindex 836941edc..41ea0187a 100644\n--- a/src/sqlfluff/rules/L060.py\n+++ b/src/sqlfluff/rules/L060.py\n@@ -59,4 +59,9 @@ class Rule_L060(BaseRule):\n             ],\n         )\n \n-        return LintResult(context.segment, [fix])\n+        return LintResult(\n+            context.segment,\n+            [fix],\n+            description=f\"Use 'COALESCE' instead of '{context.segment.raw_upper}'.\",\n+        )\n+\n",
+  "exit_status": "Submitted",
+  "cost": 1.934661,
+  "tool_calls": 40,
+  "time": 192.9811725616455
+}

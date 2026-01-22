@@ -1,0 +1,14 @@
+diff --git a/astroid/brain/brain_builtin_inference.py b/astroid/brain/brain_builtin_inference.py
+index af1ddf4d..8afb8023 100644
+--- a/astroid/brain/brain_builtin_inference.py
++++ b/astroid/brain/brain_builtin_inference.py
+@@ -957,6 +957,9 @@ def _infer_str_format_call(
+     except (IndexError, KeyError):
+         # If there is an IndexError there are too few arguments to interpolate
+         return iter([util.Uninferable])
++    except TypeError:
++        # If there is a TypeError, the format specifiers don't match the argument types
++        return iter([util.Uninferable])
+ 
+     return iter([nodes.const_factory(formatted_string)])
+ 

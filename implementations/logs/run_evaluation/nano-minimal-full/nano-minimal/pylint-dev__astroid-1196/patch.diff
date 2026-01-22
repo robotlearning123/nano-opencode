@@ -1,0 +1,34 @@
+diff --git a/astroid/nodes/node_classes.py b/astroid/nodes/node_classes.py
+index 11136f8c..4b4ebd82 100644
+--- a/astroid/nodes/node_classes.py
++++ b/astroid/nodes/node_classes.py
+@@ -2361,10 +2361,27 @@ class Dict(NodeNG, Instance):
+             # TODO(cpopa): no support for overriding yet, {1:2, **{1: 3}}.
+             if isinstance(key, DictUnpack):
+                 try:
+-                    return value.getitem(index, context)
+-                except (AstroidTypeError, AstroidIndexError):
++                    # Try to infer the actual value from the unpacked dict
++                    for inferred_value in value.infer(context):
++                        if inferred_value is util.Uninferable:
++                            continue
++                        if isinstance(inferred_value, Dict):
++                            try:
++                                return inferred_value.getitem(index, context)
++                            except (AstroidTypeError, AstroidIndexError):
++                                continue
++                        # If it's not a Dict but has getitem, try it
++                        elif hasattr(inferred_value, 'getitem'):
++                            try:
++                                return inferred_value.getitem(index, context)
++                            except (AstroidTypeError, AstroidIndexError):
++                                continue
++                except (InferenceError, StopIteration):
+                     continue
++                # If we couldn't infer or find a match, continue to next item
++                continue
+             for inferredkey in key.infer(context):
++
+                 if inferredkey is util.Uninferable:
+                     continue
+                 if isinstance(inferredkey, Const) and isinstance(index, Const):

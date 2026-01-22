@@ -1,0 +1,56 @@
+diff --git a/pydicom/tests/test_valuerep.py b/pydicom/tests/test_valuerep.py
+index ad5a62d99..1c7959878 100644
+--- a/pydicom/tests/test_valuerep.py
++++ b/pydicom/tests/test_valuerep.py
+@@ -427,6 +427,33 @@ class TestPersonName:
+         )
+         assert hash(pn1) == hash(pn2)
+ 
++    def test_contains(self):
++        """PN: Test the `in` operator for string membership."""
++        # Simple case
++        pn = PersonName("SomeName")
++        assert "S" in pn
++        assert "ome" in pn
++        assert "X" not in pn
++
++        # Component name
++        pn = PersonName("Doe^John")
++        assert "Doe" in pn
++        assert "John" in pn
++        assert "Jane" not in pn
++
++        # Multi-component name (alphabetic=ideographic=phonetic)
++        pn = PersonName(
++            "Yamada^Tarou=山田^太郎=やまだ^たろう", 
++            [default_encoding, "iso2022_jp"]
++        )
++        assert "Yamada" in pn
++        assert "山田" in pn
++        assert "太郎" in pn
++
++        # Empty name
++        pn = PersonName("")
++        assert "S" not in pn
++
+ 
+ class TestDateTime:
+     """Unit tests for DA, DT, TM conversion to datetime objects"""
+diff --git a/pydicom/valuerep.py b/pydicom/valuerep.py
+index e992f7872..3d992c2a6 100644
+--- a/pydicom/valuerep.py
++++ b/pydicom/valuerep.py
+@@ -756,6 +756,13 @@ class PersonName:
+     def __hash__(self):
+         return hash(self.components)
+ 
++    def __contains__(self, item):
++        """Return True if `item` is in the string representation.
++        
++        .. versionadded:: 1.3
++        """
++        return item in str(self)
++
+     def decode(self, encodings=None):
+         """Return the patient name decoded by the given `encodings`.
+ 

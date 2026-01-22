@@ -1,0 +1,149 @@
+diff --git a/pvlib/pvsystem.py b/pvlib/pvsystem.py
+index fecc930..90e7397 100644
+--- a/pvlib/pvsystem.py
++++ b/pvlib/pvsystem.py
+@@ -1942,7 +1942,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
+ 
+ 
+ def max_power_point(photocurrent, saturation_current, resistance_series,
+-                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+                     method='brentq'):
+     """
+     Given the single diode equation coefficients, calculates the maximum power
+@@ -1989,7 +1989,7 @@ def max_power_point(photocurrent, saturation_current, resistance_series,
+     """
+     i_mp, v_mp, p_mp = _singlediode.bishop88_mpp(
+         photocurrent, saturation_current, resistance_series,
+-        resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++        resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+         method=method.lower()
+     )
+     if isinstance(photocurrent, pd.Series):
+diff --git a/pvlib/singlediode.py b/pvlib/singlediode.py
+index b800e1c..e056d7d 100644
+--- a/pvlib/singlediode.py
++++ b/pvlib/singlediode.py
+@@ -56,7 +56,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
+ 
+ def bishop88(diode_voltage, photocurrent, saturation_current,
+              resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+-             NsVbi=np.Inf, breakdown_factor=0., breakdown_voltage=-5.5,
++             NsVbi=np.inf, breakdown_factor=0., breakdown_voltage=-5.5,
+              breakdown_exp=3.28, gradients=False):
+     r"""
+     Explicit calculation of points on the IV curve described by the single
+@@ -204,7 +204,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
+ 
+ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton'):
+     """
+@@ -292,7 +292,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+ 
+ def bishop88_v_from_i(current, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton'):
+     """
+@@ -378,7 +378,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
+ 
+ 
+ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
+-                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+                  breakdown_factor=0., breakdown_voltage=-5.5,
+                  breakdown_exp=3.28, method='newton'):
+     """
+@@ -688,3 +688,7 @@ def _pwr_optfcn(df, loc):
+                            df['nNsVth'], df[loc], df['i_0'], df['i_l'])
+ 
+     return I * df[loc]
++
++
++
++
+diff --git a/pvlib/temperature.py b/pvlib/temperature.py
+index 1d98736..531a346 100644
+--- a/pvlib/temperature.py
++++ b/pvlib/temperature.py
+@@ -599,7 +599,7 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
+     # n.b. the way Fuentes calculates the first timedelta makes it seem like
+     # the value doesn't matter -- rather than recreate it here, just assume
+     # it's the same as the second timedelta:
+-    timedelta_hours = np.diff(poa_global.index).astype(float) / 1e9 / 60 / 60
++    timedelta_hours = pd.TimedeltaIndex(np.diff(poa_global.index)).total_seconds() / 3600
+     timedelta_hours = np.append([timedelta_hours[0]], timedelta_hours)
+ 
+     tamb_array = temp_air + 273.15
+@@ -657,3 +657,4 @@ def fuentes(poa_global, temp_air, wind_speed, noct_installed, module_height=5,
+         sun0 = sun
+ 
+     return pd.Series(tmod_array - 273.15, index=poa_global.index, name='tmod')
++
+diff --git a/pvlib/tests/test_singlediode.py b/pvlib/tests/test_singlediode.py
+index ee20e48..a5186f4 100644
+--- a/pvlib/tests/test_singlediode.py
++++ b/pvlib/tests/test_singlediode.py
+@@ -203,7 +203,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
+         # other conditions with breakdown model on and recombination model off
+         (
+             (1.e-4, -5.5, 3.28),
+-            (0., np.Inf),
++            (0., np.inf),
+             POA,
+             TCELL,
+             {
+diff --git a/pvlib/tests/test_temperature.py b/pvlib/tests/test_temperature.py
+index 245c5d2..8e6a9ac 100644
+--- a/pvlib/tests/test_temperature.py
++++ b/pvlib/tests/test_temperature.py
+@@ -190,3 +190,43 @@ def test_fuentes(filename, inoct):
+     night_difference = expected_tcell[is_night] - actual_tcell[is_night]
+     assert night_difference.max() < 6
+     assert night_difference.min() > 0
++
++
++def test_fuentes_tz_aware():
++    # Test that fuentes works with timezone-aware DatetimeIndex
++    # GitHub issue: timezone-aware inputs cause errors in pandas>=1.0.0
++    times_naive = pd.date_range('2019-01-01', freq='h', periods=3)
++    inputs_naive = {
++        'poa_global': pd.Series(1000, index=times_naive),
++        'temp_air': pd.Series(20, index=times_naive),
++        'wind_speed': pd.Series(1, index=times_naive),
++        'noct_installed': 45
++    }
++    
++    # Test with timezone-aware UTC index
++    times_utc = times_naive.tz_localize('UTC')
++    inputs_utc = {
++        'poa_global': pd.Series(1000, index=times_utc),
++        'temp_air': pd.Series(20, index=times_utc),
++        'wind_speed': pd.Series(1, index=times_utc),
++        'noct_installed': 45
++    }
++    
++    result_naive = temperature.fuentes(**inputs_naive)
++    result_utc = temperature.fuentes(**inputs_utc)
++    
++    # Results should be identical
++    assert_allclose(result_naive.values, result_utc.values)
++    
++    # Test with a different timezone
++    times_mst = times_naive.tz_localize('US/Mountain')
++    inputs_mst = {
++        'poa_global': pd.Series(1000, index=times_mst),
++        'temp_air': pd.Series(20, index=times_mst),
++        'wind_speed': pd.Series(1, index=times_mst),
++        'noct_installed': 45
++    }
++    
++    result_mst = temperature.fuentes(**inputs_mst)
++    assert_allclose(result_naive.values, result_mst.values)
++

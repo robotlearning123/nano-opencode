@@ -1,0 +1,9 @@
+{
+  "instance_id": "marshmallow-code__marshmallow-1359",
+  "model_name_or_path": "anthropic/claude-sonnet-4-20250514",
+  "model_patch": "diff --git a/src/marshmallow/fields.py b/src/marshmallow/fields.py\nindex 0b18e7dd..320affe1 100644\n--- a/src/marshmallow/fields.py\n+++ b/src/marshmallow/fields.py\n@@ -1112,11 +1112,14 @@ class DateTime(Field):\n \n     def _bind_to_schema(self, field_name, schema):\n         super()._bind_to_schema(field_name, schema)\n-        self.format = (\n-            self.format\n-            or getattr(schema.opts, self.SCHEMA_OPTS_VAR_NAME)\n-            or self.DEFAULT_FORMAT\n-        )\n+        if isinstance(schema, SchemaABC):\n+            self.format = (\n+                self.format\n+                or getattr(schema.opts, self.SCHEMA_OPTS_VAR_NAME)\n+                or self.DEFAULT_FORMAT\n+            )\n+        else:\n+            self.format = self.format or self.DEFAULT_FORMAT\n \n     def _serialize(self, value, attr, obj, **kwargs):\n         if value is None:\n@@ -1691,3 +1694,4 @@ URL = Url\n Str = String\n Bool = Boolean\n Int = Integer\n+\n",
+  "exit_status": "MaxTurns",
+  "cost": 7.860872999999999,
+  "tool_calls": 50,
+  "time": 425.02435660362244
+}

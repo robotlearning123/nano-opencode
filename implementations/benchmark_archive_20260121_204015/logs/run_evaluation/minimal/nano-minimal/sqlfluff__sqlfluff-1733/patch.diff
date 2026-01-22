@@ -1,0 +1,23 @@
+diff --git a/src/sqlfluff/__init__.py b/src/sqlfluff/__init__.py
+index 677a56fcc..ad048c497 100644
+--- a/src/sqlfluff/__init__.py
++++ b/src/sqlfluff/__init__.py
+@@ -1,6 +1,5 @@
+ """Sqlfluff is a SQL linter for humans."""
+ import sys
+-import pytest
+ 
+ # Expose the public API.
+ from sqlfluff.api import lint, fix, parse, list_rules, list_dialects  # noqa: F401
+@@ -26,4 +25,10 @@ elif sys.version_info[1] < 6:
+     )
+ 
+ # Register helper functions to support variable introspection on failure.
+-pytest.register_assert_rewrite("sqlfluff.testing")
++try:
++    import pytest
++    pytest.register_assert_rewrite("sqlfluff.testing")
++except (ImportError, AttributeError):
++    # pytest not available or incompatible version
++    pass
++

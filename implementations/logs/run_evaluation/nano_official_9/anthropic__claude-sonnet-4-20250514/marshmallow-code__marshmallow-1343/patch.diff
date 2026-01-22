@@ -1,0 +1,68 @@
+diff --git a/src/marshmallow/marshalling.py b/src/marshmallow/marshalling.py
+index feb7d1aa..c36dbdde 100644
+--- a/src/marshmallow/marshalling.py
++++ b/src/marshmallow/marshalling.py
+@@ -13,7 +13,7 @@ from __future__ import unicode_literals
+ import collections
+ 
+ from marshmallow.utils import is_collection, missing, set_value
+-from marshmallow.compat import text_type, iteritems
++from marshmallow.compat import text_type, iteritems, Mapping
+ from marshmallow.exceptions import (
+     ValidationError,
+ )
+@@ -250,7 +250,7 @@ class Unmarshaller(ErrorStore):
+ 
+         ret = dict_class()
+ 
+-        if not isinstance(data, collections.Mapping):
++        if not isinstance(data, Mapping):
+             errors = self.get_errors(index=index)
+             msg = 'Invalid input type.'
+             self.error_field_names = [SCHEMA]
+@@ -306,3 +306,5 @@ class Unmarshaller(ErrorStore):
+ 
+     # Make an instance callable
+     __call__ = deserialize
++
++
+diff --git a/src/marshmallow/schema.py b/src/marshmallow/schema.py
+index 085c509b..b150b253 100644
+--- a/src/marshmallow/schema.py
++++ b/src/marshmallow/schema.py
+@@ -671,7 +671,8 @@ class BaseSchema(base.SchemaABC):
+                 )
+             except ValidationError as error:
+                 result = error.data
+-            self._invoke_field_validators(unmarshal, data=result, many=many)
++            if result is not None:
++                self._invoke_field_validators(unmarshal, data=result, many=many)
+             errors = unmarshal.errors
+             field_errors = bool(errors)
+             # Run schema-level migration
+@@ -875,6 +876,9 @@ class BaseSchema(base.SchemaABC):
+ 
+             if many:
+                 for idx, item in enumerate(data):
++                    # Skip if item is None (e.g., when validation failed for a nested field)
++                    if item is None:
++                        continue
+                     try:
+                         value = item[field_obj.attribute or field_name]
+                     except KeyError:
+@@ -890,6 +894,9 @@ class BaseSchema(base.SchemaABC):
+                         if validated_value is missing:
+                             data[idx].pop(field_name, None)
+             else:
++                # Skip if data is None (e.g., when validation failed for a nested field)
++                if data is None:
++                    continue
+                 try:
+                     value = data[field_obj.attribute or field_name]
+                 except KeyError:
+@@ -966,3 +973,5 @@ class BaseSchema(base.SchemaABC):
+ 
+ class Schema(with_metaclass(SchemaMeta, BaseSchema)):
+     __doc__ = BaseSchema.__doc__
++
++

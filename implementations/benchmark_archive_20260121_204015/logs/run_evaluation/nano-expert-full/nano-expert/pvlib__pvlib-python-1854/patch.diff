@@ -1,0 +1,266 @@
+diff --git a/pvlib/pvsystem.py b/pvlib/pvsystem.py
+index c277a77..3c7eb50 100644
+--- a/pvlib/pvsystem.py
++++ b/pvlib/pvsystem.py
+@@ -220,6 +220,9 @@ class PVSystem:
+                 strings_per_inverter,
+                 array_losses_parameters,
+             ),)
++        elif isinstance(arrays, Array):
++            # Single Array instance passed, wrap in tuple
++            self.arrays = (arrays,)
+         elif len(arrays) == 0:
+             raise ValueError("PVSystem must have at least one Array. "
+                              "If you want to create a PVSystem instance "
+@@ -270,2743 +273,4 @@ class PVSystem:
+             raise ValueError("Length mismatch for per-array parameter")
+         return values
+ 
+-    @_unwrap_single_value
+-    def _infer_cell_type(self):
+-        """
+-        Examines module_parameters and maps the Technology key for the CEC
+-        database and the Material key for the Sandia database to a common
+-        list of strings for cell type.
+-
+-        Returns
+-        -------
+-        cell_type: str
+-        """
+-        return tuple(array._infer_cell_type() for array in self.arrays)
+-
+-    @_unwrap_single_value
+-    def get_aoi(self, solar_zenith, solar_azimuth):
+-        """Get the angle of incidence on the Array(s) in the system.
+-
+-        Parameters
+-        ----------
+-        solar_zenith : float or Series.
+-            Solar zenith angle.
+-        solar_azimuth : float or Series.
+-            Solar azimuth angle.
+-
+-        Returns
+-        -------
+-        aoi : Series or tuple of Series
+-            The angle of incidence
+-        """
+-
+-        return tuple(array.get_aoi(solar_zenith, solar_azimuth)
+-                     for array in self.arrays)
+-
+-    @_unwrap_single_value
+-    def get_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
+-                       dni_extra=None, airmass=None, albedo=None,
+-                       model='haydavies', **kwargs):
+-        """
+-        Uses the :py:func:`irradiance.get_total_irradiance` function to
+-        calculate the plane of array irradiance components on the tilted
+-        surfaces defined by each array's ``surface_tilt`` and
+-        ``surface_azimuth``.
+-
+-        Parameters
+-        ----------
+-        solar_zenith : float or Series
+-            Solar zenith angle.
+-        solar_azimuth : float or Series
+-            Solar azimuth angle.
+-        dni : float or Series or tuple of float or Series
+-            Direct Normal Irradiance. [W/m2]
+-        ghi : float or Series or tuple of float or Series
+-            Global horizontal irradiance. [W/m2]
+-        dhi : float or Series or tuple of float or Series
+-            Diffuse horizontal irradiance. [W/m2]
+-        dni_extra : None, float, Series or tuple of float or Series,\
+-            default None
+-            Extraterrestrial direct normal irradiance. [W/m2]
+-        airmass : None, float or Series, default None
+-            Airmass. [unitless]
+-        albedo : None, float or Series, default None
+-            Ground surface albedo. [unitless]
+-        model : String, default 'haydavies'
+-            Irradiance model.
+-
+-        kwargs
+-            Extra parameters passed to :func:`irradiance.get_total_irradiance`.
+-
+-        Notes
+-        -----
+-        Each of `dni`, `ghi`, and `dni` parameters may be passed as a tuple
+-        to provide different irradiance for each array in the system. If not
+-        passed as a tuple then the same value is used for input to each Array.
+-        If passed as a tuple the length must be the same as the number of
+-        Arrays.
+-
+-        Returns
+-        -------
+-        poa_irradiance : DataFrame or tuple of DataFrame
+-            Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
+-            'poa_sky_diffuse', 'poa_ground_diffuse'``.
+-
+-        See also
+-        --------
+-        pvlib.irradiance.get_total_irradiance
+-        """
+-        dni = self._validate_per_array(dni, system_wide=True)
+-        ghi = self._validate_per_array(ghi, system_wide=True)
+-        dhi = self._validate_per_array(dhi, system_wide=True)
+-
+-        albedo = self._validate_per_array(albedo, system_wide=True)
+-
+-        return tuple(
+-            array.get_irradiance(solar_zenith, solar_azimuth,
+-                                 dni, ghi, dhi,
+-                                 dni_extra=dni_extra, airmass=airmass,
+-                                 albedo=albedo, model=model, **kwargs)
+-            for array, dni, ghi, dhi, albedo in zip(
+-                self.arrays, dni, ghi, dhi, albedo
+-            )
+-        )
+-
+-    @_unwrap_single_value
+-    def get_iam(self, aoi, iam_model='physical'):
+-        """
+-        Determine the incidence angle modifier using the method specified by
+-        ``iam_model``.
+-
+-        Parameters for the selected IAM model are expected to be in
+-        ``PVSystem.module_parameters``. Default parameters are available for
+-        the 'physical', 'ashrae' and 'martin_ruiz' models.
+-
+-        Parameters
+-        ----------
+-        aoi : numeric or tuple of numeric
+-            The angle of incidence in degrees.
+-
+-        aoi_model : string, default 'physical'
+-            The IAM model to be used. Valid strings are 'physical', 'ashrae',
+-            'martin_ruiz', 'sapm' and 'interp'.
+-        Returns
+-        -------
+-        iam : numeric or tuple of numeric
+-            The AOI modifier.
+-
+-        Raises
+-        ------
+-        ValueError
+-            if `iam_model` is not a valid model name.
+-        """
+-        aoi = self._validate_per_array(aoi)
+-        return tuple(array.get_iam(aoi, iam_model)
+-                     for array, aoi in zip(self.arrays, aoi))
+-
+-    @_unwrap_single_value
+-    def get_cell_temperature(self, poa_global, temp_air, wind_speed, model,
+-                             effective_irradiance=None):
+-        """
+-        Determine cell temperature using the method specified by ``model``.
+-
+-        Parameters
+-        ----------
+-        poa_global : numeric or tuple of numeric
+-            Total incident irradiance in W/m^2.
+-
+-        temp_air : numeric or tuple of numeric
+-            Ambient dry bulb temperature in degrees C.
+-
+-        wind_speed : numeric or tuple of numeric
+-            Wind speed in m/s.
+-
+-        model : str
+-            Supported models include ``'sapm'``, ``'pvsyst'``,
+-            ``'faiman'``, ``'fuentes'``, and ``'noct_sam'``
+-
+-        effective_irradiance : numeric or tuple of numeric, optional
+-            The irradiance that is converted to photocurrent in W/m^2.
+-            Only used for some models.
+-
+-        Returns
+-        -------
+-        numeric or tuple of numeric
+-            Values in degrees C.
+-
+-        See Also
+-        --------
+-        Array.get_cell_temperature
+-
+-        Notes
+-        -----
+-        The `temp_air` and `wind_speed` parameters may be passed as tuples
+-        to provide different values for each Array in the system. If passed as
+-        a tuple the length must be the same as the number of Arrays. If not
+-        passed as a tuple then the same value is used for each Array.
+-        """
+-        poa_global = self._validate_per_array(poa_global)
+-        temp_air = self._validate_per_array(temp_air, system_wide=True)
+-        wind_speed = self._validate_per_array(wind_speed, system_wide=True)
+-        # Not used for all models, but Array.get_cell_temperature handles it
+-        effective_irradiance = self._validate_per_array(effective_irradiance,
+-                                                        system_wide=True)
+-
+-        return tuple(
+-            array.get_cell_temperature(poa_global, temp_air, wind_speed,
+-                                       model, effective_irradiance)
+-            for array, poa_global, temp_air, wind_speed, effective_irradiance
+-            in zip(
+-                self.arrays, poa_global, temp_air, wind_speed,
+-                effective_irradiance
+-            )
+-        )
+-
+-    @_unwrap_single_value
+-    def calcparams_desoto(self, effective_irradiance, temp_cell):
+-        """
+-        Use the :py:func:`calcparams_desoto` function, the input
+-        parameters and ``self.module_parameters`` to calculate the
+-        module currents and resistances.
+-
+-        Parameters
+-        ----------
+-        effective_irradiance : numeric or tuple of numeric
+-            The irradiance (W/m2) that is converted to photocurrent.
+-
+-        temp_cell : float or Series or tuple of float or Series
+-            The average cell temperature of cells within a module in C.
+-
+-        Returns
+-        -------
+-        See pvsystem.calcparams_desoto for details
+-        """
+-        effective_irradiance = self._validate_per_array(effective_irradiance)
+-        temp_cell = self._validate_per_array(temp_cell)
+-
+-        build_kwargs = functools.partial(
+-            _build_kwargs,
+-            ['a_ref', 'I_L_ref', 'I_o_ref', 'R_sh_ref',
+-             'R_s', 'alpha_sc', 'EgRef', 'dEgdT',
+-             'irrad_ref', 'temp_ref']
+-        )
+-
+-        return tuple(
+-            calcparams_desoto(
+-                effective_irradiance, temp_cell,
+-                **build_kwargs(array.module_parameters)
+-            )
+-            for array, effective_irradiance, temp_cell
+-            in zip(self.arrays, effective_irradiance, temp_cell)
+-        )
+-
+-    @_unwrap_single_value
+-    def calcparams_cec(self, effective_irradiance, temp_cell):
+-        """
+-        Use the :py:func:`calcparams_cec` function, the input
+-        parameters and ``self.module_parameters`` to calculate the
+-        module currents and resistances.
+-
+-        Parameters
+-        ----------
+-        effective_irradiance : numeric or tuple of numeric
+-            The irradiance (W/m2) that is converted to photocurrent.
+-
+-        temp_cell : float or Series or tuple of float or Series
+-            The average cell temperature of cells within a module in C.
+-
+-        Returns
+-        -------
+-        See pvsystem.cal

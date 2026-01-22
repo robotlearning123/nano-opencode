@@ -1,0 +1,15 @@
+diff --git a/src/sqlfluff/rules/L060.py b/src/sqlfluff/rules/L060.py
+index 836941edc..394bf35b1 100644
+--- a/src/sqlfluff/rules/L060.py
++++ b/src/sqlfluff/rules/L060.py
+@@ -59,4 +59,9 @@ class Rule_L060(BaseRule):
+             ],
+         )
+ 
+-        return LintResult(context.segment, [fix])
++        return LintResult(
++            context.segment,
++            [fix],
++            description=f"Use 'COALESCE' instead of '{context.segment.raw}'.",
++        )
++

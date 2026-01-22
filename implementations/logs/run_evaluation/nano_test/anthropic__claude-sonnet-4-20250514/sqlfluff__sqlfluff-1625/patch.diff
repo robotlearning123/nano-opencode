@@ -1,0 +1,48 @@
+diff --git a/src/sqlfluff/rules/L031.py b/src/sqlfluff/rules/L031.py
+index 838c6ce5d..bd266de81 100644
+--- a/src/sqlfluff/rules/L031.py
++++ b/src/sqlfluff/rules/L031.py
+@@ -80,6 +80,12 @@ class Rule_L031(BaseRule):
+             if from_expression_element:
+                 base_table = from_expression_element.get_child("object_reference")
+ 
++            # Check if there are any JOIN clauses
++            # If no joins, then we don't need to check for aliases in join conditions
++            join_clauses = list(from_clause_segment.recursive_crawl("join_clause"))
++            if not join_clauses:
++                return None
++
+             from_clause_index = segment.segments.index(from_clause_segment)
+             from_clause_and_after = segment.segments[from_clause_index:]
+ 
+@@ -217,3 +223,4 @@ class Rule_L031(BaseRule):
+             )
+ 
+         return violation_buff or None
++
+diff --git a/test/fixtures/rules/std_rule_cases/L031.yml b/test/fixtures/rules/std_rule_cases/L031.yml
+index 40b41639a..35496a395 100644
+--- a/test/fixtures/rules/std_rule_cases/L031.yml
++++ b/test/fixtures/rules/std_rule_cases/L031.yml
+@@ -79,12 +79,12 @@ test_fail_avoid_aliases_3:
+     order by o desc
+ 
+ alias_single_char_identifiers:
+-  fail_str: "select b from tbl as a"
+-  fix_str: "select b from tbl"
++  # Allow aliases when there's no join (issue: TSQL - L031 incorrectly triggers)
++  pass_str: "select b from tbl as a"
+ 
+ alias_with_wildcard_identifier:
+-  fail_str: "select * from tbl as a"
+-  fix_str: "select * from tbl"
++  # Allow aliases when there's no join (issue: TSQL - L031 incorrectly triggers)
++  pass_str: "select * from tbl as a"
+ 
+ select_from_values:
+   pass_str: |
+@@ -168,3 +168,4 @@ issue_1589:
+               rnd>=t.v
+          order by rnd
+          limit 1)
++

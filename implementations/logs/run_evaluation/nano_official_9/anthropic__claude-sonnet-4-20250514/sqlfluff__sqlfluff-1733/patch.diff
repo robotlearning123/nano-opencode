@@ -1,0 +1,18 @@
+diff --git a/src/sqlfluff/rules/L036.py b/src/sqlfluff/rules/L036.py
+index ed5533b81..39d8c9be0 100644
+--- a/src/sqlfluff/rules/L036.py
++++ b/src/sqlfluff/rules/L036.py
+@@ -115,7 +115,7 @@ class Rule_L036(BaseRule):
+                     if not i
+                     else select_targets_info.select_targets[i - 1],
+                     select_if=lambda s: s.is_type("whitespace"),
+-                    loop_while=lambda s: s.is_type("whitespace", "comma") or s.is_meta,
++                    loop_while=lambda s: s.is_type("whitespace", "comma") or (s.is_meta and not s.is_type("indent")),
+                 )
+                 fixes += [LintFix("delete", ws) for ws in ws_to_delete]
+                 fixes.append(LintFix("create", select_target, NewlineSegment()))
+@@ -335,3 +335,4 @@ class Rule_L036(BaseRule):
+             )
+         else:
+             return None
++

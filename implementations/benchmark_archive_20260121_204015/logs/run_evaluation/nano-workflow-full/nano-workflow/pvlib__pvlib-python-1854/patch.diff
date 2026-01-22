@@ -1,0 +1,53 @@
+diff --git a/pvlib/pvsystem.py b/pvlib/pvsystem.py
+index c277a77..42465ba 100644
+--- a/pvlib/pvsystem.py
++++ b/pvlib/pvsystem.py
+@@ -2525,7 +2525,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
+ 
+ 
+ def max_power_point(photocurrent, saturation_current, resistance_series,
+-                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+                     method='brentq'):
+     """
+     Given the single diode equation coefficients, calculates the maximum power
+diff --git a/pvlib/singlediode.py b/pvlib/singlediode.py
+index 203b20c..fcaa61c 100644
+--- a/pvlib/singlediode.py
++++ b/pvlib/singlediode.py
+@@ -58,7 +58,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
+ 
+ def bishop88(diode_voltage, photocurrent, saturation_current,
+              resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+-             NsVbi=np.Inf, breakdown_factor=0., breakdown_voltage=-5.5,
++             NsVbi=np.inf, breakdown_factor=0., breakdown_voltage=-5.5,
+              breakdown_exp=3.28, gradients=False):
+     r"""
+     Explicit calculation of points on the IV curve described by the single
+@@ -206,7 +206,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
+ 
+ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton', method_kwargs=None):
+     """
+@@ -338,7 +338,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+ 
+ def bishop88_v_from_i(current, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton', method_kwargs=None):
+     """
+@@ -469,7 +469,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
+ 
+ 
+ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
+-                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+                  breakdown_factor=0., breakdown_voltage=-5.5,
+                  breakdown_exp=3.28, method='newton', method_kwargs=None):
+     """

@@ -1,0 +1,16 @@
+diff --git a/src/sqlfluff/rules/L060.py b/src/sqlfluff/rules/L060.py
+index 836941edc..166eca02d 100644
+--- a/src/sqlfluff/rules/L060.py
++++ b/src/sqlfluff/rules/L060.py
+@@ -59,4 +59,10 @@ class Rule_L060(BaseRule):
+             ],
+         )
+ 
+-        return LintResult(context.segment, [fix])
++        # Provide a specific error message based on which function was found.
++        return LintResult(
++            context.segment,
++            [fix],
++            description=f"Use 'COALESCE' instead of '{context.segment.raw_upper}'.",
++        )
++

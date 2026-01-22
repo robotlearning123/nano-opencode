@@ -1,0 +1,126 @@
+diff --git a/pvlib/iam.py b/pvlib/iam.py
+index 3eaa6b4..b3703d5 100644
+--- a/pvlib/iam.py
++++ b/pvlib/iam.py
+@@ -175,8 +175,12 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
+     n2costheta2 = n2 * costheta
+ 
+     # reflectance of s-, p-polarized, and normal light by the first interface
+-    rho12_s = ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
+-    rho12_p = ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
++    with np.errstate(divide='ignore', invalid='ignore'):
++        rho12_s = \
++            ((n1costheta1 - n2costheta2) / (n1costheta1 + n2costheta2)) ** 2
++        rho12_p = \
++            ((n1costheta2 - n2costheta1) / (n1costheta2 + n2costheta1)) ** 2
++
+     rho12_0 = ((n1 - n2) / (n1 + n2)) ** 2
+ 
+     # transmittance through the first interface
+@@ -197,7 +201,7 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
+             (n2costheta2 - n3costheta3) / (n2costheta2 + n3costheta3)
+         ) ** 2
+         rho23_p = (
+-            (n2costheta3 - n3costheta2) / (n2costheta3 + n3costheta2)
++            (n3costheta3 - n2costheta2) / (n3costheta3 + n2costheta2)
+         ) ** 2
+         rho23_0 = ((n2 - n3) / (n2 + n3)) ** 2
+ 
+@@ -208,15 +212,23 @@ def physical(aoi, n=1.526, K=4.0, L=0.002, *, n_ar=None):
+         tau_0 *= (1 - rho23_0) / (1 - rho23_0 * rho12_0)
+ 
+     # transmittance after absorption in the glass
+-    tau_s *= np.exp(-K * L / costheta)
+-    tau_p *= np.exp(-K * L / costheta)
++    with np.errstate(divide='ignore', invalid='ignore'):
++        tau_s *= np.exp(-K * L / costheta)
++        tau_p *= np.exp(-K * L / costheta)
++
+     tau_0 *= np.exp(-K * L)
+ 
+     # incidence angle modifier
+     iam = (tau_s + tau_p) / 2 / tau_0
+ 
+-    return iam
++    # for light coming from behind the plane, none can enter the module
++    # when n2 > 1, this is already the case
++    if np.isclose(n2, 1).any():
++        iam = np.where(aoi >= 90, 0, iam)
++        if isinstance(aoi, pd.Series):
++            iam = pd.Series(iam, index=aoi.index)
+ 
++    return iam
+ 
+ def martin_ruiz(aoi, a_r=0.16):
+     r'''
+@@ -891,3 +903,4 @@ def schlick_diffuse(surface_tilt):
+         cug = pd.Series(cug, surface_tilt.index)
+ 
+     return cuk, cug
++
+diff --git a/pvlib/pvsystem.py b/pvlib/pvsystem.py
+index bdab5d6..eb1c916 100644
+--- a/pvlib/pvsystem.py
++++ b/pvlib/pvsystem.py
+@@ -2871,7 +2871,7 @@ def singlediode(photocurrent, saturation_current, resistance_series,
+ 
+ 
+ def max_power_point(photocurrent, saturation_current, resistance_series,
+-                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++                    resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+                     method='brentq'):
+     """
+     Given the single diode equation coefficients, calculates the maximum power
+diff --git a/pvlib/singlediode.py b/pvlib/singlediode.py
+index 81d6ce3..a9a3cfe 100644
+--- a/pvlib/singlediode.py
++++ b/pvlib/singlediode.py
+@@ -56,7 +56,7 @@ def estimate_voc(photocurrent, saturation_current, nNsVth):
+ 
+ def bishop88(diode_voltage, photocurrent, saturation_current,
+              resistance_series, resistance_shunt, nNsVth, d2mutau=0,
+-             NsVbi=np.Inf, breakdown_factor=0., breakdown_voltage=-5.5,
++             NsVbi=np.inf, breakdown_factor=0., breakdown_voltage=-5.5,
+              breakdown_exp=3.28, gradients=False):
+     r"""
+     Explicit calculation of points on the IV curve described by the single
+@@ -204,7 +204,7 @@ def bishop88(diode_voltage, photocurrent, saturation_current,
+ 
+ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton'):
+     """
+@@ -292,7 +292,7 @@ def bishop88_i_from_v(voltage, photocurrent, saturation_current,
+ 
+ def bishop88_v_from_i(current, photocurrent, saturation_current,
+                       resistance_series, resistance_shunt, nNsVth,
+-                      d2mutau=0, NsVbi=np.Inf, breakdown_factor=0.,
++                      d2mutau=0, NsVbi=np.inf, breakdown_factor=0.,
+                       breakdown_voltage=-5.5, breakdown_exp=3.28,
+                       method='newton'):
+     """
+@@ -378,7 +378,7 @@ def bishop88_v_from_i(current, photocurrent, saturation_current,
+ 
+ 
+ def bishop88_mpp(photocurrent, saturation_current, resistance_series,
+-                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.Inf,
++                 resistance_shunt, nNsVth, d2mutau=0, NsVbi=np.inf,
+                  breakdown_factor=0., breakdown_voltage=-5.5,
+                  breakdown_exp=3.28, method='newton'):
+     """
+diff --git a/pvlib/tests/test_singlediode.py b/pvlib/tests/test_singlediode.py
+index 4b2a9e9..4d55963 100644
+--- a/pvlib/tests/test_singlediode.py
++++ b/pvlib/tests/test_singlediode.py
+@@ -331,7 +331,7 @@ def test_pvsyst_recombination_loss(method, poa, temp_cell, expected, tol):
+         # other conditions with breakdown model on and recombination model off
+         (
+             (1.e-4, -5.5, 3.28),
+-            (0., np.Inf),
++            (0., np.inf),
+             POA,
+             TCELL,
+             {

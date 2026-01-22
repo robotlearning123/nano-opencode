@@ -1,0 +1,16 @@
+diff --git a/astroid/brain/brain_builtin_inference.py b/astroid/brain/brain_builtin_inference.py
+index af1ddf4d..4ea0e42b 100644
+--- a/astroid/brain/brain_builtin_inference.py
++++ b/astroid/brain/brain_builtin_inference.py
+@@ -954,8 +954,10 @@ def _infer_str_format_call(
+ 
+     try:
+         formatted_string = format_template.format(*pos_values, **keyword_values)
+-    except (IndexError, KeyError):
++    except (IndexError, KeyError, TypeError):
+         # If there is an IndexError there are too few arguments to interpolate
++        # If there is a KeyError, keyword argument missing
++        # If there is a TypeError, format spec is incompatible with value type (e.g., None with :d)
+         return iter([util.Uninferable])
+ 
+     return iter([nodes.const_factory(formatted_string)])

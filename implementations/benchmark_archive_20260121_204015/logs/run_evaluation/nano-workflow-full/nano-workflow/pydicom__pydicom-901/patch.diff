@@ -1,0 +1,27 @@
+diff --git a/pydicom/config.py b/pydicom/config.py
+index ae9c8bdf1..d5bc48cea 100644
+--- a/pydicom/config.py
++++ b/pydicom/config.py
+@@ -62,10 +62,7 @@ and datetime.time respectively. Default: False
+ 
+ # Logging system and debug function to change logging level
+ logger = logging.getLogger('pydicom')
+-handler = logging.StreamHandler()
+-formatter = logging.Formatter("%(message)s")
+-handler.setFormatter(formatter)
+-logger.addHandler(handler)
++debugging = False
+ 
+ 
+ import pydicom.pixel_data_handlers.numpy_handler as np_handler  # noqa
+@@ -128,5 +125,8 @@ def debug(debug_on=True):
+         debugging = False
+ 
+ 
+-# force level=WARNING, in case logging default is set differently (issue 103)
+-debug(False)
++# The pydicom logger is configured but not initialized here.
++# It is up to the client application to configure handlers and levels.
++
++
++
