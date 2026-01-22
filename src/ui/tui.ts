@@ -46,6 +46,7 @@ export class Tui {
   private opts: TuiOptions
   private width = process.stdout.columns || 80
   private height = process.stdout.rows || 24
+  private closed = false
 
   private static SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
   private static LOGO = `${CYAN}${BOLD}nano${RESET}${WHITE}-opencode${RESET}`
@@ -57,6 +58,8 @@ export class Tui {
       output: process.stdout,
       terminal: true,
     })
+
+    this.rl.on('close', () => { this.closed = true })
 
     process.stdout.on('resize', () => {
       this.width = process.stdout.columns || 80
@@ -186,9 +189,11 @@ export class Tui {
   }
 
   async prompt(): Promise<string> {
+    if (this.closed) return '/exit'
     return new Promise((resolve) => {
       this.moveTo(this.height - 2, 4)
       process.stdout.write(SHOW_CURSOR)
+      this.rl.once('close', () => resolve('/exit'))
       this.rl.question('', (answer) => {
         resolve(answer)
       })
