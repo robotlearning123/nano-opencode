@@ -118,6 +118,7 @@ export class CLI {
     else if (c === 'skill' || c === 'skills') await commands.skill(args[0]);
     else if (c === 'memory' || c === 'mem') commands.memory(args[0]);
     else if (c === 'remember' || c === 'rem') await commands.remember(args, this.prompt);
+    else if (c === 'plan' || c === 'p') await this.planMode(args.join(' '));
     else console.log(chalk.red(`Unknown: ${cmd}\n`));
   }
 
@@ -132,6 +133,72 @@ export class CLI {
       updateSessionTitle(this.session.id, title);
       this.session.title = title;
     }
+  }
+
+  private async planMode(task: string): Promise<void> {
+    if (!task.trim()) {
+      console.log(chalk.yellow('\nUsage: /plan <task description>\n'));
+      return;
+    }
+
+    // Save current agent
+    const originalAgent = this.agent;
+
+    // Switch to prometheus (planning agent)
+    const planAgent = createAgent('prometheus');
+    if (!planAgent) {
+      console.log(chalk.red('\nError: Planning agent not available\n'));
+      return;
+    }
+
+    console.log(chalk.cyan('\n📋 Plan Mode - Analyzing task...\n'));
+    this.agent = planAgent;
+    this.turns = 0;
+
+    // Create planning request
+    const planRequest = `Create a detailed implementation plan for:\n\n${task}\n\nAnalyze the codebase and provide a step-by-step plan.`;
+    await this.chat(planRequest);
+
+    // Ask for approval
+    console.log(chalk.cyan('\n─'.repeat(50)));
+    console.log(chalk.cyan('Execute this plan? [y]es / [n]o / [e]dit'));
+    const answer = await this.prompt();
+    const choice = answer.trim().toLowerCase();
+
+    if (choice === 'y' || choice === 'yes') {
+      // Switch to sisyphus for execution
+      const execAgent = createAgent('sisyphus');
+      if (execAgent) {
+        this.agent = execAgent;
+        this.turns = 0;
+        console.log(chalk.green('\n⚡ Executing plan...\n'));
+        await this.chat(`Execute the plan we just created for: ${task}`);
+      }
+    } else if (choice === 'e' || choice === 'edit') {
+      console.log(chalk.cyan('\nEnter your modifications:'));
+      const edits = await this.prompt();
+      if (edits.trim()) {
+        await this.chat(`Revise the plan with these changes: ${edits}`);
+        // Recurse for approval
+        console.log(chalk.cyan('\nExecute revised plan? [y]es / [n]o'));
+        const retry = await this.prompt();
+        if (retry.trim().toLowerCase().startsWith('y')) {
+          const execAgent = createAgent('sisyphus');
+          if (execAgent) {
+            this.agent = execAgent;
+            this.turns = 0;
+            console.log(chalk.green('\n⚡ Executing plan...\n'));
+            await this.chat(`Execute the revised plan for: ${task}`);
+          }
+        }
+      }
+    } else {
+      console.log(chalk.gray('\nPlan cancelled.\n'));
+    }
+
+    // Restore original agent
+    this.agent = originalAgent;
+    this.turns = 0;
   }
 
   private async processLoop(): Promise<void> {
