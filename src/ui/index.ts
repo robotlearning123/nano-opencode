@@ -14,3 +14,5 @@ export {
   prompt,
   thinking,
 } from './format.js';
+
+export { Tui, createTui, type TuiMessage, type TuiOptions } from './tui.js';

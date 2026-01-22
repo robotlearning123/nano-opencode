@@ -14,6 +14,8 @@
     "start": "node dist/app.js",
     "dev": "bun src/app.ts",
     "dev:node": "tsx src/app.ts",
+    "tui": "bun src/tui.ts",
+    "tui:node": "tsx src/tui.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
     "test:watch": "node --import tsx --test --watch test/*.test.ts"
