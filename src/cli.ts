@@ -10,7 +10,7 @@ import type {
   ToolCall,
 } from './types.js';
 import { getAllTools, executeTool } from './tools/index.js';
-import { createSession, addMessage, updateSessionTitle } from './store.js';
+import { createSession, addMessage, updateSessionTitle, getSession } from './store.js';
 import { getErrorMessage } from './constants.js';
 import { createAgent } from './agents/index.js';
 import { banner, statusLine, prompt as uiPrompt, toolBox } from './ui/index.js';
@@ -34,7 +34,8 @@ export class CLI {
 
   constructor(provider: LLMProvider, sessionId?: string, existingSession?: Session) {
     this.provider = provider;
-    this.session = existingSession ?? createSession();
+    // Restore session by ID, use existing session, or create new
+    this.session = existingSession ?? (sessionId ? getSession(sessionId) : null) ?? createSession();
     this.rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     this.agent = createAgent('sisyphus')!;
 
