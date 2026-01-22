@@ -77,7 +77,15 @@ Instead, provide clear, actionable recommendations.`,
     description: 'Documentation explorer and code navigator',
     category: 'specialist',
     maxTurns: 30,
-    allowedTools: ['read_file', 'glob', 'grep', 'list_dir', 'session_list', 'session_read', 'session_search'],
+    allowedTools: [
+      'read_file',
+      'glob',
+      'grep',
+      'list_dir',
+      'session_list',
+      'session_read',
+      'session_search',
+    ],
     prompt: `You are Librarian, an AI assistant specialized in navigating and understanding codebases.
 
 Your expertise is in:

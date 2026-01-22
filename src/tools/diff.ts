@@ -9,7 +9,12 @@ import { validatePathExists } from './helpers.js';
 /**
  * Simple unified diff implementation
  */
-function unifiedDiff(oldLines: string[], newLines: string[], oldName: string, newName: string): string {
+function unifiedDiff(
+  oldLines: string[],
+  newLines: string[],
+  oldName: string,
+  newName: string
+): string {
   const result: string[] = [];
   result.push(`--- ${oldName}`);
   result.push(`+++ ${newName}`);
@@ -18,7 +23,9 @@ function unifiedDiff(oldLines: string[], newLines: string[], oldName: string, ne
   const hunks = computeHunks(oldLines, newLines);
 
   for (const hunk of hunks) {
-    result.push(`@@ -${hunk.oldStart + 1},${hunk.oldCount} +${hunk.newStart + 1},${hunk.newCount} @@`);
+    result.push(
+      `@@ -${hunk.oldStart + 1},${hunk.oldCount} +${hunk.newStart + 1},${hunk.newCount} @@`
+    );
     for (const line of hunk.lines) {
       result.push(line);
     }
@@ -56,7 +63,8 @@ function computeHunks(oldLines: string[], newLines: string[], context = 3): Hunk
     };
 
     // Add leading context
-    let oldIdx = 0, newIdx = 0;
+    let oldIdx = 0,
+      newIdx = 0;
     for (let j = 0; j < hunkStart; j++) {
       if (changes[j].type === 'same' || changes[j].type === 'remove') oldIdx++;
       if (changes[j].type === 'same' || changes[j].type === 'add') newIdx++;
@@ -80,7 +88,10 @@ function computeHunks(oldLines: string[], newLines: string[], context = 3): Hunk
         // Check if there are more changes within context range
         let hasMore = false;
         for (let j = i + 1; j <= i + context * 2 && j < changes.length; j++) {
-          if (changes[j].type !== 'same') { hasMore = true; break; }
+          if (changes[j].type !== 'same') {
+            hasMore = true;
+            break;
+          }
         }
         if (!hasMore && i - lastChangeIdx >= context) break;
         hunk.lines.push(` ${c.content}`);
@@ -98,7 +109,7 @@ function computeHunks(oldLines: string[], newLines: string[], context = 3): Hunk
       i++;
     }
 
-    if (hunk.lines.some(l => l.startsWith('+') || l.startsWith('-'))) {
+    if (hunk.lines.some((l) => l.startsWith('+') || l.startsWith('-'))) {
       hunks.push(hunk);
     }
   }
@@ -113,8 +124,11 @@ interface Change {
 
 function computeChanges(oldLines: string[], newLines: string[]): Change[] {
   // Simple diff using longest common subsequence
-  const m = oldLines.length, n = newLines.length;
-  const dp: number[][] = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+  const m = oldLines.length,
+    n = newLines.length;
+  const dp: number[][] = Array(m + 1)
+    .fill(null)
+    .map(() => Array(n + 1).fill(0));
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
@@ -128,13 +142,15 @@ function computeChanges(oldLines: string[], newLines: string[]): Change[] {
 
   // Backtrack to find changes
   const changes: Change[] = [];
-  let i = m, j = n;
+  let i = m,
+    j = n;
   const temp: Change[] = [];
 
   while (i > 0 || j > 0) {
     if (i > 0 && j > 0 && oldLines[i - 1] === newLines[j - 1]) {
       temp.push({ type: 'same', content: oldLines[i - 1] });
-      i--; j--;
+      i--;
+      j--;
     } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
       temp.push({ type: 'add', content: newLines[j - 1] });
       j--;
@@ -152,11 +168,15 @@ function computeChanges(oldLines: string[], newLines: string[]): Change[] {
  */
 export const diffTool: Tool = {
   name: 'diff',
-  description: 'Show differences between two files or between file and provided content. Returns unified diff format.',
+  description:
+    'Show differences between two files or between file and provided content. Returns unified diff format.',
   parameters: {
     type: 'object',
     properties: {
-      file1: { type: 'string', description: 'First file path (or "old" content if content1 provided)' },
+      file1: {
+        type: 'string',
+        description: 'First file path (or "old" content if content1 provided)',
+      },
       file2: { type: 'string', description: 'Second file path (optional if content2 provided)' },
       content1: { type: 'string', description: 'Old content to compare (instead of file1)' },
       content2: { type: 'string', description: 'New content to compare (instead of file2)' },

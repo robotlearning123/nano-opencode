@@ -112,8 +112,15 @@ export const backgroundListTool: Tool = {
       return 'No background tasks.';
     }
 
-    const lines = tasks.map(task => {
-      const status = task.status === 'running' ? '🔄' : task.status === 'completed' ? '✓' : task.status === 'cancelled' ? '⏹' : '✗';
+    const lines = tasks.map((task) => {
+      const status =
+        task.status === 'running'
+          ? '🔄'
+          : task.status === 'completed'
+            ? '✓'
+            : task.status === 'cancelled'
+              ? '⏹'
+              : '✗';
       const duration = task.completedAt
         ? `${task.completedAt.getTime() - task.startedAt.getTime()}ms`
         : `${Date.now() - task.startedAt.getTime()}ms`;

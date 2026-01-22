@@ -1,11 +1,32 @@
 import type { Tool } from '../types.js';
-import { EXCLUDED_RG_PATTERNS, EXCLUDED_GREP_DIRS, DEFAULT_GREP_MAX_RESULTS } from '../constants.js';
+import {
+  EXCLUDED_RG_PATTERNS,
+  EXCLUDED_GREP_DIRS,
+  DEFAULT_GREP_MAX_RESULTS,
+} from '../constants.js';
 import { runSpawn } from './helpers.js';
 
 const COMMON_FILE_TYPES = [
-  '*.ts', '*.js', '*.tsx', '*.jsx', '*.json', '*.md', '*.txt',
-  '*.py', '*.go', '*.rs', '*.java', '*.c', '*.cpp', '*.h',
-  '*.css', '*.html', '*.yaml', '*.yml', '*.toml', '*.xml',
+  '*.ts',
+  '*.js',
+  '*.tsx',
+  '*.jsx',
+  '*.json',
+  '*.md',
+  '*.txt',
+  '*.py',
+  '*.go',
+  '*.rs',
+  '*.java',
+  '*.c',
+  '*.cpp',
+  '*.h',
+  '*.css',
+  '*.html',
+  '*.yaml',
+  '*.yml',
+  '*.toml',
+  '*.xml',
 ];
 
 function formatGrepResult(stdout: string, maxResults?: number): string {
@@ -17,15 +38,28 @@ function formatGrepResult(stdout: string, maxResults?: number): string {
 
 export const grepTool: Tool = {
   name: 'grep',
-  description: 'Search for a pattern in files using ripgrep (rg) or grep. Returns matching lines with file paths and line numbers.',
+  description:
+    'Search for a pattern in files using ripgrep (rg) or grep. Returns matching lines with file paths and line numbers.',
   parameters: {
     type: 'object',
     properties: {
       pattern: { type: 'string', description: 'The regex pattern to search for' },
-      path: { type: 'string', description: 'The directory or file to search in. Default is current directory.' },
-      glob: { type: 'string', description: 'Glob pattern to filter files (e.g., "*.ts", "*.{js,jsx}")' },
-      case_insensitive: { type: 'boolean', description: 'Make the search case-insensitive. Default is false.' },
-      max_results: { type: 'number', description: `Maximum number of results to return. Default is ${DEFAULT_GREP_MAX_RESULTS}.` },
+      path: {
+        type: 'string',
+        description: 'The directory or file to search in. Default is current directory.',
+      },
+      glob: {
+        type: 'string',
+        description: 'Glob pattern to filter files (e.g., "*.ts", "*.{js,jsx}")',
+      },
+      case_insensitive: {
+        type: 'boolean',
+        description: 'Make the search case-insensitive. Default is false.',
+      },
+      max_results: {
+        type: 'number',
+        description: `Maximum number of results to return. Default is ${DEFAULT_GREP_MAX_RESULTS}.`,
+      },
     },
     required: ['pattern'],
   },
@@ -38,12 +72,18 @@ export const grepTool: Tool = {
 
     // Build ripgrep args
     const rgArgs = [
-      '--line-number', '--no-heading', '--color=never', '--no-ignore',
-      '-m', String(maxResults),
+      '--line-number',
+      '--no-heading',
+      '--color=never',
+      '--no-ignore',
+      '-m',
+      String(maxResults),
       ...(caseInsensitive ? ['-i'] : []),
-      '--glob', globPattern || '*',
-      ...EXCLUDED_RG_PATTERNS.flatMap(ex => ['--glob', ex]),
-      pattern, searchPath,
+      '--glob',
+      globPattern || '*',
+      ...EXCLUDED_RG_PATTERNS.flatMap((ex) => ['--glob', ex]),
+      pattern,
+      searchPath,
     ];
 
     const rgResult = await runSpawn({ command: 'rg', args: rgArgs, timeout: 30000 });
@@ -55,11 +95,15 @@ export const grepTool: Tool = {
 
     // Fallback to grep
     const grepArgs = [
-      '-r', '-n',
-      ...(globPattern ? [`--include=${globPattern}`] : COMMON_FILE_TYPES.map(t => `--include=${t}`)),
+      '-r',
+      '-n',
+      ...(globPattern
+        ? [`--include=${globPattern}`]
+        : COMMON_FILE_TYPES.map((t) => `--include=${t}`)),
       ...EXCLUDED_GREP_DIRS,
       ...(caseInsensitive ? ['-i'] : []),
-      pattern, searchPath,
+      pattern,
+      searchPath,
     ];
 
     const grepResult = await runSpawn({ command: 'grep', args: grepArgs, timeout: 30000 });

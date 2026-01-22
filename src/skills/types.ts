@@ -10,21 +10,21 @@
  */
 export interface SkillFrontmatter {
   description: string;
-  model?: string;           // Optional model override
-  agent?: boolean;          // If true, spawn as sub-agent
-  tags?: string[];          // For categorization
-  temperature?: number;     // Optional temperature override
-  maxTurns?: number;        // Max turns if running as agent
+  model?: string; // Optional model override
+  agent?: boolean; // If true, spawn as sub-agent
+  tags?: string[]; // For categorization
+  temperature?: number; // Optional temperature override
+  maxTurns?: number; // Max turns if running as agent
 }
 
 /**
  * Parsed skill definition
  */
 export interface Skill {
-  name: string;             // Skill identifier (filename without .md)
-  path: string;             // Full path to skill file
+  name: string; // Skill identifier (filename without .md)
+  path: string; // Full path to skill file
   frontmatter: SkillFrontmatter;
-  content: string;          // Skill content (markdown)
+  content: string; // Skill content (markdown)
 }
 
 /**
@@ -32,8 +32,8 @@ export interface Skill {
  */
 export interface ResolvedSkill {
   skill: Skill;
-  resolvedContent: string;  // Content with variables resolved
-  errors: string[];         // Any errors during resolution
+  resolvedContent: string; // Content with variables resolved
+  errors: string[]; // Any errors during resolution
 }
 
 /**
@@ -47,10 +47,4 @@ export interface ResolvedSkill {
  *   {{date}}                - Current date
  *   {{cwd}}                 - Current working directory
  */
-export type TemplateVariableType =
-  | 'file'
-  | 'command'
-  | 'env'
-  | 'arg'
-  | 'date'
-  | 'cwd';
+export type TemplateVariableType = 'file' | 'command' | 'env' | 'arg' | 'date' | 'cwd';

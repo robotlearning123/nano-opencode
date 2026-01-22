@@ -66,7 +66,9 @@ function safeParseJson<T>(content: string, filePath: string): T | null {
     const stripped = stripJsonComments(content);
     return JSON.parse(stripped) as T;
   } catch (error) {
-    console.error(`Warning: Failed to parse config file '${filePath}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error(
+      `Warning: Failed to parse config file '${filePath}': ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
     return null;
   }
 }
@@ -83,7 +85,9 @@ function loadConfigFile(filePath: string): Partial<Config> | null {
     const content = readFileSync(filePath, 'utf-8');
     return safeParseJson<Partial<Config>>(content, filePath);
   } catch (error) {
-    console.error(`Warning: Failed to read config file '${filePath}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error(
+      `Warning: Failed to read config file '${filePath}': ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
     return null;
   }
 }
@@ -95,10 +99,7 @@ function loadConfigFile(filePath: string): Partial<Config> | null {
  * 3. Provider config with variable substitution
  * 4. Legacy apiKey field
  */
-function resolveApiKey(
-  provider: SupportedProvider,
-  config: Partial<Config>
-): string | undefined {
+function resolveApiKey(provider: SupportedProvider, config: Partial<Config>): string | undefined {
   // 1. Environment variable (highest priority)
   const envKey = ENV_KEY_MAP[provider];
   const envValue = process.env[envKey];

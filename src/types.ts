@@ -28,11 +28,14 @@ export interface Tool {
 
 export interface ToolParameters {
   type: 'object';
-  properties: Record<string, {
-    type: string;
-    description: string;
-    enum?: string[];
-  }>;
+  properties: Record<
+    string,
+    {
+      type: string;
+      description: string;
+      enum?: string[];
+    }
+  >;
   required: string[];
 }
 
@@ -48,18 +51,18 @@ export interface Session {
  * Provider-specific configuration
  */
 export interface ProviderConfig {
-  apiKey?: string;      // Direct key or variable reference {env:VAR} or {file:path}
-  baseURL?: string;     // Custom API endpoint
+  apiKey?: string; // Direct key or variable reference {env:VAR} or {file:path}
+  baseURL?: string; // Custom API endpoint
 }
 
 /**
  * Agent configuration for model selection
  */
 export interface AgentConfig {
-  model?: string;       // Provider/model format (e.g., "anthropic/claude-sonnet-4-5")
+  model?: string; // Provider/model format (e.g., "anthropic/claude-sonnet-4-5")
   temperature?: number;
   maxTokens?: number;
-  variant?: string;     // Model variant (e.g., "max" for Anthropic capacity tier)
+  variant?: string; // Model variant (e.g., "max" for Anthropic capacity tier)
 }
 
 /**
@@ -100,20 +103,23 @@ export interface Config {
 
   // MCP (Model Context Protocol) servers
   mcp?: {
-    servers?: Record<string, {
-      command: string;
-      args?: string[];
-      env?: Record<string, string>;
-      enabled?: boolean;
-      timeout?: number;
-    }>;
-    timeout?: number;  // Default connection timeout for all servers
+    servers?: Record<
+      string,
+      {
+        command: string;
+        args?: string[];
+        env?: Record<string, string>;
+        enabled?: boolean;
+        timeout?: number;
+      }
+    >;
+    timeout?: number; // Default connection timeout for all servers
   };
 
   // Hooks configuration
   hooks?: {
-    enabled?: string[];   // Hooks to enable (overrides defaults)
-    disabled?: string[];  // Hooks to disable
+    enabled?: string[]; // Hooks to enable (overrides defaults)
+    disabled?: string[]; // Hooks to disable
   };
 }
 
@@ -130,7 +136,7 @@ export interface LLMProvider {
     messages: Message[],
     tools: Tool[],
     onChunk: (chunk: StreamChunk) => void,
-    systemPrompt?: string  // Agent-specific system prompt
+    systemPrompt?: string // Agent-specific system prompt
   ): Promise<Message>;
 }
 
@@ -142,15 +148,15 @@ export interface LLMProvider {
  * Built-in agent names
  */
 export type BuiltInAgentName =
-  | 'sisyphus'    // Orchestrator, full capability
-  | 'oracle'      // Read-only advisor
-  | 'librarian'   // Documentation explorer
-  | 'explore'     // Codebase search
-  | 'junior'      // Simple executor
-  | 'prometheus'  // Strategic planner
-  | 'metis'       // Pre-planning consultant
-  | 'momus'       // Plan reviewer
-  | 'frontend'    // UI development
+  | 'sisyphus' // Orchestrator, full capability
+  | 'oracle' // Read-only advisor
+  | 'librarian' // Documentation explorer
+  | 'explore' // Codebase search
+  | 'junior' // Simple executor
+  | 'prometheus' // Strategic planner
+  | 'metis' // Pre-planning consultant
+  | 'momus' // Plan reviewer
+  | 'frontend' // UI development
   | 'multimodal'; // Image/PDF analysis
 
 /**
@@ -172,8 +178,8 @@ export interface AgentDefinition {
   systemPrompt: string;
   model?: string;
   temperature?: number;
-  maxTurns?: number;        // Default: 50
-  allowedTools?: string[];  // Whitelist (if set, only these tools available)
+  maxTurns?: number; // Default: 50
+  allowedTools?: string[]; // Whitelist (if set, only these tools available)
   disallowedTools?: string[]; // Blacklist (takes precedence over allowedTools)
   category?: AgentCategory;
 }
@@ -210,13 +216,13 @@ export interface AgentYamlConfig {
  * Hook lifecycle events
  */
 export type HookLifecycle =
-  | 'chat.message.before'     // Before processing user message
-  | 'chat.message.after'      // After assistant response
-  | 'tool.execute.before'     // Before tool execution
-  | 'tool.execute.after'      // After tool execution
-  | 'session.start'           // Session started
-  | 'session.end'             // Session ending
-  | 'message.transform';      // Transform message content
+  | 'chat.message.before' // Before processing user message
+  | 'chat.message.after' // After assistant response
+  | 'tool.execute.before' // Before tool execution
+  | 'tool.execute.after' // After tool execution
+  | 'session.start' // Session started
+  | 'session.end' // Session ending
+  | 'message.transform'; // Transform message content
 
 /**
  * Context passed to hooks
@@ -236,7 +242,7 @@ export interface HookContext {
  * Result returned from hooks
  */
 export interface HookResult {
-  continue: boolean;  // false = stop processing, skip remaining hooks
+  continue: boolean; // false = stop processing, skip remaining hooks
   modified?: {
     message?: Message;
     toolCall?: ToolCall;
@@ -251,8 +257,8 @@ export interface HookResult {
 export interface Hook {
   name: string;
   description?: string;
-  lifecycle: HookLifecycle | HookLifecycle[];  // Can handle multiple lifecycles
-  priority?: number;  // Lower = runs first, default 100
-  enabled?: boolean;  // Default true
+  lifecycle: HookLifecycle | HookLifecycle[]; // Can handle multiple lifecycles
+  priority?: number; // Lower = runs first, default 100
+  enabled?: boolean; // Default true
   handler: (ctx: HookContext) => Promise<HookResult> | HookResult;
 }

@@ -43,9 +43,15 @@ export class RpcClient {
 
         this.process.stdout?.on('data', (data) => this.handleData(data.toString()));
         this.process.stderr?.on('data', (data) => console.error(`[RPC] ${data}`));
-        this.process.on('error', (err) => { clearTimeout(timeoutId); reject(err); });
+        this.process.on('error', (err) => {
+          clearTimeout(timeoutId);
+          reject(err);
+        });
         this.process.on('close', (code) => {
-          if (!this.connected) { clearTimeout(timeoutId); reject(new Error(`Exit code ${code}`)); }
+          if (!this.connected) {
+            clearTimeout(timeoutId);
+            reject(new Error(`Exit code ${code}`));
+          }
           this.process = null;
           this.connected = false;
         });
@@ -152,7 +158,9 @@ export class RpcClient {
   disconnect(): void {
     if (this.process) {
       this.process.kill('SIGTERM');
-      setTimeout(() => { if (this.process && !this.process.killed) this.process.kill('SIGKILL'); }, 1000);
+      setTimeout(() => {
+        if (this.process && !this.process.killed) this.process.kill('SIGKILL');
+      }, 1000);
       this.process = null;
     }
 

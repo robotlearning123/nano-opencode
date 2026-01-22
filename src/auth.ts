@@ -16,21 +16,21 @@ const AUTH_FILE = join(AUTH_DIR, 'auth.json');
  */
 export interface AuthEntry {
   type: 'api' | 'oauth';
-  key?: string;         // For API key auth
-  access?: string;      // For OAuth access token
-  refresh?: string;     // For OAuth refresh token
-  expiry?: number;      // Token expiry timestamp (ms)
+  key?: string; // For API key auth
+  access?: string; // For OAuth access token
+  refresh?: string; // For OAuth refresh token
+  expiry?: number; // Token expiry timestamp (ms)
 }
 
 /**
  * Account information - supports multiple accounts per provider
  */
 export interface AuthAccount {
-  id: string;           // Unique account identifier
-  email?: string;       // Optional email for identification
-  provider: string;     // Provider name (anthropic, openai, etc.)
-  auth: AuthEntry;      // Authentication credentials
-  lastUsed?: number;    // Last used timestamp
+  id: string; // Unique account identifier
+  email?: string; // Optional email for identification
+  provider: string; // Provider name (anthropic, openai, etc.)
+  auth: AuthEntry; // Authentication credentials
+  lastUsed?: number; // Last used timestamp
   rateLimited?: boolean; // Whether account is currently rate-limited
 }
 
@@ -97,9 +97,7 @@ export function getAuth(provider: string): AuthEntry | undefined {
   }
 
   // Fallback: return first non-rate-limited account for provider
-  const account = storage.accounts.find(
-    (a) => a.provider === provider && !a.rateLimited
-  );
+  const account = storage.accounts.find((a) => a.provider === provider && !a.rateLimited);
   if (account) {
     storage.activeAccounts[provider] = account.id;
     account.lastUsed = Date.now();
@@ -113,11 +111,7 @@ export function getAuth(provider: string): AuthEntry | undefined {
 /**
  * Set auth for a provider (creates or updates account)
  */
-export function setAuth(
-  provider: string,
-  entry: AuthEntry,
-  email?: string
-): string {
+export function setAuth(provider: string, entry: AuthEntry, email?: string): string {
   const storage = loadAuthStorage();
 
   // Check if account with same email exists

@@ -71,8 +71,8 @@ export class MCPClient {
 
     if (result.content?.length) {
       return result.content
-        .filter(c => c.type === 'text' && c.text)
-        .map(c => c.text)
+        .filter((c) => c.type === 'text' && c.text)
+        .map((c) => c.text)
         .join('\n');
     }
     return '';

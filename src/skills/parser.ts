@@ -135,7 +135,9 @@ export function resolveTemplateVariables(
           return match;
       }
     } catch (error) {
-      errors.push(`Error resolving ${match}: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(
+        `Error resolving ${match}: ${error instanceof Error ? error.message : String(error)}`
+      );
       return match;
     }
   });
@@ -164,7 +166,9 @@ function resolveFileVariable(path: string, errors: string[]): string {
   try {
     return readFileSync(expandedPath, 'utf-8');
   } catch (error) {
-    errors.push(`Error reading file ${path}: ${error instanceof Error ? error.message : String(error)}`);
+    errors.push(
+      `Error reading file ${path}: ${error instanceof Error ? error.message : String(error)}`
+    );
     return `[Error reading: ${path}]`;
   }
 }
@@ -208,11 +212,7 @@ function resolveEnvVariable(name: string, errors: string[]): string {
   return value;
 }
 
-function resolveArgVariable(
-  name: string,
-  args: Record<string, string>,
-  errors: string[]
-): string {
+function resolveArgVariable(name: string, args: Record<string, string>, errors: string[]): string {
   if (!name) {
     errors.push('Arg variable requires a name');
     return '';

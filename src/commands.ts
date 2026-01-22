@@ -71,7 +71,7 @@ export const commands = {
 
   loadSession(idPrefix: string): Session | null {
     const sessions = listSessions(100);
-    const match = sessions.find(s => s.id.startsWith(idPrefix));
+    const match = sessions.find((s) => s.id.startsWith(idPrefix));
     if (match) {
       const full = getSession(match.id);
       if (full) {
@@ -139,7 +139,11 @@ export const commands = {
     const action = actions[cmd.toLowerCase()];
     if (action) {
       const result = action();
-      console.log(result !== undefined ? chalk.green(`\n${cmd}: ${name}\n`) : chalk.red(`\nHook not found: ${name}\n`));
+      console.log(
+        result !== undefined
+          ? chalk.green(`\n${cmd}: ${name}\n`)
+          : chalk.red(`\nHook not found: ${name}\n`)
+      );
     }
   },
 
@@ -147,14 +151,14 @@ export const commands = {
     // List all providers: API key + OAuth
     const oauthProviders = listAuthProviders();
     const allProviders = [
-      ...SUPPORTED_PROVIDERS.map(p => ({ name: p, type: 'api' as const })),
-      ...oauthProviders.map(p => ({ name: p.name, type: 'oauth' as const, provider: p })),
+      ...SUPPORTED_PROVIDERS.map((p) => ({ name: p, type: 'api' as const })),
+      ...oauthProviders.map((p) => ({ name: p.name, type: 'oauth' as const, provider: p })),
     ];
 
-    let selection: typeof allProviders[0];
+    let selection: (typeof allProviders)[0];
 
     if (providerArg) {
-      const found = allProviders.find(p => p.name === providerArg);
+      const found = allProviders.find((p) => p.name === providerArg);
       if (found) {
         selection = found;
       } else {
@@ -194,7 +198,7 @@ export const commands = {
       if (success) {
         console.log(chalk.green(`\n${selection.provider!.displayName} connected!\n`));
         console.log(chalk.gray('Available models:'));
-        selection.provider!.models.forEach(m => console.log(chalk.white(`  ${m}`)));
+        selection.provider!.models.forEach((m) => console.log(chalk.white(`  ${m}`)));
         console.log();
       }
       return;
@@ -229,7 +233,7 @@ export const commands = {
       const accounts = listAccounts();
       for (const p of SUPPORTED_PROVIDERS) {
         const hasEnv = !!process.env[ENV_KEY_MAP[p]];
-        const hasAuth = accounts.some(a => a.provider === p);
+        const hasAuth = accounts.some((a) => a.provider === p);
         const status = hasEnv || hasAuth ? chalk.green('✓') : chalk.gray('○');
         console.log(`    ${status} ${p}`);
       }
@@ -250,7 +254,7 @@ export const commands = {
         clearAuth(provider);
         console.log(chalk.green(`\nCleared: ${provider}\n`));
       } else {
-        SUPPORTED_PROVIDERS.forEach(p => clearAuth(p));
+        SUPPORTED_PROVIDERS.forEach((p) => clearAuth(p));
         console.log(chalk.green('\nCleared all auth.\n'));
       }
     } else {

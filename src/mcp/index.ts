@@ -6,7 +6,12 @@
 
 export { MCPClient } from './client.js';
 export { mcpRegistry } from './registry.js';
-export { mcpToolToNanoTool, stripMcpPrefix, isMcpTool, getServerIdFromToolName } from './tool-adapter.js';
+export {
+  mcpToolToNanoTool,
+  stripMcpPrefix,
+  isMcpTool,
+  getServerIdFromToolName,
+} from './tool-adapter.js';
 export type {
   MCPServerConfig,
   MCPToolDefinition,

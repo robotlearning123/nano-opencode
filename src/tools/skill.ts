@@ -12,7 +12,8 @@ import { getSkill, listSkills, resolveTemplateVariables } from '../skills/index.
  */
 export const skillListTool: Tool = {
   name: 'skill_list',
-  description: 'List all available skills. Skills are markdown templates that extend agent capabilities with specialized prompts and instructions.',
+  description:
+    'List all available skills. Skills are markdown templates that extend agent capabilities with specialized prompts and instructions.',
   parameters: {
     type: 'object',
     properties: {
@@ -32,9 +33,7 @@ export const skillListTool: Tool = {
     }
 
     // Filter by tag if provided
-    const filtered = tag
-      ? skills.filter((s) => s.frontmatter.tags?.includes(tag))
-      : skills;
+    const filtered = tag ? skills.filter((s) => s.frontmatter.tags?.includes(tag)) : skills;
 
     if (filtered.length === 0) {
       return `No skills found with tag: ${tag}`;
@@ -42,9 +41,7 @@ export const skillListTool: Tool = {
 
     const lines = ['Available skills:'];
     for (const skill of filtered) {
-      const tags = skill.frontmatter.tags?.length
-        ? ` [${skill.frontmatter.tags.join(', ')}]`
-        : '';
+      const tags = skill.frontmatter.tags?.length ? ` [${skill.frontmatter.tags.join(', ')}]` : '';
       const agent = skill.frontmatter.agent ? ' (agent)' : '';
       lines.push(`\n${skill.name}${agent}${tags}`);
       lines.push(`  ${skill.frontmatter.description || '(no description)'}`);
@@ -60,7 +57,8 @@ export const skillListTool: Tool = {
  */
 export const skillExecuteTool: Tool = {
   name: 'skill_execute',
-  description: 'Execute a skill by name. Returns the resolved skill content which can be used as a prompt or instruction set. Use skill_list to see available skills.',
+  description:
+    'Execute a skill by name. Returns the resolved skill content which can be used as a prompt or instruction set. Use skill_list to see available skills.',
   parameters: {
     type: 'object',
     properties: {
@@ -131,7 +129,8 @@ export const skillExecuteTool: Tool = {
  */
 export const skillReadTool: Tool = {
   name: 'skill_read',
-  description: 'Read the raw content of a skill file without resolving template variables. Useful for inspecting or modifying skills.',
+  description:
+    'Read the raw content of a skill file without resolving template variables. Useful for inspecting or modifying skills.',
   parameters: {
     type: 'object',
     properties: {

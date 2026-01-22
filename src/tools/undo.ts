@@ -3,7 +3,15 @@
  * Keeps backups before write/edit operations for safe rollback
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, unlinkSync } from 'fs';
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  readdirSync,
+  statSync,
+  unlinkSync,
+} from 'fs';
 import { join, dirname, basename } from 'path';
 import { homedir } from 'os';
 import type { Tool } from '../types.js';
@@ -81,7 +89,7 @@ export function createBackup(filePath: string, operation: 'write' | 'edit'): str
  */
 export function restoreBackup(filePath: string): { success: boolean; message: string } {
   // Find most recent backup for this file
-  const backup = sessionBackups.find(b => b.originalPath === filePath);
+  const backup = sessionBackups.find((b) => b.originalPath === filePath);
 
   if (!backup) {
     return { success: false, message: `No backup found for ${filePath}` };
@@ -112,7 +120,7 @@ export function restoreBackup(filePath: string): { success: boolean; message: st
  */
 export function listBackups(filePath?: string): BackupEntry[] {
   if (filePath) {
-    return sessionBackups.filter(b => b.originalPath === filePath);
+    return sessionBackups.filter((b) => b.originalPath === filePath);
   }
   return [...sessionBackups];
 }
@@ -136,8 +144,8 @@ function cleanupBackups(): void {
   // Clean up backup directory (keep MAX_TOTAL_BACKUPS files)
   try {
     const files = readdirSync(BACKUP_DIR)
-      .map(f => ({ name: f, path: join(BACKUP_DIR, f) }))
-      .filter(f => statSync(f.path).isFile())
+      .map((f) => ({ name: f, path: join(BACKUP_DIR, f) }))
+      .filter((f) => statSync(f.path).isFile())
       .sort((a, b) => {
         const aTime = parseInt(a.name.split('_')[0]) || 0;
         const bTime = parseInt(b.name.split('_')[0]) || 0;

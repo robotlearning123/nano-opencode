@@ -102,7 +102,10 @@ export class OpenAIProvider implements LLMProvider {
     };
   }
 
-  private convertMessages(messages: Message[], systemPrompt?: string): OpenAI.ChatCompletionMessageParam[] {
+  private convertMessages(
+    messages: Message[],
+    systemPrompt?: string
+  ): OpenAI.ChatCompletionMessageParam[] {
     const result: OpenAI.ChatCompletionMessageParam[] = [
       {
         role: 'system',

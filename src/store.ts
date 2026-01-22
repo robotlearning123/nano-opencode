@@ -65,10 +65,14 @@ export function createSession(title?: string): Session {
   const now = new Date().toISOString();
   const sessionTitle = title ?? 'New Session';
 
-  database.prepare(`
+  database
+    .prepare(
+      `
     INSERT INTO sessions (id, title, created_at, updated_at)
     VALUES (?, ?, ?, ?)
-  `).run(id, sessionTitle, now, now);
+  `
+    )
+    .run(id, sessionTitle, now, now);
 
   return {
     id,
@@ -81,7 +85,9 @@ export function createSession(title?: string): Session {
 
 export function getSession(id: string): Session | null {
   const database = getDb();
-  const row = database.prepare('SELECT * FROM sessions WHERE id = ?').get(id) as SessionRow | undefined;
+  const row = database.prepare('SELECT * FROM sessions WHERE id = ?').get(id) as
+    | SessionRow
+    | undefined;
 
   if (!row) return null;
 
@@ -122,17 +128,21 @@ export function addMessage(sessionId: string, message: Message): void {
   const database = getDb();
   const now = new Date().toISOString();
 
-  database.prepare(`
+  database
+    .prepare(
+      `
     INSERT INTO messages (session_id, role, content, tool_calls, tool_results, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(
-    sessionId,
-    message.role,
-    message.content,
-    message.toolCalls ? JSON.stringify(message.toolCalls) : null,
-    message.toolResults ? JSON.stringify(message.toolResults) : null,
-    now
-  );
+  `
+    )
+    .run(
+      sessionId,
+      message.role,
+      message.content,
+      message.toolCalls ? JSON.stringify(message.toolCalls) : null,
+      message.toolResults ? JSON.stringify(message.toolResults) : null,
+      now
+    );
 
   database.prepare('UPDATE sessions SET updated_at = ? WHERE id = ?').run(now, sessionId);
 }

@@ -87,7 +87,9 @@ Content`;
 
     it('handles {{env:VAR}}', () => {
       process.env.TEST_SKILL_VAR = 'test-value';
-      const resolved = resolveTemplateVariables(parseTestSkill('env-test', 'Value: {{env:TEST_SKILL_VAR}}'));
+      const resolved = resolveTemplateVariables(
+        parseTestSkill('env-test', 'Value: {{env:TEST_SKILL_VAR}}')
+      );
 
       assert.ok(resolved.resolvedContent.includes('test-value'));
       delete process.env.TEST_SKILL_VAR;
@@ -104,43 +106,52 @@ Content`;
     });
 
     it('handles {{file:path}}', () => {
-      const resolved = resolveTemplateVariables(parseTestSkill('file-test', `Content: {{file:${tempFile}}}`));
+      const resolved = resolveTemplateVariables(
+        parseTestSkill('file-test', `Content: {{file:${tempFile}}}`)
+      );
       assert.ok(resolved.resolvedContent.includes('file content'));
     });
 
     it('handles {{arg:name}} with provided args', () => {
-      const resolved = resolveTemplateVariables(
-        parseTestSkill('arg-test', 'Arg: {{arg:myArg}}'),
-        { myArg: 'argument-value' }
-      );
+      const resolved = resolveTemplateVariables(parseTestSkill('arg-test', 'Arg: {{arg:myArg}}'), {
+        myArg: 'argument-value',
+      });
       assert.ok(resolved.resolvedContent.includes('argument-value'));
     });
 
     it('records error for missing env var', () => {
       delete process.env.NONEXISTENT_VAR_XYZ;
-      const resolved = resolveTemplateVariables(parseTestSkill('missing-env', 'Val: {{env:NONEXISTENT_VAR_XYZ}}'));
+      const resolved = resolveTemplateVariables(
+        parseTestSkill('missing-env', 'Val: {{env:NONEXISTENT_VAR_XYZ}}')
+      );
 
       assert.ok(resolved.errors.length > 0);
-      assert.ok(resolved.errors.some(e => e.includes('NONEXISTENT_VAR_XYZ')));
+      assert.ok(resolved.errors.some((e) => e.includes('NONEXISTENT_VAR_XYZ')));
     });
 
     it('records error for missing file', () => {
-      const resolved = resolveTemplateVariables(parseTestSkill('missing-file', 'File: {{file:/nonexistent/path/xyz}}'));
+      const resolved = resolveTemplateVariables(
+        parseTestSkill('missing-file', 'File: {{file:/nonexistent/path/xyz}}')
+      );
 
       assert.ok(resolved.errors.length > 0);
-      assert.ok(resolved.errors.some(e => e.includes('not found')));
+      assert.ok(resolved.errors.some((e) => e.includes('not found')));
     });
 
     it('leaves unknown variable types unchanged', () => {
-      const resolved = resolveTemplateVariables(parseTestSkill('unknown', 'Val: {{unknowntype:value}}'));
+      const resolved = resolveTemplateVariables(
+        parseTestSkill('unknown', 'Val: {{unknowntype:value}}')
+      );
 
       assert.ok(resolved.resolvedContent.includes('{{unknowntype:value}}'));
-      assert.ok(resolved.errors.some(e => e.includes('Unknown variable type')));
+      assert.ok(resolved.errors.some((e) => e.includes('Unknown variable type')));
     });
 
     it('handles multiple variables', () => {
       process.env.TEST_MULTI = 'multi-val';
-      const resolved = resolveTemplateVariables(parseTestSkill('multi', 'CWD: {{cwd}}, ENV: {{env:TEST_MULTI}}, DATE: {{date}}'));
+      const resolved = resolveTemplateVariables(
+        parseTestSkill('multi', 'CWD: {{cwd}}, ENV: {{env:TEST_MULTI}}, DATE: {{date}}')
+      );
 
       assert.ok(resolved.resolvedContent.includes(process.cwd()));
       assert.ok(resolved.resolvedContent.includes('multi-val'));

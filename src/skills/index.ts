@@ -13,9 +13,4 @@ export {
   clearSkillCache,
   getSkillDirectories,
 } from './discovery.js';
-export type {
-  Skill,
-  SkillFrontmatter,
-  ResolvedSkill,
-  TemplateVariableType,
-} from './types.js';
+export type { Skill, SkillFrontmatter, ResolvedSkill, TemplateVariableType } from './types.js';

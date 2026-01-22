@@ -6,7 +6,8 @@ import { createBackup } from './undo.js';
 
 export const editFileTool: Tool = {
   name: 'edit_file',
-  description: 'Edit a file by replacing a specific string with another. The old_string must match exactly (including whitespace). Automatically creates a backup for undo.',
+  description:
+    'Edit a file by replacing a specific string with another. The old_string must match exactly (including whitespace). Automatically creates a backup for undo.',
   parameters: {
     type: 'object',
     properties: {

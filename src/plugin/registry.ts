@@ -87,7 +87,7 @@ export function getSkills(): LoadedPlugin<SkillFrontmatter & { content: string }
 export function getAgent(name: string): LoadedPlugin<AgentYaml> | null {
   // First check cache
   const cached = cache.get('agent')?.plugins as LoadedPlugin<AgentYaml>[] | undefined;
-  const fromCache = cached?.find(p => p.meta.name === name);
+  const fromCache = cached?.find((p) => p.meta.name === name);
   if (fromCache) return fromCache;
 
   // Fall back to direct load
@@ -96,28 +96,32 @@ export function getAgent(name: string): LoadedPlugin<AgentYaml> | null {
 
 export function getHook(name: string): LoadedPlugin<HookYaml> | null {
   const cached = cache.get('hook')?.plugins as LoadedPlugin<HookYaml>[] | undefined;
-  const fromCache = cached?.find(p => p.meta.name === name);
+  const fromCache = cached?.find((p) => p.meta.name === name);
   if (fromCache) return fromCache;
   return loadHook(name);
 }
 
 export function getService(name: string): LoadedPlugin<ServiceYaml> | null {
   const cached = cache.get('service')?.plugins as LoadedPlugin<ServiceYaml>[] | undefined;
-  const fromCache = cached?.find(p => p.meta.name === name);
+  const fromCache = cached?.find((p) => p.meta.name === name);
   if (fromCache) return fromCache;
   return loadService(name);
 }
 
 export function getCommand(name: string): LoadedPlugin<CommandYaml> | null {
   const cached = cache.get('command')?.plugins as LoadedPlugin<CommandYaml>[] | undefined;
-  const fromCache = cached?.find(p => p.meta.name === name);
+  const fromCache = cached?.find((p) => p.meta.name === name);
   if (fromCache) return fromCache;
   return loadCommand(name);
 }
 
-export function getSkill(name: string): LoadedPlugin<SkillFrontmatter & { content: string }> | null {
-  const cached = cache.get('skill')?.plugins as LoadedPlugin<SkillFrontmatter & { content: string }>[] | undefined;
-  const fromCache = cached?.find(p => p.meta.name === name);
+export function getSkill(
+  name: string
+): LoadedPlugin<SkillFrontmatter & { content: string }> | null {
+  const cached = cache.get('skill')?.plugins as
+    | LoadedPlugin<SkillFrontmatter & { content: string }>[]
+    | undefined;
+  const fromCache = cached?.find((p) => p.meta.name === name);
   if (fromCache) return fromCache;
   return loadSkill(name);
 }

@@ -14,9 +14,7 @@ export async function createProvider(config: Config): Promise<LLMProvider> {
   if (!config.apiKey) {
     const provider = config.provider as SupportedProvider;
     const envVar = ENV_KEY_MAP[provider];
-    throw new Error(
-      `No API key for ${config.provider}. Set ${envVar} or run /connect ${provider}`
-    );
+    throw new Error(`No API key for ${config.provider}. Set ${envVar} or run /connect ${provider}`);
   }
 
   const { apiKey, model, maxTokens } = config;

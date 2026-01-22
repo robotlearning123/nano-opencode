@@ -1,7 +1,14 @@
 import * as readline from 'readline';
 import chalk from 'chalk';
 import ora from 'ora';
-import type { Message, StreamChunk, LLMProvider, Session, AgentInstance, ToolCall } from './types.js';
+import type {
+  Message,
+  StreamChunk,
+  LLMProvider,
+  Session,
+  AgentInstance,
+  ToolCall,
+} from './types.js';
 import { getAllTools, executeTool } from './tools/index.js';
 import { createSession, addMessage, updateSessionTitle } from './store.js';
 import { getErrorMessage } from './constants.js';
@@ -28,7 +35,7 @@ export class CLI {
   constructor(provider: LLMProvider, sessionId?: string) {
     this.provider = provider;
     const { getSession } = require('./store.js');
-    this.session = sessionId ? getSession(sessionId) ?? createSession() : createSession();
+    this.session = sessionId ? (getSession(sessionId) ?? createSession()) : createSession();
     this.rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     this.agent = createAgent('sisyphus')!;
 
@@ -71,7 +78,7 @@ export class CLI {
   }
 
   private prompt = (): Promise<string> =>
-    new Promise(resolve => this.rl.question(uiPrompt(), resolve));
+    new Promise((resolve) => this.rl.question(uiPrompt(), resolve));
 
   private async handleCommand(input: string): Promise<void> {
     const [cmd, ...args] = input.slice(1).split(' ');
@@ -81,32 +88,27 @@ export class CLI {
     else if (c === 'quit' || c === 'q' || c === 'exit') {
       this.isRunning = false;
       console.log(chalk.gray('\nGoodbye!\n'));
-    }
-    else if (c === 'clear' || c === 'c') {
+    } else if (c === 'clear' || c === 'c') {
       console.clear();
       console.log(banner());
       console.log(statusLine(this.provider.name, this.agent.definition.name, this.session.id));
-    }
-    else if (c === 'new' || c === 'n') {
+    } else if (c === 'new' || c === 'n') {
       this.session = createSession();
       console.log(chalk.green(`\nNew session: ${this.session.id.slice(0, 8)}\n`));
-    }
-    else if (c === 'sessions' || c === 's') commands.sessions(this.session.id);
+    } else if (c === 'sessions' || c === 's') commands.sessions(this.session.id);
     else if (c === 'load' || c === 'l') {
       if (args[0]) {
         const s = commands.loadSession(args[0]);
         if (s) this.session = s;
       } else console.log(chalk.red('Usage: /load <id>'));
-    }
-    else if (c === 'tools' || c === 't') commands.tools(this.agent);
+    } else if (c === 'tools' || c === 't') commands.tools(this.agent);
     else if (c === 'agent' || c === 'a') {
       const newAgent = commands.agent(args[0], this.agent);
       if (newAgent) {
         this.agent = newAgent;
         this.turns = 0;
       }
-    }
-    else if (c === 'hooks') commands.hooks(args[0], args[1]);
+    } else if (c === 'hooks') commands.hooks(args[0], args[1]);
     else if (c === 'connect') await commands.connect(args[0], this.prompt);
     else if (c === 'auth') commands.auth(args);
     else if (c === 'mcp') commands.mcp();

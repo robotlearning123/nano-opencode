@@ -55,7 +55,10 @@ export interface OpenCodePluginContext {
   client: {
     chat: (messages: unknown[], options?: unknown) => Promise<unknown>;
   };
-  $: (strings: TemplateStringsArray, ...values: unknown[]) => Promise<{ stdout: string; stderr: string; exitCode: number }>;
+  $: (
+    strings: TemplateStringsArray,
+    ...values: unknown[]
+  ) => Promise<{ stdout: string; stderr: string; exitCode: number }>;
   directory: string;
   worktree: string;
 }
@@ -98,7 +101,7 @@ const PLUGIN_CACHE = join(homedir(), '.cache', 'opencode', 'node_modules');
 function stripJsonc(content: string): string {
   return content
     .split('\n')
-    .map(line => {
+    .map((line) => {
       const trimmed = line.trim();
       if (trimmed.startsWith('//')) return '';
       const idx = line.indexOf('//');
@@ -125,7 +128,9 @@ export function loadOpenCodeConfig(): OpenCodeConfig {
     try {
       const content = readFileSync(GLOBAL_CONFIG, 'utf-8');
       Object.assign(config, JSON.parse(stripJsonc(content)));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   // Load project config (overrides global)
@@ -139,7 +144,9 @@ export function loadOpenCodeConfig(): OpenCodeConfig {
         projectConfig.plugin = [...new Set([...config.plugin, ...projectConfig.plugin])];
       }
       Object.assign(config, projectConfig);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   // Load oh-my-opencode config
@@ -151,7 +158,9 @@ export function loadOpenCodeConfig(): OpenCodeConfig {
       // oh-my-opencode extends the base config
       if (omoConfig.agents) config.agents = { ...config.agents, ...omoConfig.agents };
       if (omoConfig.disabled_hooks) config.disabled_hooks = omoConfig.disabled_hooks;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   return config;
@@ -169,7 +178,7 @@ export async function installPlugins(plugins: string[]): Promise<void> {
   }
 
   // Check which plugins need installation
-  const toInstall = plugins.filter(p => {
+  const toInstall = plugins.filter((p) => {
     const pkgName = p.replace(/@[^/]+$/, ''); // Remove version
     const pkgPath = join(PLUGIN_CACHE, pkgName);
     return !existsSync(pkgPath);
@@ -186,7 +195,7 @@ export async function installPlugins(plugins: string[]): Promise<void> {
       stdio: 'inherit',
     });
 
-    proc.on('close', code => {
+    proc.on('close', (code) => {
       if (code === 0) resolve();
       else reject(new Error(`Plugin installation failed with code ${code}`));
     });
@@ -197,7 +206,7 @@ export async function installPlugins(plugins: string[]): Promise<void> {
         cwd: PLUGIN_CACHE,
         stdio: 'inherit',
       });
-      npm.on('close', code => {
+      npm.on('close', (code) => {
         if (code === 0) resolve();
         else reject(new Error(`Plugin installation failed`));
       });
@@ -311,7 +320,11 @@ export const HOOK_MAPPING: Record<OpenCodeHookName, string> = {
 /**
  * Convert OpenCode tool to nano-opencode tool
  */
-export function convertOpenCodeTool(name: string, def: OpenCodeToolDef, ctx: OpenCodePluginContext) {
+export function convertOpenCodeTool(
+  name: string,
+  def: OpenCodeToolDef,
+  ctx: OpenCodePluginContext
+) {
   return {
     name: `opencode_${name}`,
     description: def.description,
@@ -369,9 +382,11 @@ export async function initOpenCodeCompat(): Promise<{
  * Check if OpenCode config exists
  */
 export function hasOpenCodeConfig(): boolean {
-  return existsSync(GLOBAL_CONFIG) ||
+  return (
+    existsSync(GLOBAL_CONFIG) ||
     existsSync(join(process.cwd(), PROJECT_CONFIG)) ||
-    existsSync(join(process.cwd(), OMO_CONFIG));
+    existsSync(join(process.cwd(), OMO_CONFIG))
+  );
 }
 
 /**

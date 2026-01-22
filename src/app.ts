@@ -76,11 +76,14 @@ program
     }
   });
 
-async function runSinglePrompt(provider: Awaited<ReturnType<typeof createProvider>>, prompt: string): Promise<void> {
+async function runSinglePrompt(
+  provider: Awaited<ReturnType<typeof createProvider>>,
+  prompt: string
+): Promise<void> {
   const [{ getAllTools, executeTool }, { toolBox }, chalk] = await Promise.all([
     import('./tools/index.js'),
     import('./ui/index.js'),
-    import('chalk').then(m => m.default),
+    import('chalk').then((m) => m.default),
   ]);
 
   const messages = [{ role: 'user' as const, content: prompt }];
