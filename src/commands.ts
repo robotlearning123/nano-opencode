@@ -34,6 +34,7 @@ export const commands = {
       ['/load <id>', 'Load session'],
       ['/tools, /t', 'List tools'],
       ['/agent [name]', 'List/switch agents'],
+      ['/plan <task>', 'Plan before executing'],
       ['/hooks [cmd]', 'Manage hooks'],
       ['/connect [p]', 'Configure provider'],
       ['/auth status', 'Show auth status'],
