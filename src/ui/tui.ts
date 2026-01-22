@@ -17,7 +17,6 @@ const RESET = `${ESC}0m`;
 const BOLD = `${ESC}1m`;
 const DIM = `${ESC}2m`;
 const ITALIC = `${ESC}3m`;
-const UNDERLINE = `${ESC}4m`;
 const BLUE = `${ESC}34m`;
 const GREEN = `${ESC}32m`;
 const YELLOW = `${ESC}33m`;
@@ -33,7 +32,6 @@ const SYN_KEYWORD = `${ESC}38;5;198m`;
 const SYN_STRING = `${ESC}38;5;113m`;
 const SYN_COMMENT = `${ESC}38;5;245m`;
 const SYN_NUMBER = `${ESC}38;5;141m`;
-const SYN_FUNCTION = `${ESC}38;5;81m`;
 
 // Simple inline markdown formatting
 function formatInline(text: string): string {
@@ -128,9 +126,9 @@ export class Tui {
 
     // Get messages (scroll support - no arbitrary limit)
     let lines: string[] = [];
-    let inCodeBlock = false;
 
     for (const msg of this.messages) {
+      let inCodeBlock = false; // Reset per message
       const prefix =
         msg.role === 'user'
           ? `${BLUE}>${RESET} `
@@ -197,7 +195,7 @@ export class Tui {
 
   private renderFooter() {
     this.moveTo(this.height, 1);
-    process.stdout.write(`${DIM}/clear: reset │ /exit: quit │ ctrl+c: force quit${RESET}${ESC}K`);
+    process.stdout.write(`${DIM}/compact: summarize │ /clear: reset │ /exit: quit${RESET}${ESC}K`);
   }
 
   clearMessages() {

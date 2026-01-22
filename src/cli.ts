@@ -32,10 +32,9 @@ export class CLI {
   private turns = 0;
   private currentOperation: AbortController | null = null;
 
-  constructor(provider: LLMProvider, sessionId?: string) {
+  constructor(provider: LLMProvider, sessionId?: string, existingSession?: Session) {
     this.provider = provider;
-    const { getSession } = require('./store.js');
-    this.session = sessionId ? (getSession(sessionId) ?? createSession()) : createSession();
+    this.session = existingSession ?? createSession();
     this.rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     this.agent = createAgent('sisyphus')!;
 

@@ -6,7 +6,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { dirname, extname, resolve } from 'path';
 import { RpcClient } from '../rpc/index.js';
-import type { Position, Location, Diagnostic, Hover, LanguageServerConfig } from './types.js';
+import type { Location, Diagnostic, Hover, LanguageServerConfig } from './types.js';
 import { DEFAULT_SERVERS, EXT_TO_LANG } from './types.js';
 
 export class LSPClient {

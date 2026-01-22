@@ -1,12 +1,11 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
-import { existsSync, mkdirSync, writeFileSync, rmSync } from 'fs';
+import { mkdirSync, writeFileSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import {
   discoverMemoryFiles,
   loadMemoryContext,
-  saveToMemory,
   formatMemoryEntry,
   clearMemoryCache,
   hasMemory,

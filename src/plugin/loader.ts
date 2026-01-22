@@ -4,13 +4,12 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from 'fs';
-import { join, basename, extname, dirname } from 'path';
+import { join, basename, dirname } from 'path';
 import { homedir } from 'os';
 import { fileURLToPath } from 'url';
 import * as yaml from 'js-yaml';
 import type {
   PluginType,
-  PluginMeta,
   LoadedPlugin,
   AgentYaml,
   HookYaml,

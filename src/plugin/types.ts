@@ -3,7 +3,7 @@
  * Defines the interfaces for all plugin types
  */
 
-import type { Tool, AgentDefinition, Hook } from '../types.js';
+// Note: Core types (Tool, AgentDefinition, Hook) imported via '../types.js' when needed
 
 // Plugin categories
 export type PluginType = 'agent' | 'tool' | 'hook' | 'service' | 'skill' | 'command';

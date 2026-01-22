@@ -286,7 +286,7 @@ export const codexProvider: AuthProvider = {
       }),
     });
 
-    const { device_code, user_code, verification_uri_complete, interval } =
+    const { device_code, verification_uri_complete, interval } =
       (await deviceResponse.json()) as DeviceCodeResponse;
 
     console.log(`\n  Visit: ${verification_uri_complete}`);

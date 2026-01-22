@@ -70,7 +70,7 @@ export function getTimingStats(): { pendingCount: number } {
 // ============================================================================
 
 const DANGEROUS_PATTERNS = [
-  /rm\s+-rf\s+[\/~]/i,
+  /rm\s+-rf\s+[/~]/i,
   /rm\s+.*\s+\/$/,
   />\s*\/dev\/sd[a-z]/i,
   /mkfs\./i,
