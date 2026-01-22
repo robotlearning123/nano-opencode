@@ -48,25 +48,29 @@ async function main() {
       messages.push({ role: 'user', content: input });
 
       try {
-        const response = await client.messages.create({
+        // Start streaming - show empty message first
+        tui.addMessage({ role: 'assistant', content: '' });
+
+        const stream = client.messages.stream({
           model,
           max_tokens: 4096,
           system: 'You are a helpful coding assistant. Be concise.',
           messages,
         });
 
-        const text = response.content
-          .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-          .map((b) => b.text)
-          .join('\n');
+        let fullText = '';
+        stream.on('text', (text) => {
+          fullText += text;
+          tui.updateLastMessage(fullText);
+        });
 
-        messages.push({ role: 'assistant', content: text });
-        tui.addMessage({ role: 'assistant', content: text });
+        await stream.finalMessage();
+        messages.push({ role: 'assistant', content: fullText });
       } catch (err: unknown) {
         // Remove failed user message from conversation history
         messages.pop();
         const errorMsg = err instanceof Error ? err.message : String(err);
-        tui.addMessage({ role: 'system', content: `Error: ${errorMsg}` });
+        tui.updateLastMessage(`Error: ${errorMsg}`);
       }
     },
     onExit: () => {
