@@ -6,6 +6,9 @@
  * Or after build: nano --tui
  */
 
+import { config } from 'dotenv'
+config()
+
 import { createTui } from './ui/tui.js'
 import { loadConfig } from './config.js'
 import Anthropic from '@anthropic-ai/sdk'
