@@ -115,6 +115,34 @@ export async function executeTool(name: string, args: Record<string, unknown>): 
   }
 }
 
+// Read-only tools that can run in parallel safely
+const READ_ONLY_TOOLS = new Set([
+  'glob',
+  'grep',
+  'read_file',
+  'list_dir',
+  'todo_read',
+  'list_backups',
+  'webfetch',
+  'lsp_definition',
+  'lsp_references',
+  'lsp_hover',
+  'session_list',
+  'session_read',
+  'session_search',
+  'skill_list',
+  'skill_read',
+  'background_list',
+  'background_output',
+]);
+
+/**
+ * Check if a tool is read-only (safe to run in parallel)
+ */
+export function isReadOnlyTool(name: string): boolean {
+  return READ_ONLY_TOOLS.has(name);
+}
+
 // Re-export tools for direct access
 export {
   readFileTool,
