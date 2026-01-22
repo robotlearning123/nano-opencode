@@ -3,7 +3,7 @@
  */
 
 export interface Position {
-  line: number;      // 0-based
+  line: number; // 0-based
   character: number; // 0-based
 }
 
@@ -32,7 +32,7 @@ export interface Hover {
 export interface LanguageServerConfig {
   command: string;
   args?: string[];
-  filetypes: string[];  // e.g., ['typescript', 'javascript']
+  filetypes: string[]; // e.g., ['typescript', 'javascript']
   rootPatterns?: string[]; // e.g., ['package.json', 'tsconfig.json']
 }
 

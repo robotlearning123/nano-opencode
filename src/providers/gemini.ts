@@ -1,4 +1,11 @@
-import { GoogleGenerativeAI, SchemaType, type Content, type Part, type FunctionCall, type FunctionDeclaration } from '@google/generative-ai';
+import {
+  GoogleGenerativeAI,
+  SchemaType,
+  type Content,
+  type Part,
+  type FunctionCall,
+  type FunctionDeclaration,
+} from '@google/generative-ai';
 import type { LLMProvider, Message, Tool, StreamChunk, ToolCall } from '../types.js';
 import { getSystemPrompt } from '../constants.js';
 

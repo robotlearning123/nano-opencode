@@ -62,7 +62,8 @@ export const webfetchTool: Tool = {
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'nano-opencode/1.0',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7',
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7',
         },
         signal: AbortSignal.timeout(30000), // 30 second timeout
       });
@@ -83,7 +84,9 @@ export const webfetchTool: Tool = {
 
       // Truncate if needed
       if (content.length > maxLength) {
-        content = content.slice(0, maxLength) + `\n\n... [Truncated: ${content.length - maxLength} characters omitted]`;
+        content =
+          content.slice(0, maxLength) +
+          `\n\n... [Truncated: ${content.length - maxLength} characters omitted]`;
       }
 
       return content;

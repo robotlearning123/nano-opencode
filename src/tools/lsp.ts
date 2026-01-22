@@ -48,32 +48,38 @@ async function withLspClient<T>(
 
 export const lspDefinitionTool: Tool = {
   name: 'lsp_definition',
-  description: 'Find the definition of a symbol at a specific location. Requires a language server.',
+  description:
+    'Find the definition of a symbol at a specific location. Requires a language server.',
   parameters: LSP_PARAMS,
-  execute: (args) => withLspClient(args, async (client, file, line, col) => {
-    const locations = await client.getDefinition(file, line, col);
-    return locations.length === 0 ? 'No definition found' : locations.map(formatLocation).join('\n');
-  }),
+  execute: (args) =>
+    withLspClient(args, async (client, file, line, col) => {
+      const locations = await client.getDefinition(file, line, col);
+      return locations.length === 0
+        ? 'No definition found'
+        : locations.map(formatLocation).join('\n');
+    }),
 };
 
 export const lspReferencesTool: Tool = {
   name: 'lsp_references',
   description: 'Find all references to a symbol at a specific location.',
   parameters: LSP_PARAMS,
-  execute: (args) => withLspClient(args, async (client, file, line, col) => {
-    const locations = await client.getReferences(file, line, col);
-    return locations.length === 0
-      ? 'No references found'
-      : `Found ${locations.length} references:\n${locations.map(formatLocation).join('\n')}`;
-  }),
+  execute: (args) =>
+    withLspClient(args, async (client, file, line, col) => {
+      const locations = await client.getReferences(file, line, col);
+      return locations.length === 0
+        ? 'No references found'
+        : `Found ${locations.length} references:\n${locations.map(formatLocation).join('\n')}`;
+    }),
 };
 
 export const lspHoverTool: Tool = {
   name: 'lsp_hover',
   description: 'Get type information and documentation for a symbol at a specific location.',
   parameters: LSP_PARAMS,
-  execute: (args) => withLspClient(args, async (client, file, line, col) => {
-    const hover = await client.getHover(file, line, col);
-    return hover || 'No hover information available';
-  }),
+  execute: (args) =>
+    withLspClient(args, async (client, file, line, col) => {
+      const hover = await client.getHover(file, line, col);
+      return hover || 'No hover information available';
+    }),
 };

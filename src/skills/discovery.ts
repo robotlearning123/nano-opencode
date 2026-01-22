@@ -14,7 +14,7 @@ import { parseSkill } from './parser.js';
  * Standard skill directories (checked in order)
  */
 const SKILL_DIRS = [
-  join(homedir(), '.nano-opencode', 'skills'),     // User skills
+  join(homedir(), '.nano-opencode', 'skills'), // User skills
   join(process.cwd(), '.nano-opencode', 'skills'), // Project skills
 ];
 
@@ -94,9 +94,7 @@ export async function listSkills(): Promise<Skill[]> {
  */
 export async function searchSkillsByTag(tag: string): Promise<Skill[]> {
   const skills = await discoverSkills();
-  return Array.from(skills.values()).filter(
-    (skill) => skill.frontmatter.tags?.includes(tag)
-  );
+  return Array.from(skills.values()).filter((skill) => skill.frontmatter.tags?.includes(tag));
 }
 
 /**

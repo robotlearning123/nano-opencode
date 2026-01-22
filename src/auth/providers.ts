@@ -86,7 +86,7 @@ export const copilotProvider: AuthProvider = {
     const deviceResponse = await fetch('https://github.com/login/device/code', {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -95,7 +95,7 @@ export const copilotProvider: AuthProvider = {
       }),
     });
 
-    const deviceData = await deviceResponse.json() as DeviceCodeResponse;
+    const deviceData = (await deviceResponse.json()) as DeviceCodeResponse;
     const { device_code, user_code, verification_uri, interval } = deviceData;
 
     console.log(`\n  Visit: ${verification_uri}`);
@@ -107,12 +107,12 @@ export const copilotProvider: AuthProvider = {
     const maxAttempts = 60; // 5 minutes max
 
     for (let i = 0; i < maxAttempts; i++) {
-      await new Promise(r => setTimeout(r, (interval || 5) * 1000));
+      await new Promise((r) => setTimeout(r, (interval || 5) * 1000));
 
       const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -122,7 +122,7 @@ export const copilotProvider: AuthProvider = {
         }),
       });
 
-      const data = await tokenResponse.json() as TokenResponse;
+      const data = (await tokenResponse.json()) as TokenResponse;
 
       if (data.access_token) {
         // Get Copilot token using GitHub token
@@ -161,13 +161,13 @@ export const copilotProvider: AuthProvider = {
 async function getCopilotToken(githubToken: string): Promise<string> {
   const response = await fetch('https://api.github.com/copilot_internal/v2/token', {
     headers: {
-      'Authorization': `Bearer ${githubToken}`,
-      'Accept': 'application/json',
+      Authorization: `Bearer ${githubToken}`,
+      Accept: 'application/json',
     },
   });
 
   if (!response.ok) throw new Error('Failed to get Copilot token');
-  const data = await response.json() as CopilotTokenResponse;
+  const data = (await response.json()) as CopilotTokenResponse;
   return data.token;
 }
 
@@ -197,7 +197,8 @@ export const antigravityProvider: AuthProvider = {
       }),
     });
 
-    const { device_code, user_code, verification_url, interval } = await deviceResponse.json() as DeviceCodeResponse;
+    const { device_code, user_code, verification_url, interval } =
+      (await deviceResponse.json()) as DeviceCodeResponse;
 
     console.log(`\n  Visit: ${verification_url}`);
     console.log(`  Enter code: ${user_code}\n`);
@@ -206,7 +207,7 @@ export const antigravityProvider: AuthProvider = {
     // Poll for token
     const maxAttempts = 60;
     for (let i = 0; i < maxAttempts; i++) {
-      await new Promise(r => setTimeout(r, (interval || 5) * 1000));
+      await new Promise((r) => setTimeout(r, (interval || 5) * 1000));
 
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -218,7 +219,7 @@ export const antigravityProvider: AuthProvider = {
         }),
       });
 
-      const data = await tokenResponse.json() as TokenResponse;
+      const data = (await tokenResponse.json()) as TokenResponse;
 
       if (data.access_token) {
         return {
@@ -248,7 +249,7 @@ export const antigravityProvider: AuthProvider = {
       }),
     });
 
-    const data = await response.json() as TokenResponse;
+    const data = (await response.json()) as TokenResponse;
     if (!data.access_token) throw new Error('Failed to refresh token');
 
     return {
@@ -271,11 +272,7 @@ export const codexProvider: AuthProvider = {
   name: 'codex',
   displayName: 'OpenAI Codex',
   description: 'Use OpenAI Codex subscription',
-  models: [
-    'codex/gpt-5.2-codex',
-    'codex/gpt-5.1-codex',
-    'codex/gpt-5.1-codex-mini',
-  ],
+  models: ['codex/gpt-5.2-codex', 'codex/gpt-5.1-codex', 'codex/gpt-5.1-codex-mini'],
 
   async login(): Promise<AuthToken> {
     // OpenAI device code flow
@@ -289,7 +286,8 @@ export const codexProvider: AuthProvider = {
       }),
     });
 
-    const { device_code, user_code, verification_uri_complete, interval } = await deviceResponse.json() as DeviceCodeResponse;
+    const { device_code, user_code, verification_uri_complete, interval } =
+      (await deviceResponse.json()) as DeviceCodeResponse;
 
     console.log(`\n  Visit: ${verification_uri_complete}`);
     console.log(`  Code will auto-fill, just confirm.\n`);
@@ -298,7 +296,7 @@ export const codexProvider: AuthProvider = {
     // Poll for token
     const maxAttempts = 60;
     for (let i = 0; i < maxAttempts; i++) {
-      await new Promise(r => setTimeout(r, (interval || 5) * 1000));
+      await new Promise((r) => setTimeout(r, (interval || 5) * 1000));
 
       const tokenResponse = await fetch('https://auth.openai.com/oauth/token', {
         method: 'POST',
@@ -310,7 +308,7 @@ export const codexProvider: AuthProvider = {
         }),
       });
 
-      const data = await tokenResponse.json() as TokenResponse;
+      const data = (await tokenResponse.json()) as TokenResponse;
 
       if (data.access_token) {
         return {
@@ -340,7 +338,7 @@ export const codexProvider: AuthProvider = {
       }),
     });
 
-    const data = await response.json() as TokenResponse;
+    const data = (await response.json()) as TokenResponse;
     if (!data.access_token) throw new Error('Failed to refresh token');
 
     return {
@@ -391,7 +389,9 @@ export function saveProviderAuth(auth: StoredAuth): void {
   if (existsSync(PROVIDERS_FILE)) {
     try {
       data = JSON.parse(readFileSync(PROVIDERS_FILE, 'utf-8'));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   data[auth.provider] = auth;

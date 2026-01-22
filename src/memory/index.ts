@@ -98,18 +98,17 @@ export function loadMemoryContext(cwd: string = process.cwd(), forceReload = fal
   const sections: string[] = [];
 
   for (const file of sortedFiles) {
-    const header = file.scope === 'global'
-      ? '## Global Preferences (~/.nano/NANO.md)'
-      : file.scope === 'project'
-        ? '## Project Context (./NANO.md)'
-        : `## Directory Context (${file.relativePath})`;
+    const header =
+      file.scope === 'global'
+        ? '## Global Preferences (~/.nano/NANO.md)'
+        : file.scope === 'project'
+          ? '## Project Context (./NANO.md)'
+          : `## Directory Context (${file.relativePath})`;
 
     sections.push(`${header}\n\n${file.content.trim()}`);
   }
 
-  const combined = sections.length > 0
-    ? `# Memory Context\n\n${sections.join('\n\n---\n\n')}`
-    : '';
+  const combined = sections.length > 0 ? `# Memory Context\n\n${sections.join('\n\n---\n\n')}` : '';
 
   memoryCache = {
     files,
@@ -149,9 +148,7 @@ export function saveToMemory(
   scope: 'global' | 'project' = 'project',
   append = true
 ): { success: boolean; path: string; message: string } {
-  const targetPath = scope === 'global'
-    ? GLOBAL_MEMORY
-    : join(process.cwd(), 'NANO.md');
+  const targetPath = scope === 'global' ? GLOBAL_MEMORY : join(process.cwd(), 'NANO.md');
 
   const targetDir = dirname(targetPath);
 
@@ -195,9 +192,7 @@ export function saveToMemory(
  */
 export function formatMemoryEntry(content: string, category?: string): string {
   const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  const header = category
-    ? `### ${category} (${timestamp})`
-    : `### Note (${timestamp})`;
+  const header = category ? `### ${category} (${timestamp})` : `### Note (${timestamp})`;
 
   return `${header}\n\n${content}`;
 }
@@ -215,7 +210,7 @@ export function clearMemoryCache(): void {
  */
 export function listMemoryFiles(cwd: string = process.cwd()): string[] {
   const context = loadMemoryContext(cwd);
-  return context.files.map(f => `${f.scope}: ${f.path}`);
+  return context.files.map((f) => `${f.scope}: ${f.path}`);
 }
 
 /**

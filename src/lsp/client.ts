@@ -73,10 +73,13 @@ export class LSPClient {
     if (!this.initialized) await this.start();
     await this.openFile(filePath);
 
-    const result = await this.rpc?.request<Location | Location[] | null>('textDocument/definition', {
-      textDocument: { uri: `file://${resolve(filePath)}` },
-      position: { line, character },
-    });
+    const result = await this.rpc?.request<Location | Location[] | null>(
+      'textDocument/definition',
+      {
+        textDocument: { uri: `file://${resolve(filePath)}` },
+        position: { line, character },
+      }
+    );
 
     if (!result) return [];
     return Array.isArray(result) ? result : [result];

@@ -127,7 +127,7 @@ class BackgroundTaskManager {
    * List all tasks
    */
   list(): BackgroundTask[] {
-    return Array.from(this.tasks.values()).map(task => ({
+    return Array.from(this.tasks.values()).map((task) => ({
       id: task.id,
       command: task.command,
       status: task.status,

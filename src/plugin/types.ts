@@ -21,7 +21,7 @@ export interface PluginMeta {
 export interface AgentYaml {
   name: string;
   description: string;
-  prompt: string;  // System prompt (supports multi-line |)
+  prompt: string; // System prompt (supports multi-line |)
   model?: string;
   temperature?: number;
   max_turns?: number;
@@ -90,7 +90,7 @@ export type LoadedSkill = LoadedPlugin<SkillFrontmatter & { content: string }>;
 
 // Plugin locations
 export interface PluginLocations {
-  builtin: string;  // Shipped with package
-  user: string;     // ~/.nano/
-  project: string;  // .nano/
+  builtin: string; // Shipped with package
+  user: string; // ~/.nano/
+  project: string; // .nano/
 }

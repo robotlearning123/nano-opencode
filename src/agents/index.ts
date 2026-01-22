@@ -86,7 +86,10 @@ export function getAgent(name: AgentName): AgentDefinition | undefined {
 /**
  * Create an agent instance
  */
-export function createAgent(name: AgentName, overrides?: Partial<AgentDefinition>): AgentInstance | undefined {
+export function createAgent(
+  name: AgentName,
+  overrides?: Partial<AgentDefinition>
+): AgentInstance | undefined {
   const definition = getAgent(name);
   if (!definition) return undefined;
 

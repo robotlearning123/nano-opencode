@@ -41,13 +41,15 @@ const TYPE_DIRS: Record<PluginType, string> = {
 /**
  * Get all possible paths for a plugin type
  */
-function getPluginPaths(type: PluginType): { path: string; source: 'builtin' | 'user' | 'project' }[] {
+function getPluginPaths(
+  type: PluginType
+): { path: string; source: 'builtin' | 'user' | 'project' }[] {
   const subdir = TYPE_DIRS[type];
   return [
     { path: join(BUILTIN_DIR, subdir), source: 'builtin' as const },
     { path: join(USER_DIR, subdir), source: 'user' as const },
     { path: join(PROJECT_DIR, subdir), source: 'project' as const },
-  ].filter(p => existsSync(p.path));
+  ].filter((p) => existsSync(p.path));
 }
 
 /**
@@ -65,7 +67,9 @@ function parseYaml<T>(filePath: string): T | null {
 /**
  * Parse Markdown with YAML frontmatter
  */
-function parseMarkdown(filePath: string): { frontmatter: SkillFrontmatter; content: string } | null {
+function parseMarkdown(
+  filePath: string
+): { frontmatter: SkillFrontmatter; content: string } | null {
   try {
     const raw = readFileSync(filePath, 'utf-8');
     const match = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -92,7 +96,7 @@ export function discoverPlugins<T>(type: PluginType): LoadedPlugin<T>[] {
 
   for (const { path, source } of paths) {
     try {
-      const files = readdirSync(path).filter(f => f.endsWith(ext));
+      const files = readdirSync(path).filter((f) => f.endsWith(ext));
 
       for (const file of files) {
         const name = basename(file, ext);
@@ -165,10 +169,12 @@ export const loadAgent = (name: string) => loadPlugin<AgentYaml>('agent', name);
 export const loadHook = (name: string) => loadPlugin<HookYaml>('hook', name);
 export const loadService = (name: string) => loadPlugin<ServiceYaml>('service', name);
 export const loadCommand = (name: string) => loadPlugin<CommandYaml>('command', name);
-export const loadSkill = (name: string) => loadPlugin<SkillFrontmatter & { content: string }>('skill', name);
+export const loadSkill = (name: string) =>
+  loadPlugin<SkillFrontmatter & { content: string }>('skill', name);
 
 export const discoverAgents = () => discoverPlugins<AgentYaml>('agent');
 export const discoverHooks = () => discoverPlugins<HookYaml>('hook');
 export const discoverServices = () => discoverPlugins<ServiceYaml>('service');
 export const discoverCommands = () => discoverPlugins<CommandYaml>('command');
-export const discoverSkills = () => discoverPlugins<SkillFrontmatter & { content: string }>('skill');
+export const discoverSkills = () =>
+  discoverPlugins<SkillFrontmatter & { content: string }>('skill');

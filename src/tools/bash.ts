@@ -5,7 +5,8 @@ import { checkDangerousCommand, formatCommandWarnings } from '../utils.js';
 
 export const bashTool: Tool = {
   name: 'bash',
-  description: 'Execute a shell command. Returns stdout and stderr. Use for git, npm, build commands, etc.',
+  description:
+    'Execute a shell command. Returns stdout and stderr. Use for git, npm, build commands, etc.',
   parameters: {
     type: 'object',
     properties: {

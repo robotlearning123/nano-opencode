@@ -6,7 +6,8 @@ import { getErrorMessage, EXCLUDED_GLOB_PATTERNS } from '../constants.js';
 
 export const globTool: Tool = {
   name: 'glob',
-  description: 'Find files matching a glob pattern (e.g., "**/*.ts", "src/**/*.js"). Returns matching file paths.',
+  description:
+    'Find files matching a glob pattern (e.g., "**/*.ts", "src/**/*.js"). Returns matching file paths.',
   parameters: {
     type: 'object',
     properties: {

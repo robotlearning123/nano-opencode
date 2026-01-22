@@ -83,7 +83,7 @@ export const todoWriteTool: Tool = {
         if (id === undefined) {
           return 'Error: id is required for update action';
         }
-        const todo = todos.find(t => t.id === id);
+        const todo = todos.find((t) => t.id === id);
         if (!todo) {
           return `Error: Todo #${id} not found`;
         }
@@ -103,7 +103,7 @@ export const todoWriteTool: Tool = {
         if (id === undefined) {
           return 'Error: id is required for remove action';
         }
-        const index = todos.findIndex(t => t.id === id);
+        const index = todos.findIndex((t) => t.id === id);
         if (index === -1) {
           return `Error: Todo #${id} not found`;
         }
@@ -142,14 +142,14 @@ export const todoReadTool: Tool = {
 
     let filtered = todos;
     if (filter !== 'all') {
-      filtered = todos.filter(t => t.status === filter);
+      filtered = todos.filter((t) => t.status === filter);
     }
 
     if (filtered.length === 0) {
       return filter === 'all' ? 'No todos.' : `No ${filter} todos.`;
     }
 
-    const lines = filtered.map(t => {
+    const lines = filtered.map((t) => {
       const statusIcon = t.status === 'completed' ? '✓' : t.status === 'in_progress' ? '→' : '○';
       return `${statusIcon} #${t.id} [${t.status}] ${t.content}`;
     });

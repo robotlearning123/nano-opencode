@@ -134,7 +134,12 @@ export {
 
 // Re-export optional tools (lazy loaded)
 export { webfetchTool } from './webfetch.js';
-export { backgroundTaskTool, backgroundOutputTool, backgroundCancelTool, backgroundListTool } from './background.js';
+export {
+  backgroundTaskTool,
+  backgroundOutputTool,
+  backgroundCancelTool,
+  backgroundListTool,
+} from './background.js';
 export { sessionListTool, sessionReadTool, sessionSearchTool } from './session.js';
 export { skillListTool, skillExecuteTool, skillReadTool } from './skill.js';
 export { lspDefinitionTool, lspReferencesTool, lspHoverTool } from './lsp.js';

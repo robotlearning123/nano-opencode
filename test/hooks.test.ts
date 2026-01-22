@@ -53,7 +53,9 @@ describe('Hook System', () => {
 
     it('getForLifecycle filters by lifecycle', () => {
       hookRegistry.register(createTestHook({ name: 'before-hook' }));
-      hookRegistry.register(createTestHook({ name: 'after-hook', lifecycle: 'chat.message.after' }));
+      hookRegistry.register(
+        createTestHook({ name: 'after-hook', lifecycle: 'chat.message.after' })
+      );
 
       const beforeHooks = hookRegistry.getForLifecycle('chat.message.before');
       assert.strictEqual(beforeHooks.length, 1);
@@ -83,16 +85,26 @@ describe('Hook System', () => {
     it('executeHooks runs hooks in priority order', async () => {
       const order: string[] = [];
 
-      hookRegistry.register(createTestHook({
-        name: 'second',
-        priority: 100,
-        handler: () => { order.push('second'); return CONTINUE; },
-      }));
-      hookRegistry.register(createTestHook({
-        name: 'first',
-        priority: 50,
-        handler: () => { order.push('first'); return CONTINUE; },
-      }));
+      hookRegistry.register(
+        createTestHook({
+          name: 'second',
+          priority: 100,
+          handler: () => {
+            order.push('second');
+            return CONTINUE;
+          },
+        })
+      );
+      hookRegistry.register(
+        createTestHook({
+          name: 'first',
+          priority: 50,
+          handler: () => {
+            order.push('first');
+            return CONTINUE;
+          },
+        })
+      );
 
       await executeHooks('chat.message.before', {});
       assert.deepStrictEqual(order, ['first', 'second']);
@@ -101,16 +113,26 @@ describe('Hook System', () => {
     it('executeHooks stops on continue: false', async () => {
       const order: string[] = [];
 
-      hookRegistry.register(createTestHook({
-        name: 'stopper',
-        priority: 50,
-        handler: () => { order.push('stopper'); return { continue: false }; },
-      }));
-      hookRegistry.register(createTestHook({
-        name: 'never-runs',
-        priority: 100,
-        handler: () => { order.push('never-runs'); return CONTINUE; },
-      }));
+      hookRegistry.register(
+        createTestHook({
+          name: 'stopper',
+          priority: 50,
+          handler: () => {
+            order.push('stopper');
+            return { continue: false };
+          },
+        })
+      );
+      hookRegistry.register(
+        createTestHook({
+          name: 'never-runs',
+          priority: 100,
+          handler: () => {
+            order.push('never-runs');
+            return CONTINUE;
+          },
+        })
+      );
 
       const result = await executeHooks('chat.message.before', {});
       assert.strictEqual(result.continue, false);
@@ -118,13 +140,15 @@ describe('Hook System', () => {
     });
 
     it('executeHooks handles async handlers', async () => {
-      hookRegistry.register(createTestHook({
-        name: 'async-hook',
-        handler: async () => {
-          await new Promise((resolve) => setTimeout(resolve, 10));
-          return { continue: true, metadata: { async: true } };
-        },
-      }));
+      hookRegistry.register(
+        createTestHook({
+          name: 'async-hook',
+          handler: async () => {
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            return { continue: true, metadata: { async: true } };
+          },
+        })
+      );
 
       const result = await executeHooks('chat.message.before', {});
       assert.strictEqual(result.continue, true);
@@ -134,10 +158,15 @@ describe('Hook System', () => {
     it('executeHooks passes context correctly', async () => {
       let receivedContext: HookContext | undefined;
 
-      hookRegistry.register(createTestHook({
-        name: 'context-hook',
-        handler: (ctx) => { receivedContext = ctx; return CONTINUE; },
-      }));
+      hookRegistry.register(
+        createTestHook({
+          name: 'context-hook',
+          handler: (ctx) => {
+            receivedContext = ctx;
+            return CONTINUE;
+          },
+        })
+      );
 
       const message = { role: 'user' as const, content: 'Hello' };
       await executeHooks('chat.message.before', { message });

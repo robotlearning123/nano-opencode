@@ -11,9 +11,9 @@ import { validatePath } from './helpers.js';
 interface PatchOperation {
   file: string;
   action: 'create' | 'edit' | 'delete';
-  content?: string;       // For create
-  oldString?: string;     // For edit
-  newString?: string;     // For edit
+  content?: string; // For create
+  oldString?: string; // For edit
+  newString?: string; // For edit
 }
 
 export const patchTool: Tool = {
@@ -34,7 +34,7 @@ export const patchTool: Tool = {
     required: ['operations'],
   },
   execute: async (args) => {
-    const dryRun = args.dryRun as boolean || false;
+    const dryRun = (args.dryRun as boolean) || false;
     let operations: PatchOperation[];
 
     try {

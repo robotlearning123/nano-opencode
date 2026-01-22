@@ -34,7 +34,7 @@ describe('Memory System', () => {
     it('returns empty array when no memory files exist', () => {
       const files = discoverMemoryFiles(testDir);
       // May find global ~/.nano/NANO.md, filter to test-specific
-      const testFiles = files.filter(f => f.path.startsWith(testDir));
+      const testFiles = files.filter((f) => f.path.startsWith(testDir));
       assert.strictEqual(testFiles.length, 0);
     });
 
@@ -44,7 +44,7 @@ describe('Memory System', () => {
 
       clearMemoryCache();
       const files = discoverMemoryFiles(testDir);
-      const projectFile = files.find(f => f.path === projectMd);
+      const projectFile = files.find((f) => f.path === projectMd);
 
       assert.ok(projectFile);
       assert.strictEqual(projectFile.scope, 'project');
@@ -57,7 +57,7 @@ describe('Memory System', () => {
 
       clearMemoryCache();
       const files = discoverMemoryFiles(subDir);
-      const subFile = files.find(f => f.path === subMd);
+      const subFile = files.find((f) => f.path === subMd);
 
       assert.ok(subFile);
       assert.strictEqual(subFile.scope, 'project'); // project relative to cwd
@@ -113,7 +113,7 @@ describe('Memory System', () => {
       assert.ok(Array.isArray(files));
       assert.ok(files.length > 0);
       // Each entry should have scope prefix
-      assert.ok(files.some(f => f.includes(':')));
+      assert.ok(files.some((f) => f.includes(':')));
     });
   });
 });

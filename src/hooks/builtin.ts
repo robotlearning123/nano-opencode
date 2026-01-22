@@ -19,11 +19,15 @@ export const loggingHook: Hook = {
   handler: (ctx: HookContext): HookResult => {
     if (ctx.lifecycle === 'tool.execute.before' && ctx.toolCall) {
       console.log(`[Hook:logging] Tool: ${ctx.toolCall.name}`);
-      console.log(`[Hook:logging] Args: ${JSON.stringify(ctx.toolCall.arguments, null, 2).slice(0, 200)}`);
+      console.log(
+        `[Hook:logging] Args: ${JSON.stringify(ctx.toolCall.arguments, null, 2).slice(0, 200)}`
+      );
     }
     if (ctx.lifecycle === 'tool.execute.after' && ctx.toolResult) {
       const preview = ctx.toolResult.content.slice(0, 100);
-      console.log(`[Hook:logging] Result: ${preview}${ctx.toolResult.content.length > 100 ? '...' : ''}`);
+      console.log(
+        `[Hook:logging] Result: ${preview}${ctx.toolResult.content.length > 100 ? '...' : ''}`
+      );
     }
     return CONTINUE;
   },
@@ -215,7 +219,9 @@ export const contextWindowHook: Hook = {
 
     const estimatedTokens = Math.ceil(totalChars / CHARS_PER_TOKEN);
     if (estimatedTokens > warningThreshold) {
-      console.warn(`[Hook:context-window] WARNING: Estimated ${estimatedTokens} tokens (threshold: ${warningThreshold})`);
+      console.warn(
+        `[Hook:context-window] WARNING: Estimated ${estimatedTokens} tokens (threshold: ${warningThreshold})`
+      );
     }
 
     return {

@@ -10,7 +10,7 @@ export interface MCPServerConfig {
   args?: string[];
   env?: Record<string, string>;
   enabled?: boolean;
-  timeout?: number;  // Connection timeout in ms
+  timeout?: number; // Connection timeout in ms
 }
 
 /**
@@ -21,11 +21,14 @@ export interface MCPToolDefinition {
   description?: string;
   inputSchema?: {
     type: 'object';
-    properties?: Record<string, {
-      type: string;
-      description?: string;
-      enum?: string[];
-    }>;
+    properties?: Record<
+      string,
+      {
+        type: string;
+        description?: string;
+        enum?: string[];
+      }
+    >;
     required?: string[];
   };
 }

@@ -70,7 +70,10 @@ function parseSimpleYaml(content: string): Record<string, unknown> {
         multilineIndent = line.search(/\S|$/) + 2;
         multilineValue = [];
       } else if (value.startsWith('[') && value.endsWith(']')) {
-        const items = value.slice(1, -1).split(',').map((s) => s.trim().replace(/^["']|["']$/g, ''));
+        const items = value
+          .slice(1, -1)
+          .split(',')
+          .map((s) => s.trim().replace(/^["']|["']$/g, ''));
         result[key] = items.filter((s) => s !== '');
       } else if (value === 'true' || value === 'false') {
         result[key] = value === 'true';
@@ -178,9 +181,16 @@ class AgentRegistry {
         model: typeof parsed.model === 'string' ? parsed.model : undefined,
         temperature: typeof parsed.temperature === 'number' ? parsed.temperature : undefined,
         max_turns: typeof parsed.max_turns === 'number' ? parsed.max_turns : undefined,
-        allowed_tools: Array.isArray(parsed.allowed_tools) ? (parsed.allowed_tools as string[]) : undefined,
-        disallowed_tools: Array.isArray(parsed.disallowed_tools) ? (parsed.disallowed_tools as string[]) : undefined,
-        category: typeof parsed.category === 'string' ? (parsed.category as AgentYamlConfig['category']) : undefined,
+        allowed_tools: Array.isArray(parsed.allowed_tools)
+          ? (parsed.allowed_tools as string[])
+          : undefined,
+        disallowed_tools: Array.isArray(parsed.disallowed_tools)
+          ? (parsed.disallowed_tools as string[])
+          : undefined,
+        category:
+          typeof parsed.category === 'string'
+            ? (parsed.category as AgentYamlConfig['category'])
+            : undefined,
       };
 
       this.register(yamlToDefinition(yaml));

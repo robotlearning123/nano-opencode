@@ -7,7 +7,8 @@ import { createBackup } from './undo.js';
 
 export const writeFileTool: Tool = {
   name: 'write_file',
-  description: 'Write content to a file. Creates the file if it does not exist, or overwrites it if it does. Automatically creates a backup for undo.',
+  description:
+    'Write content to a file. Creates the file if it does not exist, or overwrites it if it does. Automatically creates a backup for undo.',
   parameters: {
     type: 'object',
     properties: {

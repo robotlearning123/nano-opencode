@@ -51,9 +51,9 @@ describe('Agent System', () => {
       const filtered = filterToolsForAgent(mockTools, definition);
 
       assert.strictEqual(filtered.length, 2);
-      assert.ok(filtered.some(t => t.name === 'read_file'));
-      assert.ok(filtered.some(t => t.name === 'search_files'));
-      assert.ok(!filtered.some(t => t.name === 'write_file'));
+      assert.ok(filtered.some((t) => t.name === 'read_file'));
+      assert.ok(filtered.some((t) => t.name === 'search_files'));
+      assert.ok(!filtered.some((t) => t.name === 'write_file'));
     });
 
     it('filters by disallowedTools blacklist', () => {
@@ -61,8 +61,8 @@ describe('Agent System', () => {
       const filtered = filterToolsForAgent(mockTools, definition);
 
       assert.strictEqual(filtered.length, 2);
-      assert.ok(filtered.some(t => t.name === 'read_file'));
-      assert.ok(filtered.some(t => t.name === 'search_files'));
+      assert.ok(filtered.some((t) => t.name === 'read_file'));
+      assert.ok(filtered.some((t) => t.name === 'search_files'));
     });
 
     it('blacklist takes precedence over whitelist', () => {
@@ -112,7 +112,7 @@ describe('Agent System', () => {
       // At minimum, should have 5 essential agents (more if TS fallback loads)
       assert.ok(agents.length >= 5);
 
-      const names = agents.map(a => a.name);
+      const names = agents.map((a) => a.name);
       // Essential agents (from YAML or TS fallback)
       assert.ok(names.includes('sisyphus'));
       assert.ok(names.includes('oracle'));
