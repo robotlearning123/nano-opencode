@@ -19,6 +19,7 @@ import { diffTool } from './diff.js';
 import { todoWriteTool, todoReadTool } from './todo.js';
 import { undoTool, listBackupsTool } from './undo.js';
 import { webSearchTool } from './websearch.js';
+import { imageTool } from './image.js';
 
 // Core tools array (always available)
 const coreTools: Tool[] = [
@@ -36,6 +37,7 @@ const coreTools: Tool[] = [
   undoTool,
   listBackupsTool,
   webSearchTool,
+  imageTool,
 ];
 
 // Dynamic tools (from MCP servers, plugins, etc.)
@@ -127,6 +129,7 @@ const READ_ONLY_TOOLS = new Set([
   'list_backups',
   'webfetch',
   'web_search',
+  'read_image',
   'lsp_definition',
   'lsp_references',
   'lsp_hover',
@@ -166,6 +169,7 @@ export {
 // Re-export optional tools (lazy loaded)
 export { webfetchTool } from './webfetch.js';
 export { webSearchTool } from './websearch.js';
+export { imageTool } from './image.js';
 export {
   backgroundTaskTool,
   backgroundOutputTool,

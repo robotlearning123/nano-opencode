@@ -449,16 +449,16 @@ nano-opencode-vscode/
 
 ## Implementation Priority
 
-| Priority | Feature | Effort | Impact |
-|----------|---------|--------|--------|
-| P0 | Plan Mode | Medium | High |
-| P0 | Web Search | Low | High |
-| P1 | Image Support | Medium | Medium |
-| P1 | Ollama | Low | High |
-| P2 | Enhanced Sandbox | High | Medium |
-| P2 | Git Auto-commit | Low | Medium |
-| P3 | Sub-agents | High | High |
-| P3 | VS Code Extension | High | High |
+| Priority | Feature | Effort | Impact | Status |
+|----------|---------|--------|--------|--------|
+| P0 | Plan Mode | Medium | High | ✅ Done |
+| P0 | Web Search | Low | High | ✅ Done |
+| P1 | Image Support | Medium | Medium | ✅ Done |
+| P1 | Ollama | Low | High | 📋 Planned |
+| P2 | Enhanced Sandbox | High | Medium | 📋 Planned |
+| P2 | Git Auto-commit | Low | Medium | 🔜 Next |
+| P3 | Sub-agents | High | High | 📋 Planned |
+| P3 | VS Code Extension | High | High | 📋 Planned |
 
 ---
 
