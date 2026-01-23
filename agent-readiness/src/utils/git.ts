@@ -3,15 +3,43 @@
  */
 
 import * as path from 'node:path';
-import { fileExists, readFile } from './fs.js';
+import { fileExists, readFile, directoryExists } from './fs.js';
 import { gitExec } from './exec.js';
 
 /**
- * Check if path is inside a git repository
+ * Check if path is inside a git repository (checks for .git in path or parents)
  */
 export async function isGitRepo(repoPath: string): Promise<boolean> {
+  const gitRoot = await findGitRoot(repoPath);
+  return gitRoot !== null;
+}
+
+/**
+ * Find the git root directory for a given path
+ * Walks up the directory tree looking for .git
+ */
+export async function findGitRoot(startPath: string): Promise<string | null> {
+  let currentPath = path.resolve(startPath);
+  const root = path.parse(currentPath).root;
+
+  while (currentPath !== root) {
+    const gitDir = path.join(currentPath, '.git');
+    // .git can be a directory (normal) or a file (worktree/submodule)
+    if ((await directoryExists(gitDir)) || (await fileExists(gitDir))) {
+      return currentPath;
+    }
+    currentPath = path.dirname(currentPath);
+  }
+
+  return null;
+}
+
+/**
+ * Check if the scanned path has its own .git (is the repo root)
+ */
+export async function isRepoRoot(repoPath: string): Promise<boolean> {
   const gitDir = path.join(repoPath, '.git');
-  return await fileExists(gitDir);
+  return (await directoryExists(gitDir)) || (await fileExists(gitDir));
 }
 
 /**
@@ -32,6 +60,7 @@ export function getShortCommitSha(repoPath: string): string {
 
 /**
  * Get repository name from git remote or folder name
+ * For subdirectories of a git repo, returns "repo/subdir" format
  */
 export function getRepoName(repoPath: string): string {
   const result = gitExec(['remote', 'get-url', 'origin'], repoPath);
@@ -41,21 +70,39 @@ export function getRepoName(repoPath: string): string {
   }
 
   const url = result.stdout;
+  let repoName: string | null = null;
 
   // Handle SSH format: git@github.com:owner/repo.git
   const sshMatch = url.match(/git@[^:]+:(.+?)(?:\.git)?$/);
   if (sshMatch) {
-    return sshMatch[1];
+    repoName = sshMatch[1];
   }
 
   // Handle HTTPS format: https://github.com/owner/repo.git
-  const httpsMatch = url.match(/https?:\/\/[^/]+\/(.+?)(?:\.git)?$/);
-  if (httpsMatch) {
-    return httpsMatch[1];
+  if (!repoName) {
+    const httpsMatch = url.match(/https?:\/\/[^/]+\/(.+?)(?:\.git)?$/);
+    if (httpsMatch) {
+      repoName = httpsMatch[1];
+    }
   }
 
-  // Fallback to folder name
-  return path.basename(repoPath);
+  if (!repoName) {
+    return path.basename(repoPath);
+  }
+
+  // Check if we're in a subdirectory of the git repo
+  const gitRootResult = gitExec(['rev-parse', '--show-toplevel'], repoPath);
+  if (gitRootResult.success) {
+    const gitRoot = gitRootResult.stdout;
+    const resolvedPath = path.resolve(repoPath);
+    if (resolvedPath !== gitRoot) {
+      // We're in a subdirectory, append the relative path
+      const relativePath = path.relative(gitRoot, resolvedPath);
+      return `${repoName}/${relativePath}`;
+    }
+  }
+
+  return repoName;
 }
 
 /**
