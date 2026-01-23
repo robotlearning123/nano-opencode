@@ -95,6 +95,24 @@ function findCommonDirectory(files: string[]): string | null {
 }
 
 /**
+ * Validate file paths to prevent git option injection
+ * Returns error message if invalid, null if valid
+ */
+function validateFilePaths(paths: string[]): string | null {
+  for (const path of paths) {
+    // Block git options (start with -)
+    if (path.startsWith('-')) {
+      return `Error: Invalid file path "${path}" - cannot start with dash`;
+    }
+    // Block empty paths
+    if (!path.trim()) {
+      continue;
+    }
+  }
+  return null;
+}
+
+/**
  * Git commit tool - stage and commit changes
  */
 export const gitCommitTool: Tool = {
@@ -125,8 +143,15 @@ export const gitCommitTool: Tool = {
       return 'Error: Not in a git repository';
     }
 
+    // Parse and validate file paths
+    const filePaths = files.split(/\s+/).filter(Boolean);
+    const validationError = validateFilePaths(filePaths);
+    if (validationError) {
+      return validationError;
+    }
+
     // Stage files
-    const stageArgs = ['add', ...files.split(/\s+/).filter(Boolean)];
+    const stageArgs = ['add', ...filePaths];
     const stageResult = runGit(stageArgs);
     if (stageResult.status !== 0) {
       return `Error staging files: ${stageResult.stderr || 'Unknown error'}`;
@@ -171,14 +196,14 @@ export const gitStatusTool: Tool = {
     type: 'object',
     properties: {
       short: {
-        type: 'string',
+        type: 'boolean',
         description: 'Use short format output (default: false)',
       },
     },
     required: [],
   },
   execute: async (args) => {
-    const short = args.short === 'true' || args.short === true;
+    const short = Boolean(args.short);
 
     const result = runGit(['status', short ? '-s' : '--long']);
     if (result.status !== 0) {
@@ -199,7 +224,7 @@ export const gitDiffTool: Tool = {
     type: 'object',
     properties: {
       staged: {
-        type: 'string',
+        type: 'boolean',
         description: 'Show staged changes only (default: false)',
       },
       file: {
@@ -207,16 +232,21 @@ export const gitDiffTool: Tool = {
         description: 'Show diff for specific file',
       },
       stat: {
-        type: 'string',
+        type: 'boolean',
         description: 'Show diffstat instead of full diff (default: false)',
       },
     },
     required: [],
   },
   execute: async (args) => {
-    const staged = args.staged === 'true' || args.staged === true;
+    const staged = Boolean(args.staged);
     const file = args.file as string | undefined;
-    const stat = args.stat === 'true' || args.stat === true;
+    const stat = Boolean(args.stat);
+
+    // Validate file path if provided
+    if (file && file.startsWith('-')) {
+      return `Error: Invalid file path "${file}" - cannot start with dash`;
+    }
 
     const gitArgs = ['diff'];
     if (staged) gitArgs.push('--cached');
