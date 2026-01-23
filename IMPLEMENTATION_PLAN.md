@@ -21,13 +21,13 @@ nano-opencode already has:
 
 | Feature | Claude Code | Codex CLI | nano-opencode |
 |---------|-------------|-----------|---------------|
-| Plan Mode | ✅ | ❌ | 🔴 Missing |
-| Web Search | ✅ | ❌ | 🔴 Missing |
-| Image Support | ✅ | ✅ | 🔴 Missing |
-| Sandbox | ✅ | ✅ | 🟡 Partial |
-| Local Models | ❌ | ✅ | 🟡 Via OpenRouter |
-| Git Auto-commit | ✅ | ✅ | 🟡 Manual |
-| Sub-agents | ✅ | ❌ | 🔴 Missing |
+| Plan Mode | ✅ | ❌ | ✅ Done |
+| Web Search | ✅ | ❌ | ✅ Done |
+| Image Support | ✅ | ✅ | ✅ Done |
+| Sandbox | ✅ | ✅ | ✅ Done |
+| Local Models | ❌ | ✅ | ✅ Ollama |
+| Git Auto-commit | ✅ | ✅ | ✅ Done |
+| Sub-agents | ✅ | ❌ | ✅ Done |
 
 ---
 
@@ -454,10 +454,10 @@ nano-opencode-vscode/
 | P0 | Plan Mode | Medium | High | ✅ Done |
 | P0 | Web Search | Low | High | ✅ Done |
 | P1 | Image Support | Medium | Medium | ✅ Done |
-| P1 | Ollama | Low | High | 🔜 Next |
-| P2 | Enhanced Sandbox | High | Medium | 📋 Planned |
+| P1 | Ollama | Low | High | ✅ Done |
+| P2 | Enhanced Sandbox | High | Medium | ✅ Done |
 | P2 | Git Auto-commit | Low | Medium | ✅ Done |
-| P3 | Sub-agents | High | High | 📋 Planned |
+| P3 | Sub-agents | High | High | ✅ Done |
 | P3 | VS Code Extension | High | High | 📋 Planned |
 
 ---

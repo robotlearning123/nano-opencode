@@ -21,6 +21,8 @@ import { undoTool, listBackupsTool } from './undo.js';
 import { webSearchTool } from './websearch.js';
 import { imageTool } from './image.js';
 import { gitCommitTool, gitStatusTool, gitDiffTool } from './git.js';
+import { sandboxTool, sandboxInfoTool } from './sandbox.js';
+import { spawnAgentTool, listAgentsTool } from './spawn.js';
 
 // Core tools array (always available)
 const coreTools: Tool[] = [
@@ -42,6 +44,10 @@ const coreTools: Tool[] = [
   gitCommitTool,
   gitStatusTool,
   gitDiffTool,
+  sandboxTool,
+  sandboxInfoTool,
+  spawnAgentTool,
+  listAgentsTool,
 ];
 
 // Dynamic tools (from MCP servers, plugins, etc.)
@@ -146,6 +152,8 @@ const READ_ONLY_TOOLS = new Set([
   'background_output',
   'git_status',
   'git_diff',
+  'sandbox_info',
+  'list_agents',
 ]);
 
 /**
@@ -186,3 +194,5 @@ export { sessionListTool, sessionReadTool, sessionSearchTool } from './session.j
 export { skillListTool, skillExecuteTool, skillReadTool } from './skill.js';
 export { lspDefinitionTool, lspReferencesTool, lspHoverTool } from './lsp.js';
 export { gitCommitTool, gitStatusTool, gitDiffTool } from './git.js';
+export { sandboxTool, sandboxInfoTool } from './sandbox.js';
+export { spawnAgentTool, listAgentsTool } from './spawn.js';
