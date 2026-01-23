@@ -56,7 +56,29 @@ export async function executeHooks(
         aggregatedResult.metadata = { ...aggregatedResult.metadata, ...result.metadata };
       }
     } catch (error) {
-      console.error(`Hook ${hook.name} failed:`, error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Hook ${hook.name} failed:`, errorMessage);
+
+      // Track hook errors in metadata for visibility
+      aggregatedResult.metadata = {
+        ...aggregatedResult.metadata,
+        hookErrors: [
+          ...((aggregatedResult.metadata?.hookErrors as string[]) || []),
+          `${hook.name}: ${errorMessage}`,
+        ],
+      };
+
+      // For critical hooks (priority < 10), stop execution on failure
+      // Default priority is 100, so only explicitly low-priority hooks are critical
+      if ((hook.priority ?? 100) < 10) {
+        return {
+          continue: false,
+          metadata: {
+            ...aggregatedResult.metadata,
+            criticalHookFailed: hook.name,
+          },
+        };
+      }
     }
   }
 

@@ -43,4 +43,5 @@ export interface PendingRequest {
   resolve: (value: unknown) => void;
   reject: (error: Error) => void;
   timeoutId?: ReturnType<typeof setTimeout>;
+  createdAt: number; // Timestamp for cleanup of stale requests
 }

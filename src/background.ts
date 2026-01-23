@@ -18,11 +18,15 @@ export interface BackgroundTask {
 class BackgroundTaskManager {
   private tasks = new Map<string, BackgroundTask>();
   private nextId = 1;
+  private static readonly MAX_TASKS = 100; // Maximum tasks to retain
+  private static readonly MAX_COMPLETED_AGE_MS = 3600000; // 1 hour
 
   /**
    * Start a new background task
    */
   start(command: string, timeout = 600000): string {
+    // Auto-cleanup old completed tasks before starting new one
+    this.autoCleanup();
     const id = `bg_${this.nextId++}`;
     const task: BackgroundTask = {
       id,
@@ -150,6 +154,57 @@ class BackgroundTaskManager {
       }
     }
     return count;
+  }
+
+  /**
+   * Automatic cleanup to prevent unbounded memory growth
+   * - Removes completed tasks older than MAX_COMPLETED_AGE_MS
+   * - If still over MAX_TASKS, removes oldest completed tasks
+   */
+  private autoCleanup(): void {
+    const now = Date.now();
+
+    // First pass: remove old completed tasks
+    for (const [id, task] of this.tasks) {
+      if (task.status !== 'running' && task.completedAt) {
+        const age = now - task.completedAt.getTime();
+        if (age > BackgroundTaskManager.MAX_COMPLETED_AGE_MS) {
+          this.tasks.delete(id);
+        }
+      }
+    }
+
+    // Second pass: if still over limit, remove oldest completed tasks
+    if (this.tasks.size >= BackgroundTaskManager.MAX_TASKS) {
+      const completedTasks = Array.from(this.tasks.entries())
+        .filter(([, task]) => task.status !== 'running')
+        .sort((a, b) => {
+          const timeA = a[1].completedAt?.getTime() ?? 0;
+          const timeB = b[1].completedAt?.getTime() ?? 0;
+          return timeA - timeB; // Oldest first
+        });
+
+      // Remove oldest completed tasks to get under limit
+      const toRemove = this.tasks.size - BackgroundTaskManager.MAX_TASKS + 10; // Leave some room
+      for (let i = 0; i < Math.min(toRemove, completedTasks.length); i++) {
+        this.tasks.delete(completedTasks[i][0]);
+      }
+    }
+  }
+
+  /**
+   * Get task manager statistics
+   */
+  getStats(): { total: number; running: number; completed: number; failed: number } {
+    let running = 0;
+    let completed = 0;
+    let failed = 0;
+    for (const task of this.tasks.values()) {
+      if (task.status === 'running') running++;
+      else if (task.status === 'completed') completed++;
+      else failed++;
+    }
+    return { total: this.tasks.size, running, completed, failed };
   }
 }
 
