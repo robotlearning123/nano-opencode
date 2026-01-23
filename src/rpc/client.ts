@@ -119,9 +119,30 @@ export class RpcClient {
           }
         }
       }
-    } catch {
-      // Ignore parse errors
+    } catch (error) {
+      // Log parse errors for debugging - malformed JSON from servers is a real issue
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`[RPC] JSON parse error: ${errorMessage}`);
+      console.error(`[RPC] Content preview: ${content.slice(0, 100)}...`);
     }
+  }
+
+  /**
+   * Cleanup stale pending requests (older than maxAge ms)
+   * Call this periodically to prevent memory leaks
+   */
+  cleanupStaleRequests(maxAge = 300000): number {
+    const now = Date.now();
+    let cleaned = 0;
+    for (const [id, pending] of this.pendingRequests.entries()) {
+      if (pending.createdAt && now - pending.createdAt > maxAge) {
+        if (pending.timeoutId) clearTimeout(pending.timeoutId);
+        pending.reject(new Error('Request expired during cleanup'));
+        this.pendingRequests.delete(id);
+        cleaned++;
+      }
+    }
+    return cleaned;
   }
 
   private send(msg: object): void {
@@ -148,7 +169,12 @@ export class RpcClient {
         reject(new Error(`Request timeout: ${method}`));
       }, this.options.timeout);
 
-      this.pendingRequests.set(id, { resolve: resolve as (v: unknown) => void, reject, timeoutId });
+      this.pendingRequests.set(id, {
+        resolve: resolve as (v: unknown) => void,
+        reject,
+        timeoutId,
+        createdAt: Date.now(),
+      });
       this.send(request);
     });
   }

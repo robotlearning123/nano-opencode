@@ -176,6 +176,10 @@ function resolveFileVariable(path: string, errors: string[]): string {
 /**
  * Execute a command from a skill template.
  * Commands in skill files are user-defined and trusted.
+ *
+ * SECURITY NOTE: This intentionally executes shell commands from skill files.
+ * Skills are user-authored and considered trusted content.
+ * Only use skills from sources you trust.
  */
 function resolveCommandVariable(command: string, errors: string[]): string {
   if (!command) {
@@ -185,14 +189,28 @@ function resolveCommandVariable(command: string, errors: string[]): string {
 
   try {
     // User-defined command from skill file - intentionally executes shell commands
+    // This is safe because skills are user-authored trusted content
     const output = execSync(command, {
       encoding: 'utf-8',
       timeout: 10000,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     return output.trim();
-  } catch {
-    errors.push(`Command failed: ${command}`);
+  } catch (error) {
+    // Capture actual error details for debugging
+    let errorDetail = 'Unknown error';
+    if (error instanceof Error) {
+      errorDetail = error.message;
+      // For exec errors, stderr is often in the error object
+      const execError = error as Error & { stderr?: string; status?: number };
+      if (execError.stderr) {
+        errorDetail = execError.stderr.trim() || errorDetail;
+      }
+      if (execError.status !== undefined) {
+        errorDetail += ` (exit code: ${execError.status})`;
+      }
+    }
+    errors.push(`Command failed: ${command} - ${errorDetail}`);
     return `[Command failed: ${command}]`;
   }
 }
