@@ -25,6 +25,26 @@ export interface SandboxResult {
   backend: 'docker' | 'firejail' | 'direct';
 }
 
+// Parse memory limit string to bytes (e.g., "512m" -> 536870912)
+function parseMemoryLimit(limit: string): number {
+  const match = limit.match(/^(\d+)([kmg])?$/i);
+  if (!match) return 536870912; // Default 512MB
+
+  const value = parseInt(match[1], 10);
+  const unit = (match[2] || 'm').toLowerCase();
+
+  switch (unit) {
+    case 'k':
+      return value * 1024;
+    case 'm':
+      return value * 1024 * 1024;
+    case 'g':
+      return value * 1024 * 1024 * 1024;
+    default:
+      return value;
+  }
+}
+
 // Check if Docker is available
 function hasDocker(): boolean {
   try {
@@ -82,13 +102,17 @@ async function runInFirejail(
   command: string,
   options: SandboxOptions
 ): Promise<SandboxResult> {
-  const { timeout = 30000, network = false, cwd } = options;
+  const { timeout = 30000, maxMemory = '512m', network = false, cwd } = options;
+
+  // Parse memory limit for rlimit (convert to bytes)
+  const memoryBytes = parseMemoryLimit(maxMemory);
 
   const firejailArgs = [
     '--quiet',
     '--private-tmp',
     '--noroot',
     '--caps.drop=all',
+    `--rlimit-as=${memoryBytes}`, // Memory limit
   ];
 
   if (!network) {

@@ -5,11 +5,39 @@
  */
 
 import type { Tool } from '../types.js';
-import { listSubAgentTypes, type SubAgentType } from '../agents/subagent.js';
 
-// Note: The actual runSubAgent requires an LLMProvider instance,
-// which needs to be injected at runtime. This tool definition
-// will be enhanced when integrated with the main agent loop.
+// Sub-agent types (defined here to avoid circular dependency)
+const SUB_AGENT_TYPES = {
+  research: {
+    description: 'Research and explore codebases',
+    tools: ['glob', 'grep', 'read_file', 'list_dir', 'web_search'],
+  },
+  'code-review': {
+    description: 'Review code for issues and improvements',
+    tools: ['glob', 'grep', 'read_file', 'diff', 'git_diff'],
+  },
+  'test-writer': {
+    description: 'Write tests for existing code',
+    tools: ['glob', 'grep', 'read_file', 'write_file', 'bash'],
+  },
+  refactor: {
+    description: 'Refactor and improve existing code',
+    tools: ['glob', 'grep', 'read_file', 'edit_file', 'bash'],
+  },
+  documentation: {
+    description: 'Generate or update documentation',
+    tools: ['glob', 'grep', 'read_file', 'write_file', 'edit_file'],
+  },
+} as const;
+
+type SubAgentType = keyof typeof SUB_AGENT_TYPES;
+
+function listSubAgentTypes(): Array<{ type: SubAgentType; description: string }> {
+  return Object.entries(SUB_AGENT_TYPES).map(([type, config]) => ({
+    type: type as SubAgentType,
+    description: config.description,
+  }));
+}
 
 export const spawnAgentTool: Tool = {
   name: 'spawn_agent',
@@ -65,9 +93,7 @@ Use sub-agents for focused tasks that benefit from specialized tool sets.`,
     // Parse context files
     const context = contextStr ? contextStr.split(',').map((f) => f.trim()) : [];
 
-    // Note: In a full implementation, runSubAgent would be called here
-    // with the current LLMProvider. For now, return a placeholder that
-    // the main agent loop will intercept and execute.
+    // Return a marker for the main agent loop to intercept and execute
     return JSON.stringify({
       __subagent__: true,
       type,
