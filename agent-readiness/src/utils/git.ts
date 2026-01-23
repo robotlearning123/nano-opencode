@@ -1,51 +1,46 @@
 /**
  * Git utilities for repository information
+ *
+ * IMPORTANT: Each scanned directory is treated as a STANDALONE repository.
+ * Git info is ONLY used if .git exists directly in the scanned path.
+ * Parent directories are NOT checked - this prevents subdirectories from
+ * inheriting git info from parent repos.
  */
 
 import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { fileExists, readFile, directoryExists } from './fs.js';
 import { gitExec } from './exec.js';
 
 /**
- * Check if path is inside a git repository (checks for .git in path or parents)
+ * Check if path has its own .git directory (is a standalone git repository)
+ * Does NOT check parent directories
  */
 export async function isGitRepo(repoPath: string): Promise<boolean> {
-  const gitRoot = await findGitRoot(repoPath);
-  return gitRoot !== null;
-}
-
-/**
- * Find the git root directory for a given path
- * Walks up the directory tree looking for .git
- */
-export async function findGitRoot(startPath: string): Promise<string | null> {
-  let currentPath = path.resolve(startPath);
-  const root = path.parse(currentPath).root;
-
-  while (currentPath !== root) {
-    const gitDir = path.join(currentPath, '.git');
-    // .git can be a directory (normal) or a file (worktree/submodule)
-    if ((await directoryExists(gitDir)) || (await fileExists(gitDir))) {
-      return currentPath;
-    }
-    currentPath = path.dirname(currentPath);
-  }
-
-  return null;
-}
-
-/**
- * Check if the scanned path has its own .git (is the repo root)
- */
-export async function isRepoRoot(repoPath: string): Promise<boolean> {
   const gitDir = path.join(repoPath, '.git');
   return (await directoryExists(gitDir)) || (await fileExists(gitDir));
 }
 
 /**
+ * Check if .git exists synchronously (for use in sync functions)
+ */
+function hasGitDir(repoPath: string): boolean {
+  const gitDir = path.join(repoPath, '.git');
+  try {
+    return fs.existsSync(gitDir);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Get current commit SHA
+ * Returns 'unknown' if no .git exists in the scanned path
  */
 export function getCommitSha(repoPath: string): string {
+  if (!hasGitDir(repoPath)) {
+    return 'unknown';
+  }
   const result = gitExec(['rev-parse', 'HEAD'], repoPath);
   return result.success ? result.stdout : 'unknown';
 }
@@ -60,9 +55,14 @@ export function getShortCommitSha(repoPath: string): string {
 
 /**
  * Get repository name from git remote or folder name
- * For subdirectories of a git repo, returns "repo/subdir" format
+ * Only uses git info if .git exists in the scanned path
  */
 export function getRepoName(repoPath: string): string {
+  // Only use git if .git exists in this directory
+  if (!hasGitDir(repoPath)) {
+    return path.basename(repoPath);
+  }
+
   const result = gitExec(['remote', 'get-url', 'origin'], repoPath);
 
   if (!result.success) {
@@ -86,29 +86,16 @@ export function getRepoName(repoPath: string): string {
     }
   }
 
-  if (!repoName) {
-    return path.basename(repoPath);
-  }
-
-  // Check if we're in a subdirectory of the git repo
-  const gitRootResult = gitExec(['rev-parse', '--show-toplevel'], repoPath);
-  if (gitRootResult.success) {
-    const gitRoot = gitRootResult.stdout;
-    const resolvedPath = path.resolve(repoPath);
-    if (resolvedPath !== gitRoot) {
-      // We're in a subdirectory, append the relative path
-      const relativePath = path.relative(gitRoot, resolvedPath);
-      return `${repoName}/${relativePath}`;
-    }
-  }
-
-  return repoName;
+  return repoName || path.basename(repoPath);
 }
 
 /**
  * Get current branch name
  */
 export function getCurrentBranch(repoPath: string): string {
+  if (!hasGitDir(repoPath)) {
+    return 'unknown';
+  }
   const result = gitExec(['branch', '--show-current'], repoPath);
   return result.success && result.stdout ? result.stdout : 'unknown';
 }
@@ -117,6 +104,9 @@ export function getCurrentBranch(repoPath: string): string {
  * Check if there are uncommitted changes
  */
 export function hasUncommittedChanges(repoPath: string): boolean {
+  if (!hasGitDir(repoPath)) {
+    return false;
+  }
   const result = gitExec(['status', '--porcelain'], repoPath);
   return result.success && result.stdout.length > 0;
 }
