@@ -20,6 +20,7 @@ import { todoWriteTool, todoReadTool } from './todo.js';
 import { undoTool, listBackupsTool } from './undo.js';
 import { webSearchTool } from './websearch.js';
 import { imageTool } from './image.js';
+import { gitCommitTool, gitStatusTool, gitDiffTool } from './git.js';
 
 // Core tools array (always available)
 const coreTools: Tool[] = [
@@ -38,6 +39,9 @@ const coreTools: Tool[] = [
   listBackupsTool,
   webSearchTool,
   imageTool,
+  gitCommitTool,
+  gitStatusTool,
+  gitDiffTool,
 ];
 
 // Dynamic tools (from MCP servers, plugins, etc.)
@@ -140,6 +144,8 @@ const READ_ONLY_TOOLS = new Set([
   'skill_read',
   'background_list',
   'background_output',
+  'git_status',
+  'git_diff',
 ]);
 
 /**
@@ -179,3 +185,4 @@ export {
 export { sessionListTool, sessionReadTool, sessionSearchTool } from './session.js';
 export { skillListTool, skillExecuteTool, skillReadTool } from './skill.js';
 export { lspDefinitionTool, lspReferencesTool, lspHoverTool } from './lsp.js';
+export { gitCommitTool, gitStatusTool, gitDiffTool } from './git.js';
