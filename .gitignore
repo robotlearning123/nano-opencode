@@ -24,3 +24,9 @@ test-tmp/
 *.db
 *.db-journal
 implementations/rust/target/
+
+# Separate repos (not part of nano-opencode)
+agent-readiness/
+jarvis/
+nano-opencode/
+.nano/
