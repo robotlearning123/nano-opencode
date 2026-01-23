@@ -8,21 +8,32 @@
  */
 
 import { spawn, spawnSync } from 'child_process';
+import { resolve, isAbsolute } from 'path';
 
-export interface SandboxOptions {
-  timeout?: number; // ms, default 30000
-  maxMemory?: string; // e.g., '512m', default '512m'
-  network?: boolean; // allow network access, default false
-  cwd?: string; // working directory
-  env?: Record<string, string>; // environment variables
-}
+/**
+ * Validate and sanitize cwd path to prevent injection attacks
+ * - Must be absolute path
+ * - No shell metacharacters
+ * - No path traversal attempts
+ */
+function validateCwd(cwd: string): string | null {
+  // Must be absolute
+  if (!isAbsolute(cwd)) {
+    return null;
+  }
 
-export interface SandboxResult {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-  killed: boolean;
-  backend: 'docker' | 'firejail' | 'direct';
+  // Resolve to canonical path (removes .., ., etc)
+  const resolved = resolve(cwd);
+
+  // Block dangerous characters for Docker/Firejail
+  // Colon is used in Docker volume syntax, could allow mounting other paths
+  // Semicolon, backtick, $, etc could enable command injection
+  const dangerousChars = /[;`$|&<>'"\\:\n\r\t]/;
+  if (dangerousChars.test(resolved)) {
+    return null;
+  }
+
+  return resolved;
 }
 
 // Parse memory limit string to bytes (e.g., "512m" -> 536870912)
@@ -43,6 +54,22 @@ function parseMemoryLimit(limit: string): number {
     default:
       return value;
   }
+}
+
+export interface SandboxOptions {
+  timeout?: number; // ms, default 30000
+  maxMemory?: string; // e.g., '512m', default '512m'
+  network?: boolean; // allow network access, default false
+  cwd?: string; // working directory
+  env?: Record<string, string>; // environment variables
+}
+
+export interface SandboxResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+  killed: boolean;
+  backend: 'docker' | 'firejail' | 'direct';
 }
 
 // Check if Docker is available
@@ -66,10 +93,7 @@ function hasFirejail(): boolean {
 }
 
 // Run command in Docker container
-async function runInDocker(
-  command: string,
-  options: SandboxOptions
-): Promise<SandboxResult> {
+async function runInDocker(command: string, options: SandboxOptions): Promise<SandboxResult> {
   const { timeout = 30000, maxMemory = '512m', network = false, cwd } = options;
 
   const dockerArgs = [
@@ -86,9 +110,14 @@ async function runInDocker(
     dockerArgs.push('--network=none');
   }
 
+  // Validate cwd to prevent path injection
   if (cwd) {
-    dockerArgs.push('-v', `${cwd}:${cwd}`);
-    dockerArgs.push('-w', cwd);
+    const safeCwd = validateCwd(cwd);
+    if (safeCwd) {
+      dockerArgs.push('-v', `${safeCwd}:${safeCwd}`);
+      dockerArgs.push('-w', safeCwd);
+    }
+    // If validation fails, run without volume mount (safer)
   }
 
   // Use a minimal image with shell
@@ -98,10 +127,7 @@ async function runInDocker(
 }
 
 // Run command in Firejail sandbox
-async function runInFirejail(
-  command: string,
-  options: SandboxOptions
-): Promise<SandboxResult> {
+async function runInFirejail(command: string, options: SandboxOptions): Promise<SandboxResult> {
   const { timeout = 30000, maxMemory = '512m', network = false, cwd } = options;
 
   // Parse memory limit for rlimit (convert to bytes)
@@ -119,8 +145,13 @@ async function runInFirejail(
     firejailArgs.push('--net=none');
   }
 
+  // Validate cwd to prevent path injection
   if (cwd) {
-    firejailArgs.push(`--whitelist=${cwd}`);
+    const safeCwd = validateCwd(cwd);
+    if (safeCwd) {
+      firejailArgs.push(`--whitelist=${safeCwd}`);
+    }
+    // If validation fails, run without whitelist (more restricted)
   }
 
   firejailArgs.push('--', 'sh', '-c', command);
@@ -129,23 +160,16 @@ async function runInFirejail(
 }
 
 // Run command directly with ulimit
-async function runDirect(
-  command: string,
-  options: SandboxOptions
-): Promise<SandboxResult> {
+async function runDirect(command: string, options: SandboxOptions): Promise<SandboxResult> {
   const { timeout = 30000, cwd, env } = options;
+
+  // Validate cwd for consistency with other backends
+  const safeCwd = cwd ? validateCwd(cwd) : undefined;
 
   // Use ulimit to set some basic limits
   const wrappedCommand = `ulimit -v 524288 2>/dev/null; ${command}`;
 
-  return runWithTimeout(
-    'sh',
-    ['-c', wrappedCommand],
-    timeout,
-    'direct',
-    cwd,
-    env
-  );
+  return runWithTimeout('sh', ['-c', wrappedCommand], timeout, 'direct', safeCwd ?? undefined, env);
 }
 
 // Helper to run command with timeout
@@ -161,6 +185,7 @@ function runWithTimeout(
     let stdout = '';
     let stderr = '';
     let killed = false;
+    let resolved = false; // Guard against double-resolve
 
     const proc = spawn(cmd, args, {
       cwd,
@@ -181,6 +206,8 @@ function runWithTimeout(
     }, timeout);
 
     proc.on('close', (code) => {
+      if (resolved) return;
+      resolved = true;
       clearTimeout(timeoutId);
       resolve({
         stdout: stdout.trim(),
@@ -192,6 +219,8 @@ function runWithTimeout(
     });
 
     proc.on('error', (error) => {
+      if (resolved) return;
+      resolved = true;
       clearTimeout(timeoutId);
       resolve({
         stdout: '',
@@ -211,10 +240,7 @@ let _hasFirejail: boolean | null = null;
 /**
  * Run a command in the best available sandbox
  */
-export async function runInSandbox(
-  command: string,
-  options: SandboxOptions = {}
-): Promise<SandboxResult> {
+export async function runInSandbox(command: string, options: SandboxOptions = {}): Promise<SandboxResult> {
   // Cache availability checks
   if (_hasDocker === null) _hasDocker = hasDocker();
   if (_hasFirejail === null) _hasFirejail = hasFirejail();
