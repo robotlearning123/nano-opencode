@@ -34,14 +34,15 @@ export const EXCLUDED_RG_PATTERNS = EXCLUDED_DIRS.map((dir) => `!${dir}`);
 export const EXCLUDED_GREP_DIRS = EXCLUDED_DIRS.map((dir) => `--exclude-dir=${dir}`);
 
 // Supported providers
-export const SUPPORTED_PROVIDERS = ['anthropic', 'openai', 'gemini'] as const;
+export const SUPPORTED_PROVIDERS = ['anthropic', 'openai', 'gemini', 'ollama'] as const;
 export type SupportedProvider = (typeof SUPPORTED_PROVIDERS)[number];
 
-// Environment variable names for API keys
+// Environment variable names for API keys (ollama doesn't need one)
 export const ENV_KEY_MAP: Record<SupportedProvider, string> = {
   anthropic: 'ANTHROPIC_API_KEY',
   openai: 'OPENAI_API_KEY',
   gemini: 'GEMINI_API_KEY',
+  ollama: 'OLLAMA_HOST', // Optional: defaults to localhost:11434
 };
 
 // Default models per provider
@@ -49,6 +50,7 @@ export const DEFAULT_MODELS: Record<SupportedProvider, string> = {
   anthropic: 'claude-sonnet-4-20250514',
   openai: 'gpt-4o',
   gemini: 'gemini-2.0-flash',
+  ollama: 'llama3.2',
 };
 
 export function getSystemPrompt(): string {

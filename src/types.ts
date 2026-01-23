@@ -79,7 +79,7 @@ export interface ModelCategory {
  */
 export interface Config {
   // Provider settings
-  provider: 'anthropic' | 'openai' | 'gemini';
+  provider: 'anthropic' | 'openai' | 'gemini' | 'ollama';
   providers?: Record<string, ProviderConfig>;
 
   // Model settings
