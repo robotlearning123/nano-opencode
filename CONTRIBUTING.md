@@ -69,9 +69,15 @@ We follow conventional commits:
 - `feat:` - New feature
 - `fix:` - Bug fix
 - `docs:` - Documentation changes
+- `style:` - Formatting, no code change
+- `refactor:` - Code restructuring
+- `perf:` - Performance improvement
 - `test:` - Test additions or changes
-- `refactor:` - Code refactoring
+- `build:` - Build system changes
+- `ci:` - CI configuration changes
 - `chore:` - Maintenance tasks
+- `revert:` - Revert a commit
+- `deps:` - Dependency updates
 
 ## Adding a New Tool
 

@@ -1,0 +1,11 @@
+# Default owners for everything in the repo
+* @robotlearning123
+
+# CI/CD configuration
+/.github/ @robotlearning123
+
+# Core source code
+/src/ @robotlearning123
+
+# Tests
+/test/ @robotlearning123
