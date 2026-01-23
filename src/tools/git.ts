@@ -7,6 +7,7 @@
 
 import { spawnSync } from 'child_process';
 import type { Tool } from '../types.js';
+import { validatePath } from './helpers.js';
 
 /**
  * Execute a git command safely using spawnSync (avoids shell injection)
@@ -99,14 +100,25 @@ function findCommonDirectory(files: string[]): string | null {
  * Returns error message if invalid, null if valid
  */
 function validateFilePaths(paths: string[]): string | null {
-  for (const path of paths) {
+  if (paths.length === 0) {
+    return 'Error: No valid file paths provided';
+  }
+
+  for (const filePath of paths) {
     // Block git options (start with -)
-    if (path.startsWith('-')) {
-      return `Error: Invalid file path "${path}" - cannot start with dash`;
+    if (filePath.startsWith('-')) {
+      return `Error: Invalid file path "${filePath}" - cannot start with dash`;
     }
-    // Block empty paths
-    if (!path.trim()) {
+
+    // Special case: "." means current directory, skip path validation
+    if (filePath === '.') {
       continue;
+    }
+
+    // Validate path is within cwd (prevents path traversal)
+    const result = validatePath(filePath);
+    if (!result.ok) {
+      return result.error;
     }
   }
   return null;
@@ -159,6 +171,9 @@ export const gitCommitTool: Tool = {
 
     // Check if there are staged changes
     const staged = runGit(['diff', '--cached', '--name-only']);
+    if (staged.status !== 0) {
+      return `Error checking staged files: ${staged.stderr || 'Unknown error'}`;
+    }
     if (!staged.stdout) {
       return 'Nothing to commit (no staged changes)';
     }
@@ -244,8 +259,15 @@ export const gitDiffTool: Tool = {
     const stat = Boolean(args.stat);
 
     // Validate file path if provided
-    if (file && file.startsWith('-')) {
-      return `Error: Invalid file path "${file}" - cannot start with dash`;
+    if (file) {
+      if (file.startsWith('-')) {
+        return `Error: Invalid file path "${file}" - cannot start with dash`;
+      }
+      // Validate path is within cwd (prevents path traversal)
+      const pathResult = validatePath(file);
+      if (!pathResult.ok) {
+        return pathResult.error;
+      }
     }
 
     const gitArgs = ['diff'];
