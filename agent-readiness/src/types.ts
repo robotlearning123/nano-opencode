@@ -1,5 +1,5 @@
 /**
- * Core type definitions for agent-readiness scanner
+ * Core type definitions for agent-ready scanner
  */
 
 // Cache interface compatible with both Map and LRUCache

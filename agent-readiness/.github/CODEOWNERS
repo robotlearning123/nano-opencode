@@ -1,18 +1,18 @@
-# Code ownership for agent-readiness
+# Code ownership for agent-ready
 # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default owners for everything in the repo
-* @{{GITHUB_USERNAME}}
+* @robotlearning123
 
 # Documentation
-/docs/ @{{GITHUB_USERNAME}}
-*.md @{{GITHUB_USERNAME}}
+/docs/ @robotlearning123
+*.md @robotlearning123
 
 # CI/CD configuration
-/.github/ @{{GITHUB_USERNAME}}
+/.github/ @robotlearning123
 
 # Source code
-/src/ @{{GITHUB_USERNAME}}
+/src/ @robotlearning123
 
 # Tests
-/test/ @{{GITHUB_USERNAME}}
+/test/ @robotlearning123

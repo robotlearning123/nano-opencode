@@ -39,7 +39,7 @@ npm run build
 
 ## Codebase Structure
 
-```
+```text
 src/
 ├── index.ts          # Entry point
 ├── [describe key directories]

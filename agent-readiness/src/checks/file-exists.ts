@@ -60,7 +60,7 @@ export async function executeFileExists(
   // Check content against regex
   const content = await readFileCached(filePath, context.file_cache);
 
-  if (!content) {
+  if (content === null) {
     return {
       check_id: check.id,
       check_name: check.name,

@@ -21,34 +21,45 @@ export function isUnsafeRegex(pattern: string): boolean {
 
   const len = pattern.length;
   let depth = 0;
-  let hasQuantifierInGroup = false;
+  // Track quantifier presence per group (stack for nested groups)
+  const groupQuantifiers: boolean[] = [];
+
+  // Robust escape detection: count consecutive backslashes before index
+  const isEscaped = (idx: number): boolean => {
+    let backslashes = 0;
+    for (let k = idx - 1; k >= 0 && pattern[k] === '\\'; k--) backslashes++;
+    return backslashes % 2 === 1;
+  };
 
   for (let i = 0; i < len; i++) {
     const char = pattern[i];
-    const prevChar = i > 0 ? pattern[i - 1] : '';
     const nextChar = i < len - 1 ? pattern[i + 1] : '';
 
-    // Skip escaped characters
-    if (prevChar === '\\') continue;
+    // Skip escaped characters (use robust check)
+    if (isEscaped(i)) continue;
 
     if (char === '(') {
       depth++;
-      hasQuantifierInGroup = false;
+      groupQuantifiers.push(false);
     } else if (char === ')') {
+      const hadQuantifier = groupQuantifiers.pop() ?? false;
       // Check for quantifier after closing paren when group had quantifier inside
-      if (hasQuantifierInGroup && (nextChar === '+' || nextChar === '*' || nextChar === '{')) {
+      if (hadQuantifier && (nextChar === '+' || nextChar === '*' || nextChar === '{')) {
         return true; // Nested quantifier detected: (a+)+, (a*)*, etc.
       }
-      depth--;
-      hasQuantifierInGroup = false;
-    } else if ((char === '+' || char === '*') && depth > 0) {
-      hasQuantifierInGroup = true;
-    } else if (char === '{' && depth > 0) {
+      // Propagate quantifier info to parent group
+      if (groupQuantifiers.length > 0) {
+        groupQuantifiers[groupQuantifiers.length - 1] ||= hadQuantifier;
+      }
+      depth = Math.max(0, depth - 1);
+    } else if ((char === '+' || char === '*') && depth > 0 && groupQuantifiers.length > 0) {
+      groupQuantifiers[groupQuantifiers.length - 1] = true;
+    } else if (char === '{' && depth > 0 && groupQuantifiers.length > 0) {
       // Check for repetition quantifier {n,m}
       let j = i + 1;
       while (j < len && pattern[j] !== '}') j++;
       if (j < len && pattern.slice(i, j + 1).includes(',')) {
-        hasQuantifierInGroup = true;
+        groupQuantifiers[groupQuantifiers.length - 1] = true;
       }
     }
   }

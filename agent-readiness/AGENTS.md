@@ -4,7 +4,7 @@ This file provides instructions for AI agents working with this codebase.
 
 ## Project Overview
 
-agent-readiness is a [brief description of your project].
+agent-ready is a CLI tool that scans repositories for AI agent readiness, evaluating maturity across 10 pillars with 5 levels (L1-L5) using the Factory Agent Readiness model.
 
 ## Getting Started
 
@@ -39,10 +39,13 @@ npm run build
 
 ## Codebase Structure
 
-```
+```text
 src/
-├── index.ts          # Entry point
-├── [describe key directories]
+├── index.ts          # CLI entry point
+├── checks/           # Check implementations (file_exists, github_workflow, etc.)
+├── engine/           # Core scanning engine
+├── output/           # Output formatters (JSON, Markdown)
+└── utils/            # Shared utilities (regex, file cache, path validation)
 ```
 
 ## Key Conventions

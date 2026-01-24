@@ -129,13 +129,15 @@ function checkForEvent(
   requiredBranches?: string[]
 ): boolean {
   // String trigger: on: push
+  // Per GitHub docs, this triggers on ALL branches (no filter = all branches)
   if (typeof triggers === 'string') {
-    return triggers === event && !requiredBranches;
+    return triggers === event;
   }
 
   // Array trigger: on: [push, pull_request]
+  // Per GitHub docs, this triggers on ALL branches (no filter = all branches)
   if (Array.isArray(triggers)) {
-    return triggers.includes(event) && !requiredBranches;
+    return triggers.includes(event);
   }
 
   // Object trigger: on: { push: { branches: [main] } }
@@ -148,17 +150,23 @@ function checkForEvent(
     }
 
     // Event present but null (e.g., on: { push: })
+    // Per GitHub docs, no branches key means ALL branches
     if (eventConfig === null) {
-      return !requiredBranches;
+      return true;
     }
 
-    // No branch requirements
+    // No branch requirements from the check
     if (!requiredBranches) {
       return true;
     }
 
-    // Check branches
-    const configBranches = eventConfig.branches || [];
+    // No branches key in config means all branches (satisfies any requirement)
+    const configBranches = eventConfig.branches;
+    if (!configBranches || configBranches.length === 0) {
+      return true;
+    }
+
+    // Check that required branches are in the config's branch filter
     return requiredBranches.every((branch) => configBranches.includes(branch));
   }
 

@@ -1,11 +1,11 @@
 # Factory-Compatible Agent Readiness Profile
-# Evaluates repositories against the 9 Pillars / 5 Levels model
+# Evaluates repositories against the 10 Pillars / 5 Levels model
 
 name: factory_compat
 version: "1.0.0"
 description: >
   Default profile for evaluating repository maturity for AI agent readiness.
-  Based on the 9 Pillars model with 5 maturity levels (L1-L5).
+  Based on the 10 Pillars model with 5 maturity levels (L1-L5).
 
 checks:
   # =============================================================================
@@ -175,14 +175,42 @@ checks:
   # PILLAR: Build System (build)
   # =============================================================================
 
-  - id: build.package_json
-    name: Package manifest
-    description: package.json exists with build scripts
-    type: file_exists
+  - id: build.manifest
+    name: Build manifest
+    description: Repository has a primary build manifest
+    type: any_of
     pillar: build
     level: L1
     required: true
-    path: package.json
+    checks:
+      - id: build.package_json
+        name: package.json
+        type: file_exists
+        pillar: build
+        level: L1
+        required: false
+        path: package.json
+      - id: build.pyproject
+        name: pyproject.toml
+        type: file_exists
+        pillar: build
+        level: L1
+        required: false
+        path: pyproject.toml
+      - id: build.cargo_toml
+        name: Cargo.toml
+        type: file_exists
+        pillar: build
+        level: L1
+        required: false
+        path: Cargo.toml
+      - id: build.makefile
+        name: Makefile
+        type: file_exists
+        pillar: build
+        level: L1
+        required: false
+        path: Makefile
 
   - id: build.scripts
     name: Build scripts defined

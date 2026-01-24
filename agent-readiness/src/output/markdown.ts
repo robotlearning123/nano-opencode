@@ -71,11 +71,20 @@ function printLevelBadge(result: ScanResult): void {
   const level = result.level || 'none';
   const colorFn = LEVEL_COLORS[level];
   const levelName = result.level || 'Not Achieved';
+  const scoreStr = `Score: ${result.overall_score}%`;
+  const levelStr = `Level: ${levelName}`;
+
+  // Calculate padding for consistent alignment (inner width = 47 chars)
+  const innerWidth = 47;
+  const levelPadLeft = Math.floor((innerWidth - levelStr.length) / 2);
+  const levelPadRight = innerWidth - levelStr.length - levelPadLeft;
+  const scorePadLeft = Math.floor((innerWidth - scoreStr.length) / 2);
+  const scorePadRight = innerWidth - scoreStr.length - scorePadLeft;
 
   const badge = `┌─────────────────────────────────────────────────┐
 │                                                 │
-│          ${colorFn(`Level: ${levelName}`)}                          │
-│          ${chalk.dim(`Score: ${result.overall_score}%`)}                            │
+│${' '.repeat(levelPadLeft)}${colorFn(levelStr)}${' '.repeat(levelPadRight)}│
+│${' '.repeat(scorePadLeft)}${chalk.dim(scoreStr)}${' '.repeat(scorePadRight)}│
 │                                                 │
 └─────────────────────────────────────────────────┘`;
 

@@ -240,7 +240,10 @@ let _hasFirejail: boolean | null = null;
 /**
  * Run a command in the best available sandbox
  */
-export async function runInSandbox(command: string, options: SandboxOptions = {}): Promise<SandboxResult> {
+export async function runInSandbox(
+  command: string,
+  options: SandboxOptions = {}
+): Promise<SandboxResult> {
   // Cache availability checks
   if (_hasDocker === null) _hasDocker = hasDocker();
   if (_hasFirejail === null) _hasFirejail = hasFirejail();

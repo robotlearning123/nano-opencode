@@ -1,4 +1,4 @@
-# Contributing to agent-readiness
+# Contributing to agent-ready
 
 Thank you for your interest in contributing! This document provides guidelines and steps for contributing.
 
@@ -36,8 +36,8 @@ Please be respectful and constructive in all interactions.
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR_USERNAME/agent-readiness.git
-cd agent-readiness
+git clone https://github.com/YOUR_USERNAME/agent-ready.git
+cd agent-ready
 
 # Install dependencies
 npm install
@@ -51,7 +51,7 @@ npm run dev
 
 ## Code Style
 
-- We use [ESLint/Prettier] for code formatting
+- We use ESLint and Prettier for code formatting
 - Run `npm run lint` before committing
 - Follow existing patterns in the codebase
 

@@ -1,6 +1,6 @@
 # Factory Agent Readiness Comparison
 
-This document compares our agent-readiness implementation with [Factory's official Agent Readiness Model](https://docs.factory.ai/web/agent-readiness/overview).
+This document compares our agent-ready implementation with [Factory's official Agent Readiness Model](https://docs.factory.ai/web/agent-readiness/overview).
 
 ## Executive Summary
 

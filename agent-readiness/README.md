@@ -1,10 +1,10 @@
-# agent-readiness
+# agent-ready
 
-Factory-compatible repo maturity scanner CLI tool that evaluates repositories against the **9 Pillars / 5 Levels** model and outputs actionable readiness reports for AI agents.
+Factory-compatible repo maturity scanner CLI tool that evaluates repositories against the **10 Pillars / 5 Levels** model and outputs actionable readiness reports for AI agents.
 
 ## Features
 
-- **9 Pillars Assessment**: Documentation, Code Style, Build, Testing, Security, Observability, Environment, CI/CD, Monorepo
+- **10 Pillars Assessment**: Documentation, Code Style, Build, Testing, Security, Observability, Environment, CI/CD, Monorepo, Task Discovery
 - **5 Maturity Levels**: L1 (Minimal) → L5 (Optimal)
 - **80% Gating Rule**: Levels achieved when ≥80% of checks pass AND all required checks pass
 - **Extensible Profiles**: YAML-based check definitions
@@ -63,7 +63,7 @@ npm run dev -- init --dry-run
 
 ### Terminal Output
 
-```
+```text
 Agent Readiness Report
 ──────────────────────────────────────────────────
 Repository: owner/repo
@@ -107,7 +107,7 @@ Action Items
 }
 ```
 
-## The 9 Pillars / 5 Levels Model
+## The 10 Pillars / 5 Levels Model
 
 ### Pillars
 
@@ -122,6 +122,7 @@ Action Items
 | **Environment** | .env.example templates |
 | **CI/CD** | GitHub workflows, triggers, actions |
 | **Monorepo** | Workspace configuration |
+| **Task Discovery** | Issue templates, PR templates |
 
 ### Levels
 
@@ -199,8 +200,8 @@ npm run build
 
 ## Project Structure
 
-```
-agent-readiness/
+```text
+agent-ready/
 ├── src/
 │   ├── index.ts              # CLI entry
 │   ├── types.ts              # Type definitions
