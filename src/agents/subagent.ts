@@ -5,7 +5,7 @@
  * to handle specific tasks with limited tool sets and turn counts.
  */
 
-import type { LLMProvider, Message, Tool, AgentDefinition, ToolResult } from '../types.js';
+import type { LLMProvider, Message, AgentDefinition, ToolResult } from '../types.js';
 import { filterToolsForAgent } from './registry.js';
 import { getAllTools, executeTool } from '../tools/index.js';
 
@@ -106,6 +106,7 @@ export async function runSubAgent(
   let turn = 0;
   const toolsUsed: Set<string> = new Set();
   let lastOutput = '';
+  let completedNaturally = false;
 
   while (turn < maxTurns) {
     turn++;
@@ -120,8 +121,9 @@ export async function runSubAgent(
 
     messages.push(response);
 
-    // If no tool calls, we're done
+    // If no tool calls, we're done - completed naturally
     if (!response.toolCalls || response.toolCalls.length === 0) {
+      completedNaturally = true;
       break;
     }
 
@@ -145,8 +147,9 @@ export async function runSubAgent(
     });
   }
 
+  // Success if completed naturally (no more tool calls), not just if we haven't hit the limit
   return {
-    success: turn < maxTurns, // Didn't hit limit
+    success: completedNaturally,
     output: lastOutput,
     turns: turn,
     toolsUsed: Array.from(toolsUsed),

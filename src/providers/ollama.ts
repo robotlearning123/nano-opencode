@@ -101,59 +101,74 @@ export class OllamaProvider implements LLMProvider {
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+    let buffer = ''; // Buffer for incomplete lines across chunk boundaries
+
+    const processLine = (line: string) => {
+      try {
+        const chunk: OllamaStreamChunk = JSON.parse(line);
+
+        if (chunk.message?.content) {
+          fullText += chunk.message.content;
+          onChunk({ type: 'text', content: chunk.message.content });
+        }
+
+        if (chunk.message?.tool_calls) {
+          for (const tc of chunk.message.tool_calls) {
+            if (tc.function?.name) {
+              const id = tc.id || `call_${toolCallIndex}`;
+              toolCalls.set(toolCallIndex, {
+                id,
+                name: tc.function.name,
+                arguments: tc.function.arguments || '{}',
+              });
+              toolCallIndex++;
+            }
+          }
+        }
+
+        if (chunk.done) {
+          // Process completed tool calls
+          for (const [, tc] of toolCalls) {
+            try {
+              const args = JSON.parse(tc.arguments);
+              const toolCall: ToolCall = {
+                id: tc.id,
+                name: tc.name,
+                arguments: args,
+              };
+              onChunk({ type: 'tool_use', toolCall });
+            } catch (error) {
+              console.error(`Failed to parse tool arguments for ${tc.name}:`, error);
+            }
+          }
+          onChunk({ type: 'done' });
+        }
+      } catch {
+        // Skip invalid JSON lines
+      }
+    };
 
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const text = decoder.decode(value, { stream: true });
-        const lines = text.split('\n').filter((line) => line.trim());
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        // Keep the last element as it might be incomplete
+        buffer = lines.pop() ?? '';
 
         for (const line of lines) {
-          try {
-            const chunk: OllamaStreamChunk = JSON.parse(line);
-
-            if (chunk.message?.content) {
-              fullText += chunk.message.content;
-              onChunk({ type: 'text', content: chunk.message.content });
-            }
-
-            if (chunk.message?.tool_calls) {
-              for (const tc of chunk.message.tool_calls) {
-                if (tc.function?.name) {
-                  const id = tc.id || `call_${toolCallIndex}`;
-                  toolCalls.set(toolCallIndex, {
-                    id,
-                    name: tc.function.name,
-                    arguments: tc.function.arguments || '{}',
-                  });
-                  toolCallIndex++;
-                }
-              }
-            }
-
-            if (chunk.done) {
-              // Process completed tool calls
-              for (const [, tc] of toolCalls) {
-                try {
-                  const args = JSON.parse(tc.arguments);
-                  const toolCall: ToolCall = {
-                    id: tc.id,
-                    name: tc.name,
-                    arguments: args,
-                  };
-                  onChunk({ type: 'tool_use', toolCall });
-                } catch (error) {
-                  console.error(`Failed to parse tool arguments for ${tc.name}:`, error);
-                }
-              }
-              onChunk({ type: 'done' });
-            }
-          } catch {
-            // Skip invalid JSON lines
+          if (line.trim()) {
+            processLine(line);
           }
         }
+      }
+
+      // Process any remaining data after stream ends
+      buffer += decoder.decode(); // Flush decoder
+      if (buffer.trim()) {
+        processLine(buffer);
       }
     } finally {
       reader.releaseLock();
